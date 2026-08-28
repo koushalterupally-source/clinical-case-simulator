@@ -1,5 +1,5 @@
 {
-  "name": "pyq-ccs-simulator",
+  "name": "clinical-case-simulator",
   "private": true,
   "version": "1.0.0",
   "type": "module",
