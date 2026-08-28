@@ -1,0 +1,35 @@
+name: CI
+
+# The deploy workflow also runs these checks, but only on a push to main — by
+# which point a broken case is already live. The case invariants in Test Suite
+# 14 are only worth having if they gate the pull request that would introduce
+# the defect, so they run here too, on every branch and every PR.
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Typecheck and case invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      # A green test run that could not build is not green.
+      - name: Build
+        run: npm run build
