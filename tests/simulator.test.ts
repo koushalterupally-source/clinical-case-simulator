@@ -7,11 +7,15 @@ import {
   inferOrderCategory,
   simTimeToMinutes,
   formatSimTime,
+  normalizeOrderText,
+  findByAlias,
+  getOrderableGroupsForScaffold,
 } from '../src/utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from '../src/utils/caseBinder';
 import { exportQBankToJSON, importQBankFromJSON } from '../src/utils/qbankParser';
 import { DEFAULT_PYQ_INDEX } from '../src/data/defaultQBank';
 import { CASE_SCAFFOLDS } from '../src/data/cases/scaffolds';
+import { ORDER_GROUPS } from '../src/data/orderSets';
 import { buildQuestionLedCase, buildIdf } from '../src/utils/questionLedCase';
 import {
   rankForXp,
@@ -395,6 +399,255 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
   assert(spo2Severity(0) === 'normal', '0 SpO2 returns normal');
   assert(rrSeverity(0) === 'normal', '0 RR returns normal');
   assert(grbsSeverity(0) === 'normal', '0 GRBS returns normal');
+
+  // 11. Alias Matching — the exact bug this rebuild fixes
+  console.log('\n--- Test Suite 11: Alias Matching ---');
+  const dkaScaffold = CASE_SCAFFOLDS.find((s) => s.id === 'scaffold_dka')!;
+
+  assert(
+    normalizeOrderText('Normal saline 0.9% 500 mL bolus') === normalizeOrderText('normal saline 0.9% 500 ml bolus'),
+    'normalizeOrderText is case-insensitive and punctuation-insensitive'
+  );
+  assert(
+    findByAlias(dkaScaffold.investigationsMap, 'Serum ketones')?.key === 'serum_ketones',
+    'findByAlias matches "Serum ketones" to the serum_ketones entry'
+  );
+  assert(
+    findByAlias(dkaScaffold.investigationsMap, 'Urine ketones')?.key === 'urine_ketones',
+    'findByAlias matches "Urine ketones" to the urine_ketones entry — a different key from serum ketones'
+  );
+  assert(
+    findByAlias(dkaScaffold.investigationsMap, 'Serum ketones panel extended') === null,
+    'Matching is exact-normalized equality, not substring — a near-miss order name matches nothing'
+  );
+
+  let ketonesSession = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  ketonesSession = processTurnOffline(ketonesSession, 'order: Serum ketones, Urine ketones');
+  const serumOrd = ketonesSession.pendingOrders.find((o) => o.orderName === 'Serum ketones');
+  const urineOrd = ketonesSession.pendingOrders.find((o) => o.orderName === 'Urine ketones');
+  assert(!!serumOrd && !!urineOrd, 'Serum ketones and Urine ketones are placed as two separate orders');
+  assert(
+    !!serumOrd && !!urineOrd && serumOrd.resultText !== urineOrd.resultText,
+    'PINNED: "Serum ketones" and "Urine ketones" return DIFFERENT results'
+  );
+  assert(
+    /beta-hydroxybutyrate/i.test(serumOrd?.resultText || ''),
+    'Serum ketones result quantifies beta-hydroxybutyrate'
+  );
+  assert(
+    !/beta-hydroxybutyrate/i.test(urineOrd?.resultText || ''),
+    'Urine ketones result does not claim to quantify beta-hydroxybutyrate'
+  );
+
+  // An order the scaffold does not model must never invent a clinical result.
+  let unmodeledSession = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  unmodeledSession = processTurnOffline(unmodeledSession, 'order: Colonoscopy');
+  const unmodeledOrd = unmodeledSession.pendingOrders[0];
+  assert(
+    !!unmodeledOrd && unmodeledOrd.resultText === 'Not modelled in this case.',
+    'An unmodelled order is honestly reported as such, never given a fabricated result'
+  );
+
+  // 12. Therapy Model — treating the patient changes the patient
+  console.log('\n--- Test Suite 12: Therapy Model ---');
+
+  // An indicated therapy is acknowledged, and once its onset elapses it moves
+  // vitals toward normal and changes what a REPEATED investigation returns.
+  let dkaTx = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  const grbsBefore = dkaTx.patient.currentVitals.grbs;
+  dkaTx = processTurnOffline(dkaTx, 'order: Normal saline 0.9% 500 mL bolus');
+  dkaTx = processTurnOffline(dkaTx, 'order: Insulin infusion');
+  const insulinEntry = dkaTx.therapyLog.find((t) => t.key === 'insulin');
+  assert(!!insulinEntry && insulinEntry.appropriateness === 'indicated', 'Insulin given after fluids is graded indicated');
+  dkaTx = processTurnOffline(dkaTx, 'advance 65 minutes');
+  assert(
+    dkaTx.patient.currentVitals.grbs < grbsBefore,
+    'An indicated therapy (insulin, correctly sequenced after fluids) visibly lowers GRBS once its onset elapses'
+  );
+  dkaTx = processTurnOffline(dkaTx, 'order: ABG');
+  const repeatAbg = dkaTx.pendingOrders.find((o) => o.orderName === 'ABG');
+  assert(
+    !!repeatAbg && /improving/i.test(repeatAbg.resultText),
+    'A REPEATED investigation after indicated treatment returns a changed (improving) result via labShift'
+  );
+
+  // Sequence matters: insulin before fluids in DKA is the canonical harmful case.
+  let dkaHarmfulSeq = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  dkaHarmfulSeq = processTurnOffline(dkaHarmfulSeq, 'order: Insulin infusion');
+  const earlyInsulinEntry = dkaHarmfulSeq.therapyLog.find((t) => t.key === 'insulin');
+  assert(
+    !!earlyInsulinEntry && earlyInsulinEntry.appropriateness === 'harmful',
+    'Insulin given BEFORE fluids in DKA is graded harmful — sequence matters'
+  );
+  assert(
+    !dkaHarmfulSeq.turns.some((t) => /hypokalemia|arrhythmia/i.test(t.whatHappened || '')),
+    'The harmful-sequence rationale is never leaked into the case narrative during play'
+  );
+  const dkaEnded = processTurnOffline(dkaHarmfulSeq, 'end case');
+  const dkaCard = dkaEnded.scorecard!;
+  assert(
+    dkaCard.therapiesGiven.some((t) => t.appropriateness === 'harmful' && /hypokalemia/i.test(t.rationale)),
+    'The rationale for a harmful therapy is surfaced in the scorecard AFTERWARDS'
+  );
+
+  // A harmful therapy is acted on and the patient responds — never a no-op.
+  let stemiHarmful = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_stemi', mode: 'standard' });
+  const hrBeforeMetoprolol = stemiHarmful.patient.currentVitals.hr;
+  stemiHarmful = processTurnOffline(stemiHarmful, 'order: Metoprolol IV');
+  stemiHarmful = processTurnOffline(stemiHarmful, 'advance 15 minutes');
+  const metoprololEntry = stemiHarmful.therapyLog.find((t) => t.key === 'metoprolol');
+  assert(!!metoprololEntry && metoprololEntry.appropriateness === 'harmful', 'Metoprolol is graded harmful in this STEMI scaffold (heart-failure signs present)');
+  assert(
+    stemiHarmful.patient.currentVitals.hr !== hrBeforeMetoprolol,
+    'A harmful therapy is acted on and the patient responds accordingly — not a no-op'
+  );
+
+  // 13. Order Sheet Filtering — the sheet stops lying
+  console.log('\n--- Test Suite 13: Order Sheet Filtering ---');
+  const totalSheetItems = ORDER_GROUPS.reduce((n, g) => n + g.sections.reduce((m, s) => m + s.items.length, 0), 0);
+  const dkaGroups = getOrderableGroupsForScaffold(dkaScaffold);
+  const dkaSheetItems = dkaGroups.reduce((n, g) => n + g.sections.reduce((m, s) => m + s.items.length, 0), 0);
+  assert(dkaSheetItems < totalSheetItems, 'The order sheet is filtered down to what the DKA case actually models');
+  const dkaFlatItems = new Set(dkaGroups.flatMap((g) => g.sections.flatMap((s) => s.items)));
+  assert(dkaFlatItems.has('Serum ketones') && dkaFlatItems.has('Urine ketones'), 'Both ketone orders remain distinct entries on the filtered sheet');
+  assert(!dkaFlatItems.has('Magnesium sulfate (Pritchard regimen)'), 'A drug this case does not model (eclampsia-only) is not offered on the DKA sheet');
+  assert(getOrderableGroupsForScaffold(undefined).length === ORDER_GROUPS.length, 'With no scaffold (question-led case), the full catalogue is shown');
+
+  // 14. Every case is modelled to the same standard.
+  //
+  // These run over the WHOLE library rather than one hand-picked case, because the failure this
+  // project actually shipped was not a broken case — it was twelve cases nobody had checked, where
+  // 96% of orders were inert and no therapy was modelled anywhere. A per-case spot check would not
+  // have caught that. These would have.
+  console.log('\n--- Test Suite 14: Library-wide case invariants ---');
+
+  const sheetItemsNormalized = new Set(
+    ORDER_GROUPS.flatMap((g) => g.sections.flatMap((s) => s.items)).map(normalizeOrderText)
+  );
+
+  const seenIds = new Set<string>();
+  const seenConditions = new Set<string>();
+
+  for (const sc of CASE_SCAFFOLDS) {
+    const where = sc.id;
+
+    assert(!seenIds.has(sc.id), `${where}: id is unique across the library`);
+    seenIds.add(sc.id);
+    assert(!seenConditions.has(sc.conditionName), `${where}: conditionName is unique across the library`);
+    seenConditions.add(sc.conditionName);
+
+    const investigationKeys = Object.keys(sc.investigationsMap);
+    const therapyKeys = Object.keys(sc.therapiesMap);
+
+    // A case with no therapies is the exact defect CASE_MODEL.md was written to end.
+    assert(therapyKeys.length >= 3, `${where}: models at least three therapies (has ${therapyKeys.length})`);
+    assert(investigationKeys.length >= 6, `${where}: models at least six investigations (has ${investigationKeys.length})`);
+    assert(
+      therapyKeys.some((k) => sc.therapiesMap[k].appropriateness === 'indicated'),
+      `${where}: at least one therapy is actually the right thing to do`
+    );
+
+    // The opening vignette must not hand the candidate the diagnosis. Same word-boundary rule the
+    // gate check uses, applied to the text the candidate reads first.
+    const condTerms = sc.conditionName
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .filter((w) => w.length > 3 && !STOPWORDS.has(w));
+    for (const term of condTerms) {
+      assert(
+        !new RegExp(`\\b${term}\\b`).test(sc.openingVignette.toLowerCase()),
+        `${where}: opening vignette does not name the diagnosis ("${term}")`
+      );
+    }
+
+    // One order name must never resolve to two different things. The engine looks up
+    // investigations and therapies separately, so a duplicate alias across the two maps is a
+    // genuine ambiguity, not a harmless repetition.
+    const aliasOwner = new Map<string, string>();
+    const claim = (alias: string, owner: string) => {
+      const norm = normalizeOrderText(alias);
+      assert(norm.length > 0, `${where}: ${owner} has an empty alias`);
+      const prior = aliasOwner.get(norm);
+      assert(
+        prior === undefined,
+        prior === owner
+          ? `${where}: ${owner} lists "${alias}" twice (it normalizes to an alias it already has)`
+          : `${where}: alias "${alias}" is claimed by both ${prior} and ${owner}`
+      );
+      aliasOwner.set(norm, owner);
+    };
+    for (const [k, entry] of Object.entries(sc.investigationsMap)) {
+      assert(entry.aliases.length > 0, `${where}: investigation "${k}" has at least one alias`);
+      for (const a of entry.aliases) claim(a, `investigation:${k}`);
+    }
+    for (const [k, entry] of Object.entries(sc.therapiesMap)) {
+      assert(entry.aliases.length > 0, `${where}: therapy "${k}" has at least one alias`);
+      for (const a of entry.aliases) claim(a, `therapy:${k}`);
+    }
+
+    // Every therapy must be reachable by TAPPING, not only by typing free text. A therapy whose
+    // aliases match nothing on the catalogue is invisible on the filtered order sheet.
+    for (const [k, entry] of Object.entries(sc.therapiesMap)) {
+      assert(
+        entry.aliases.some((a) => sheetItemsNormalized.has(normalizeOrderText(a))),
+        `${where}: therapy "${k}" is offered on the order sheet (no alias matches the catalogue)`
+      );
+    }
+
+    // Dangling references. Both of these fail silently at runtime rather than throwing, which is
+    // why they are worth pinning: a typo'd key simply means the effect never happens.
+    for (const [k, entry] of Object.entries(sc.therapiesMap)) {
+      for (const req of entry.requiresFirst || []) {
+        assert(
+          Object.prototype.hasOwnProperty.call(sc.therapiesMap, req),
+          `${where}: therapy "${k}" requiresFirst "${req}", which exists in this case`
+        );
+        assert(req !== k, `${where}: therapy "${k}" does not require itself`);
+      }
+      for (const shifted of Object.keys(entry.labShift || {})) {
+        assert(
+          Object.prototype.hasOwnProperty.call(sc.investigationsMap, shifted),
+          `${where}: therapy "${k}" shifts investigation "${shifted}", which exists in this case`
+        );
+      }
+      // A harmful call the candidate is never told about teaches nothing.
+      if (entry.appropriateness === 'harmful') {
+        assert(entry.rationale.trim().length > 20, `${where}: harmful therapy "${k}" explains why`);
+      }
+      if (entry.requiresFirst?.length) {
+        assert(
+          (entry.harmfulSequenceRationale || '').trim().length > 20,
+          `${where}: sequence-dependent therapy "${k}" explains why order matters`
+        );
+      }
+    }
+
+    // A milestone whose pattern matches nothing this case models can never be satisfied — the
+    // candidate is marked down for missing something they were never able to order.
+    assert(sc.criticalInterventions.length > 0, `${where}: has at least one timed critical intervention`);
+    for (const ci of sc.criticalInterventions) {
+      const reachable = Object.values(sc.therapiesMap).some((t) =>
+        t.aliases.some((a) => ci.orderOrActionPattern.test(a))
+      );
+      assert(reachable, `${where}: critical intervention "${ci.name}" is achievable with a therapy this case models`);
+      assert(ci.targetMilestoneMinutes > 0, `${where}: "${ci.name}" has a positive time target`);
+    }
+
+    assert(sc.incidentalPool.length >= 2, `${where}: carries at least two incidental findings`);
+    assert(sc.gateMilestones.length >= 3, `${where}: carries at least three decision gates`);
+
+    // The sheet must be filtered, and must not be filtered down to nothing.
+    const groups = getOrderableGroupsForScaffold(sc);
+    const itemCount = groups.reduce((n, g) => n + g.sections.reduce((m, s) => m + s.items.length, 0), 0);
+    assert(itemCount > 0, `${where}: the filtered order sheet offers something`);
+    assert(itemCount < totalSheetItems, `${where}: the filtered order sheet is narrower than the full catalogue`);
+  }
+
+  assert(CASE_SCAFFOLDS.length >= 12, `The library carries at least twelve cases (has ${CASE_SCAFFOLDS.length})`);
+
+  // Subject spread: a library that is 100% Medicine is not exam-representative.
+  const subjects = new Set(CASE_SCAFFOLDS.map((s) => s.subject));
+  assert(subjects.size >= 4, `Cases span at least four subjects (spans ${subjects.size}: ${[...subjects].join(', ')})`);
 
   console.log(`\n🎉 Verification Suite Complete: ${passed} Passed, ${failed} Failed.`);
   if (failed > 0) {

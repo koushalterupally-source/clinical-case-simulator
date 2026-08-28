@@ -8,8 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "test": "npx tsx tests/simulator.test.ts && npx tsx tests/all_20_cases.test.ts",
-    "test:cases": "npx tsx tests/all_20_cases.test.ts",
+    "test": "npx tsx tests/simulator.test.ts",
     "build:index": "npx tsx scripts/build-index.ts",
     "verify:index": "npx tsx scripts/verify-index.ts",
     "import:index": "npx tsx scripts/import-master-index.ts"

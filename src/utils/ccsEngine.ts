@@ -5,8 +5,12 @@ import {
   EndOfCaseScorecard,
   LocationType,
   PYQItem,
+  Vitals,
+  CaseScaffold,
+  TherapyLogEntry,
 } from '../types';
 import { CASE_SCAFFOLDS } from '../data/cases/scaffolds';
+import { ORDER_GROUPS, OrderGroup } from '../data/orderSets';
 
 /**
  * Utility: Convert sim time object to total minutes from Day 1, 00:00
@@ -170,6 +174,171 @@ export function inferOrderCategory(name: string): OrderResultItem['category'] {
 }
 
 /**
+ * Normalizes an order name for alias comparison: lowercase, punctuation
+ * collapsed to single spaces, trimmed. Two strings that normalize equal are
+ * considered the same order; nothing shorter is ever treated as a match.
+ *
+ * This is the fix for the bug that let "ketones" swallow both "Serum
+ * ketones" and "Urine ketones": matching is now equality against an explicit
+ * alias list, never `a.includes(b)` in either direction.
+ */
+export function normalizeOrderText(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+/** Finds the scaffold map entry (investigation or therapy) whose `aliases`
+ *  list contains this exact order name, once both sides are normalized. */
+export function findByAlias<T extends { aliases: string[] }>(
+  map: Record<string, T>,
+  orderName: string
+): { key: string; entry: T } | null {
+  const norm = normalizeOrderText(orderName);
+  if (!norm) return null;
+  for (const [key, entry] of Object.entries(map)) {
+    for (const alias of entry.aliases) {
+      if (normalizeOrderText(alias) === norm) {
+        return { key, entry };
+      }
+    }
+  }
+  return null;
+}
+
+/** Additively applies a therapy's vitals effect. Numeric fields (hr, rr,
+ *  spo2, grbs) are deltas off the current value, clamped to physiologically
+ *  sane bounds; bp/temp are free-text and are replaced outright when given. */
+function applyVitalsEffect(vitals: Vitals, effect: Partial<Vitals>): void {
+  if (effect.hr !== undefined) vitals.hr = Math.max(30, Math.min(220, vitals.hr + effect.hr));
+  if (effect.rr !== undefined) vitals.rr = Math.max(6, Math.min(60, vitals.rr + effect.rr));
+  if (effect.spo2 !== undefined) vitals.spo2 = Math.max(50, Math.min(100, vitals.spo2 + effect.spo2));
+  if (effect.grbs !== undefined) vitals.grbs = Math.max(20, Math.min(800, vitals.grbs + effect.grbs));
+  if (effect.bp !== undefined) vitals.bp = effect.bp;
+  if (effect.temp !== undefined) vitals.temp = effect.temp;
+}
+
+/** Looks up whether any already-administered, onset-elapsed therapy shifts
+ *  this investigation's result — the mechanism that makes a REPEATED
+ *  investigation come back different once treatment has taken effect. */
+function shiftedInvestigationResult(
+  therapyLog: TherapyLogEntry[],
+  investigationKey: string,
+  baseResultText: string,
+  currentMinutes: number
+): string {
+  let resultText = baseResultText;
+  let latestAt = -1;
+  for (const t of therapyLog) {
+    if (!t.labShift || !t.labShift[investigationKey]) continue;
+    if (currentMinutes - t.atMinutes < t.onsetMinutes) continue;
+    if (t.atMinutes > latestAt) {
+      latestAt = t.atMinutes;
+      resultText = t.labShift[investigationKey];
+    }
+  }
+  return resultText;
+}
+
+/**
+ * Resolves one order against a scaffold's therapiesMap and investigationsMap,
+ * enforcing sequence-dependent safety (e.g. insulin before fluids in DKA) and
+ * never inventing a result for anything the scaffold does not model.
+ */
+function resolveOrder(
+  scaffold: CaseScaffold,
+  orderName: string,
+  therapyLog: TherapyLogEntry[],
+  currentMinutes: number
+): {
+  resultText: string;
+  turnaround: number;
+  category: OrderResultItem['category'];
+  newTherapyLogEntry?: TherapyLogEntry;
+} {
+  const therapyMatch = findByAlias(scaffold.therapiesMap, orderName);
+  if (therapyMatch) {
+    const { key, entry } = therapyMatch;
+    const givenKeys = new Set(therapyLog.map((t) => t.key));
+    const sequenceOk = !entry.requiresFirst || entry.requiresFirst.every((k) => givenKeys.has(k));
+
+    const appropriateness = sequenceOk ? entry.appropriateness : 'harmful';
+    const rationale = sequenceOk ? entry.rationale : entry.harmfulSequenceRationale || entry.rationale;
+    const vitalsEffect = sequenceOk ? entry.vitalsEffect : entry.harmfulSequenceVitalsEffect || entry.vitalsEffect;
+    const responseText = sequenceOk
+      ? entry.responseText
+      : entry.harmfulSequenceResponseText || entry.responseText;
+
+    return {
+      resultText: responseText,
+      turnaround: 2,
+      category: inferOrderCategory(orderName),
+      newTherapyLogEntry: {
+        key,
+        orderName,
+        atMinutes: currentMinutes,
+        onsetMinutes: entry.onsetMinutes,
+        effectApplied: false,
+        appropriateness,
+        rationale,
+        vitalsEffect,
+        labShift: entry.labShift,
+      },
+    };
+  }
+
+  const investigationMatch = findByAlias(scaffold.investigationsMap, orderName);
+  if (investigationMatch) {
+    const { key, entry } = investigationMatch;
+    return {
+      resultText: shiftedInvestigationResult(therapyLog, key, entry.resultText, currentMinutes),
+      turnaround: entry.turnaroundMinutes,
+      category: entry.category,
+    };
+  }
+
+  // Not modelled in this scaffold — say so rather than inventing a result.
+  return {
+    resultText: 'Not modelled in this case.',
+    turnaround: 20,
+    category: inferOrderCategory(orderName),
+  };
+}
+
+/**
+ * Filters the order sheet catalogue down to what a given scaffold actually
+ * models (its investigationsMap and therapiesMap aliases), dropping any
+ * section or group that ends up empty. This is what stops the sheet from
+ * offering 175 options when a case only models a couple of dozen of them —
+ * everything else is still reachable as free text, which the engine will
+ * honestly report as "Not modelled in this case" rather than invent a result
+ * for.
+ */
+export function getOrderableGroupsForScaffold(scaffold: CaseScaffold | undefined): OrderGroup[] {
+  if (!scaffold) return ORDER_GROUPS;
+
+  const modeled = new Set<string>();
+  for (const entry of Object.values(scaffold.investigationsMap)) {
+    for (const alias of entry.aliases) modeled.add(normalizeOrderText(alias));
+  }
+  for (const entry of Object.values(scaffold.therapiesMap)) {
+    for (const alias of entry.aliases) modeled.add(normalizeOrderText(alias));
+  }
+
+  return ORDER_GROUPS.map((group) => ({
+    ...group,
+    sections: group.sections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => modeled.has(normalizeOrderText(item))),
+      }))
+      .filter((section) => section.items.length > 0),
+  })).filter((group) => group.sections.length > 0);
+}
+
+/**
  * Main Offline Simulation Turn Engine
  */
 export function processTurnOffline(
@@ -179,6 +348,7 @@ export function processTurnOffline(
   gateIndex?: number
 ): CaseSession {
   const updatedSession: CaseSession = JSON.parse(JSON.stringify(session));
+  if (!updatedSession.therapyLog) updatedSession.therapyLog = []; // older saved sessions predate this field
   const scaffold = CASE_SCAFFOLDS.find((s) => s.id === updatedSession.scaffoldId) || CASE_SCAFFOLDS[0];
 
   let timeSpentMins = 5; // Default turn duration
@@ -273,33 +443,14 @@ export function processTurnOffline(
       const q = userCommand.replace(/^(?:hx|history)\:\s*/i, '').trim();
       timeSpentMins = 2;
 
-      let ans = '';
+      let ans = 'No significant abnormalities reported.';
       const qLower = q.toLowerCase();
 
-      // Normalize common history aliases
-      let searchKey = qLower;
-      if (/allergy|allergies|allergic/i.test(qLower)) searchKey = 'allergies';
-      else if (/past|medical history|comorbid|illness|history of/i.test(qLower)) searchKey = 'past';
-      else if (/medication|meds|drugs|prescriptions|taking/i.test(qLower)) searchKey = 'medications';
-      else if (/family|father|mother|parents|sibling|genetic/i.test(qLower)) searchKey = 'family';
-      else if (/habit|smoke|smoking|alcohol|drink|tobacco|social|substance/i.test(qLower)) searchKey = 'social';
-      else if (/surgery|surgical|operation|procedure/i.test(qLower)) searchKey = 'surgical';
-      else if (/complaint|onset|presenting|hpi|pain|symptom|started/i.test(qLower)) searchKey = 'presenting';
-
       for (const [key, val] of Object.entries(scaffold.historyMap)) {
-        if (searchKey.includes(key) || key.includes(searchKey) || qLower.includes(key)) {
+        if (qLower.includes(key)) {
           ans = val;
           break;
         }
-      }
-
-      if (!ans) {
-        if (searchKey === 'allergies') ans = 'No known drug allergies reported.';
-        else if (searchKey === 'surgical') ans = 'No prior major surgical interventions.';
-        else if (searchKey === 'social') ans = 'Non-smoker, occasional alcohol, no illicit drug use.';
-        else if (searchKey === 'family') ans = 'No premature deaths or familial genetic syndromes reported.';
-        else if (searchKey === 'medications') ans = 'No other regular prescription medications.';
-        else ans = `Patient reports no other specific complaints or pertinent negatives related to ${q}.`;
       }
 
       updatedSession.historyLog.push({
@@ -311,36 +462,15 @@ export function processTurnOffline(
     }
     // Command: pe: <system>
     else if (cmdLower.startsWith('pe:') || cmdLower.startsWith('exam:')) {
-      const sys = userCommand.replace(/^(?:pe|exam)\:\s*/i, '').trim();
-      const sysLower = sys.toLowerCase();
+      const sys = userCommand.replace(/^(?:pe|exam)\:\s*/i, '').trim().toLowerCase();
       timeSpentMins = 3;
 
-      // Normalize physical exam system aliases
-      let searchKey = sysLower;
-      if (/chest|resp|lung|pulmonary|breath|auscult/i.test(sysLower)) searchKey = 'chest';
-      else if (/cvs|cardiac|heart|heart sound|jvp|pulse/i.test(sysLower)) searchKey = 'cvs';
-      else if (/abdomen|abd|belly|stomach|gi|per abdomen|bowel/i.test(sysLower)) searchKey = 'abdomen';
-      else if (/neuro|cns|brain|mental|pupil|gcs|cranial|reflex/i.test(sysLower)) searchKey = 'neuro';
-      else if (/general|appearance|pallor|icterus|edema|cyanosis/i.test(sysLower)) searchKey = 'general';
-      else if (/local|skin|rash|lesion|extremit|limb|wound|ent|eye/i.test(sysLower)) searchKey = 'local';
-      else if (/vitals|vital signs/i.test(sysLower)) searchKey = 'vitals';
-
-      let findings = '';
+      let findings = 'Vesicular breath sounds, soft abdomen, normal S1 S2, alert.';
       for (const [key, val] of Object.entries(scaffold.examFindingsMap)) {
-        if (searchKey.includes(key) || key.includes(searchKey) || sysLower.includes(key)) {
+        if (sys.includes(key)) {
           findings = val;
           break;
         }
-      }
-
-      if (!findings) {
-        if (searchKey === 'chest') findings = 'Bilateral normal vesicular breath sounds, no wheezing, rhonchi, or crepitations.';
-        else if (searchKey === 'cvs') findings = 'S1 S2 heard normally, no added sounds, gallops, or murmurs. JVP normal.';
-        else if (searchKey === 'abdomen') findings = 'Soft, non-tender, no guarding or rigidity, normal bowel sounds present.';
-        else if (searchKey === 'neuro') findings = 'Alert and oriented x 3, pupils equal and reactive to light (3mm), cranial nerves grossly intact, no motor deficit.';
-        else if (searchKey === 'general') findings = 'No significant pallor, icterus, cyanosis, clubbing, lymphadenopathy, or pedal edema.';
-        else if (searchKey === 'vitals') findings = `HR ${updatedSession.patient.currentVitals.hr} bpm, BP ${updatedSession.patient.currentVitals.bp} mmHg, RR ${updatedSession.patient.currentVitals.rr}/min, SpO2 ${updatedSession.patient.currentVitals.spo2}%, Temp ${updatedSession.patient.currentVitals.temp}, GRBS ${updatedSession.patient.currentVitals.grbs} mg/dL.`;
-        else findings = 'Physical examination unremarkable for this region; no acute localized pathology detected.';
       }
 
       updatedSession.examLog.push({
@@ -354,68 +484,27 @@ export function processTurnOffline(
     else if (cmdLower.startsWith('order:') || cmdLower.startsWith('give') || cmdLower.startsWith('start') || cmdLower.startsWith('administer') || cmdLower.startsWith('order')) {
       const orderBlock = userCommand.replace(/^(?:order\:|give|start|administer|order)\s*/i, '').trim();
 
+      // One command can carry several orders — the order sheet sends them
+      // comma-separated, and a doctor writing them out does the same. Each gets
+      // its own result and its own turnaround, rather than being filed as a
+      // single order literally named "CBC, chest x-ray".
       const orderNames = splitOrders(orderBlock);
+
       timeSpentMins = Math.min(15, 2 + orderNames.length);
       const placedLines: string[] = [];
+      // Orders resolve against the scaffold's therapy/investigation maps using
+      // the sim time as it stands right now — before this turn's own clock
+      // advance — so a therapy given earlier this session has already had its
+      // onset window measured against real elapsed minutes.
+      const orderMinutesNow = simTimeToMinutes(updatedSession.simTime);
 
       for (const orderName of orderNames) {
         const orderLower = orderName.toLowerCase();
-        let matchedKey: string | null = null;
 
-        // Clean lookup in scaffold investigationsMap
-        for (const key of Object.keys(scaffold.investigationsMap)) {
-          const kLower = key.toLowerCase();
-          if (
-            orderLower.includes(kLower) ||
-            kLower.includes(orderLower) ||
-            (orderLower.includes('ecg') && kLower.includes('ecg')) ||
-            (orderLower.includes('ekg') && kLower.includes('ecg')) ||
-            (orderLower.includes('cxr') && (kLower.includes('cxr') || kLower.includes('chest_xray'))) ||
-            (orderLower.includes('chest x-ray') && (kLower.includes('cxr') || kLower.includes('chest_xray'))) ||
-            (orderLower.includes('cbc') && (kLower.includes('cbc') || kLower.includes('hemogram'))) ||
-            (orderLower.includes('rft') && (kLower.includes('kft') || kLower.includes('rft'))) ||
-            (orderLower.includes('kft') && (kLower.includes('kft') || kLower.includes('rft'))) ||
-            (orderLower.includes('lft') && kLower.includes('lft')) ||
-            (orderLower.includes('abg') && kLower.includes('abg')) ||
-            (orderLower.includes('troponin') && kLower.includes('troponin')) ||
-            (orderLower.includes('lipase') && kLower.includes('lipase')) ||
-            (orderLower.includes('amylase') && kLower.includes('amylase')) ||
-            (orderLower.includes('fast') && (kLower.includes('fast') || kLower.includes('usg'))) ||
-            (orderLower.includes('ultrasound') && (kLower.includes('usg') || kLower.includes('ultrasound'))) ||
-            (orderLower.includes('ct') && kLower.includes('ct'))
-          ) {
-            matchedKey = key;
-            break;
-          }
-        }
-
-        let resultText = '';
-        let turnaround = 15;
-        let category: any = 'labs';
-
-        if (matchedKey) {
-          const item = scaffold.investigationsMap[matchedKey];
-          resultText = item.resultText;
-          turnaround = item.turnaroundMinutes;
-          category = item.category;
-        } else {
-          // Dynamic realistic physiological reports instead of "Not modelled"
-          category = inferOrderCategory(orderName);
-          turnaround = category === 'drugs' ? 2 : category === 'monitoring' ? 5 : category === 'procedures' ? 10 : 25;
-
-          if (category === 'drugs') {
-            resultText = `Medication Order: ${orderName} — Administered intravenously/orally as ordered. Patient monitored for therapeutic response.`;
-          } else if (category === 'procedures') {
-            resultText = `Bedside Procedure: ${orderName} — Performed successfully under aseptic precautions. Post-procedure vitals stable.`;
-          } else if (category === 'consults') {
-            resultText = `Specialist Consultation: ${orderName} — Attending specialist reviewed case. Treatment recommendations documented in clinical chart.`;
-          } else if (category === 'monitoring') {
-            resultText = `Continuous Monitoring: ${orderName} — Continuous telemetry active. Rhythm and vitals logged.`;
-          } else if (category === 'imaging') {
-            resultText = `Diagnostic Imaging (${orderName}): No acute localized gross abnormality or radiopaque defect identified. Study within normal anatomical limits.`;
-          } else {
-            resultText = `Laboratory Panel (${orderName}): Sample processed. Result parameters within normal physiological reference ranges for age and gender.`;
-          }
+        const resolved = resolveOrder(scaffold, orderName, updatedSession.therapyLog, orderMinutesNow);
+        const { resultText, turnaround, category } = resolved;
+        if (resolved.newTherapyLogEntry) {
+          updatedSession.therapyLog.push(resolved.newTherapyLogEntry);
         }
 
         const readySimTimeStr = formatSimTime(addMinutesToSimTime(updatedSession.simTime, turnaround));
@@ -480,6 +569,21 @@ export function processTurnOffline(
 
   updatedSession.pendingOrders = remainingPending;
 
+  // 4.5 Apply delayed therapy effects (Scaffold cases only). Each administered
+  // therapy's vitalsEffect fires exactly once, the first turn where enough sim
+  // time has passed to reach its onsetMinutes — this is what makes treating
+  // the patient visibly change the patient, on the timeline it would in life.
+  if (!updatedSession.isQuestionLed) {
+    updatedSession.therapyLog.forEach((entry) => {
+      if (!entry.effectApplied && currentTotalMinutes - entry.atMinutes >= entry.onsetMinutes) {
+        entry.effectApplied = true;
+        if (entry.vitalsEffect) {
+          applyVitalsEffect(updatedSession.patient.currentVitals, entry.vitalsEffect);
+        }
+      }
+    });
+  }
+
   // 5. Evaluate Trajectory & Patient Deterioration (Scaffold cases only)
   if (!updatedSession.isQuestionLed) {
     const allPlaced = [...updatedSession.completedOrders, ...updatedSession.pendingOrders];
@@ -504,17 +608,17 @@ export function processTurnOffline(
         (t.whatHappened || '').includes(critical.name.toLowerCase())
       );
 
-      if (executed) {
-        // Improve vitals
-        updatedSession.patient.currentVitals.hr = Math.max(72, updatedSession.patient.currentVitals.hr - 6);
-        updatedSession.patient.currentVitals.spo2 = Math.min(99, updatedSession.patient.currentVitals.spo2 + 4);
-      } else if (totalElapsedMinutes > critical.targetMilestoneMinutes) {
+      if (!executed && totalElapsedMinutes > critical.targetMilestoneMinutes) {
         // Deteriorate vitals!
-        updatedSession.patient.currentVitals.hr = Math.min(180, updatedSession.patient.currentVitals.hr + 1);
-        updatedSession.patient.currentVitals.spo2 = Math.max(70, updatedSession.patient.currentVitals.spo2 - 1);
+        updatedSession.patient.currentVitals.hr = Math.min(180, updatedSession.patient.currentVitals.hr + 4);
+        updatedSession.patient.currentVitals.spo2 = Math.max(70, updatedSession.patient.currentVitals.spo2 - 2);
         if (!alreadyWarned) {
           narrative += `\n\nThe patient is deteriorating: ${critical.name.toLowerCase()} is now overdue against a ${critical.targetMilestoneMinutes}-minute window. Heart rate is climbing and oxygenation is falling.`;
         }
+      } else if (executed) {
+        // Improve vitals
+        updatedSession.patient.currentVitals.hr = Math.max(72, updatedSession.patient.currentVitals.hr - 2);
+        updatedSession.patient.currentVitals.spo2 = Math.min(99, updatedSession.patient.currentVitals.spo2 + 1);
       }
     });
   }
@@ -557,17 +661,29 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
   const totalGates = gateResults.length;
   const pyqPercentage = totalGates > 0 ? Math.round((correctGates / totalGates) * 100) : 100;
 
-  // Over-ordering list (orders placed that were not indicative)
+  // Over-ordering list (investigations placed that were not indicative).
+  // Therapies are graded separately below, by appropriateness — a drug order
+  // is never counted here even when the map has no entry for it.
   const allOrders = [...session.completedOrders, ...session.pendingOrders];
   const overOrders = allOrders.filter((ord) => {
-    const keyMatch = Object.keys(scaffold.investigationsMap).find((k) => ord.orderName.toLowerCase().includes(k));
-    if (!keyMatch) return true; // Not in scaffold map = unindicated
-    return !scaffold.investigationsMap[keyMatch].isIndicative;
+    if (findByAlias(scaffold.therapiesMap, ord.orderName)) return false;
+    const invMatch = findByAlias(scaffold.investigationsMap, ord.orderName);
+    if (!invMatch) return true; // Not modelled in this scaffold = unindicated
+    return !invMatch.entry.isIndicative;
   });
 
   const overOrderingList = overOrders.map(
     (o) => `${o.orderName} — not indicated here; it cost ${o.turnaroundMinutes} minutes.`
   );
+
+  // Therapies given, graded and explained — surfaced only here, never during
+  // the case itself.
+  const therapiesGiven = session.therapyLog.map((t) => ({
+    orderName: t.orderName,
+    appropriateness: t.appropriateness,
+    rationale: t.rationale,
+    time: formatSimTime(addMinutesToSimTime({ day: 1, hour: 0, minute: 0 }, t.atMinutes)),
+  }));
 
   // Critical Delays
   const currentTotalMins = simTimeToMinutes(session.simTime);
@@ -622,6 +738,7 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
       incidentalFindingsReport: [],
       criticalDelays: [],
       overOrderingList: [],
+      therapiesGiven: [],
       preventionChecklist: [],
       topConceptsToRevise,
       overallGrade: qGrade,
@@ -632,8 +749,11 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
 
   // Calculate Overall Score for scaffold simulation
   const overOrderingPenalty = overOrders.length * 5;
+  const harmfulTherapyPenalty = therapiesGiven.filter((t) => t.appropriateness === 'harmful').length * 8;
   const gateContribution = totalGates > 0 ? (correctGates / totalGates) * 80 : 80;
-  const rawScore = Math.round(gateContribution + addressedIncCount * 10 - overOrderingPenalty);
+  const rawScore = Math.round(
+    gateContribution + addressedIncCount * 10 - overOrderingPenalty - harmfulTherapyPenalty
+  );
   const overallScore = Math.min(100, Math.max(0, rawScore));
 
   let grade: 'S' | 'A' | 'B' | 'C' | 'F' = 'B';
@@ -656,6 +776,7 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
     incidentalFindingsReport: incidentalReport,
     criticalDelays,
     overOrderingList,
+    therapiesGiven,
     preventionChecklist: [
       { item: 'Adult Tdap Booster Vaccination', status: addressedIncCount > 0 ? 'done' : 'missed' },
     ],

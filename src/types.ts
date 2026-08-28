@@ -109,6 +109,21 @@ export interface SimTurn {
 
 export type CaseMode = 'standard' | 'rapid' | 'mixed' | 'weakness' | 'blind';
 
+/** One administered therapy, recorded so the engine can enforce sequencing,
+ *  apply its delayed vitals effect once, shift repeat investigation results,
+ *  and surface it (with rationale) in the end-of-case scorecard. */
+export interface TherapyLogEntry {
+  key: string; // therapiesMap key
+  orderName: string; // what the candidate actually typed/selected
+  atMinutes: number; // absolute sim-minutes when administered
+  onsetMinutes: number;
+  effectApplied: boolean;
+  appropriateness: 'indicated' | 'neutral' | 'harmful';
+  rationale: string;
+  vitalsEffect?: Partial<Vitals>;
+  labShift?: Record<string, string>;
+}
+
 export interface PatientState {
   id: string;
   name: string;
@@ -155,6 +170,14 @@ export interface EndOfCaseScorecard {
   }[];
   criticalDelays: string[];
   overOrderingList: string[];
+  /** Every therapy given, with its clinical appropriateness and the reasoning
+   *  behind that grading — surfaced only here, never during the case itself. */
+  therapiesGiven: {
+    orderName: string;
+    appropriateness: 'indicated' | 'neutral' | 'harmful';
+    rationale: string;
+    time: string;
+  }[];
   preventionChecklist: { item: string; status: 'done' | 'missed' }[];
   topConceptsToRevise: { concept: string; sourceQIDs: string[] }[];
   overallGrade: 'S' | 'A' | 'B' | 'C' | 'F';
@@ -183,6 +206,7 @@ export interface CaseSession {
   decisionGates: DecisionGate[];
   currentGateIndex: number;
   incidentalFindings: IncidentalFinding[];
+  therapyLog: TherapyLogEntry[];
   status: 'active' | 'paused' | 'completed';
   scorecard?: EndOfCaseScorecard;
   blindMode?: boolean;
@@ -208,12 +232,40 @@ export interface CaseScaffold {
   examFindingsMap: Record<string, string>; // e.g. 'chest' => 'Bilateral crepitations...', 'cvs' => 'S1 S2 heard...'
   // History findings map
   historyMap: Record<string, string>; // e.g. 'allergies' => 'No known drug allergies.', 'past' => 'Hypertension 5 yrs on enalapril'
-  // Investigation results lookup (exact matching or regex pattern)
+  // Investigation results lookup. Matching is against `aliases`, normalized and
+  // compared for equality — never substring — so "Serum ketones" and "Urine
+  // ketones" can never collide into one result.
   investigationsMap: Record<string, {
+    aliases: string[]; // exact order names/phrasings this key answers to
     resultText: string;
     turnaroundMinutes: number;
     category: OrderCategory;
     isIndicative: boolean; // True if indicated for this condition (false = over-ordering)
+  }>;
+  // Therapies this case models. An `indicated` therapy is acknowledged, moves
+  // vitals toward normal over `onsetMinutes`, and can change what a REPEATED
+  // investigation returns via `labShift` (investigation key -> new resultText).
+  // A `harmful` therapy is acted on and the patient responds accordingly.
+  // `rationale` is surfaced in the scorecard afterwards, never during the case.
+  therapiesMap: Record<string, {
+    aliases: string[];
+    responseText: string;
+    onsetMinutes: number;
+    vitalsEffect?: Partial<Vitals>;
+    labShift?: Record<string, string>;
+    appropriateness: 'indicated' | 'neutral' | 'harmful';
+    rationale: string;
+    /**
+     * Sequence-dependent safety: therapy keys (within this same therapiesMap)
+     * that must already have been administered before this one is safe to give.
+     * Giving this therapy first — the classic "insulin before fluids" trap —
+     * is treated as harmful for that administration regardless of
+     * `appropriateness`, using the harmfulSequence* overrides below.
+     */
+    requiresFirst?: string[];
+    harmfulSequenceResponseText?: string;
+    harmfulSequenceVitalsEffect?: Partial<Vitals>;
+    harmfulSequenceRationale?: string;
   }>;
   // Trajectory milestones for time elapsed without critical treatment
   criticalInterventions: {

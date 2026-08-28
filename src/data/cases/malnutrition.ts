@@ -1,0 +1,262 @@
+import { CaseScaffold } from '../../types';
+
+/**
+ * Severe Acute Malnutrition with Shock — see CASE_MODEL.md for the modelling
+ * rules this scaffold follows (therapiesMap, labShift, aliases matched by
+ * equality against ORDER_GROUPS). The teaching point of this case is that
+ * standard paediatric resuscitation volumes are wrong for a child this
+ * wasted — see `standard_bolus`.
+ */
+export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
+  id: 'scaffold_malnutrition',
+  title: 'Lethargic Toddler with Diarrhoea',
+  conditionName: 'Severe Acute Malnutrition with Shock',
+  subject: 'Pediatrics',
+  system: 'Nutrition',
+  demographics: {
+    name: 'Priya Kumari',
+    age: 2,
+    gender: 'Female',
+    setting: 'Emergency',
+  },
+  openingVignette: 'A 22-month-old girl is brought to the emergency department with 4 days of loose stools and poor feeding. She has become lethargic and is now barely responsive. Her mother reports she has not gained weight for several months and has had repeated episodes of diarrhoea. The family describes ongoing food insecurity at home.',
+  initialVitals: {
+    hr: 168,
+    bp: '70/40',
+    rr: 44,
+    spo2: 93,
+    temp: '35.4°C',
+    grbs: 42,
+  },
+  clinchingClue: 'Weight-for-height Z-score below −3 with visible severe wasting and a mid-upper-arm circumference of 10.2 cm, presenting together with hypothermia and hypoglycaemia — the triad that must be treated simultaneously.',
+  clinchingClueTimeMinutes: 10,
+  examFindingsMap: {
+    general: 'Lethargic, barely responsive to stimuli. Visible severe wasting of muscle bulk and subcutaneous fat. No pitting oedema of the feet.',
+    cvs: 'Weak thready pulses, cold extremities, capillary refill prolonged to 4 seconds.',
+    chest: 'Mild subcostal retractions. Air entry equal bilaterally, no crepitations.',
+    abdomen: 'Scaphoid, soft, non-tender, bowel sounds hyperactive.',
+    skin: 'Dry skin with reduced turgor, no rash, sparse thin hair.',
+  },
+  historyMap: {
+    allergies: 'No known drug allergies.',
+    feeding: 'Predominantly diluted cereal-based feeds with poor dietary diversity; breastfeeding stopped early.',
+    past: 'Multiple prior admissions for diarrhoeal illness; growth faltering noted over several months on the growth chart.',
+    immunisation: 'Immunisation delayed and incomplete for age.',
+    social: 'Family reports food insecurity at home; several siblings living in the same household.',
+  },
+  investigationsMap: {
+    muac: {
+      aliases: ['muac & weight-for-height z-score', 'muac', 'mid-upper arm circumference'],
+      resultText: 'MUAC 10.2 cm (Reference ≥12.5 cm), with weight-for-height Z-score below −3 SD and visible severe wasting.',
+      turnaroundMinutes: 5,
+      category: 'monitoring',
+      isIndicative: true,
+    },
+    grbs: {
+      aliases: ['rbs / grbs', 'grbs', 'blood glucose'],
+      resultText: 'GRBS: 42 mg/dL (Reference 70–140 mg/dL) — critically low.',
+      turnaroundMinutes: 2,
+      category: 'labs',
+      isIndicative: true,
+    },
+    cbc: {
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      resultText: 'CBC: Hb 8.2 g/dL (Reference 11.0–14.0 g/dL for age), microcytic indices, WBC 9,200/mcL (Reference 6,000–17,000/mcL for age), Platelets 310,000/mcL (Reference 150,000–450,000/mcL).',
+      turnaroundMinutes: 20,
+      category: 'labs',
+      isIndicative: true,
+    },
+    electrolytes: {
+      aliases: ['serum electrolytes (na, k, cl)', 'electrolytes'],
+      resultText: 'Serum Electrolytes: Na+ 128 mEq/L (Reference 135–145 mEq/L), K+ 2.9 mEq/L (Reference 3.5–5.0 mEq/L), Cl- 92 mEq/L (Reference 96–106 mEq/L) — hyponatraemia with a significant total-body potassium deficit.',
+      turnaroundMinutes: 20,
+      category: 'labs',
+      isIndicative: true,
+    },
+    blood_culture: {
+      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture'],
+      resultText: 'Blood Cultures x2: Aerobic and anaerobic bottles incubated. Growth pending at 24–48 hours.',
+      turnaroundMinutes: 60,
+      category: 'labs',
+      isIndicative: true,
+    },
+    kft: {
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      resultText: 'KFT: Blood Urea 22 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.3 mg/dL (Reference 0.2–0.4 mg/dL for age) — within range, though depleted muscle mass can mask true renal impairment.',
+      turnaroundMinutes: 25,
+      category: 'labs',
+      isIndicative: true,
+    },
+    abg: {
+      aliases: ['abg'],
+      resultText: 'ABG: pH 7.31 (Reference 7.35–7.45), PaCO2 30 mmHg (Reference 35–45 mmHg), PaO2 90 mmHg (Reference 80–100 mmHg), HCO3 16 mEq/L (Reference 22–26 mEq/L) — mild metabolic acidosis from dehydration and probable sepsis.',
+      turnaroundMinutes: 10,
+      category: 'labs',
+      isIndicative: true,
+    },
+    stool_routine: {
+      aliases: ['stool routine'],
+      resultText: 'Stool Routine: Watery stool, no red cells, occasional pus cells, no ova or cysts seen.',
+      turnaroundMinutes: 20,
+      category: 'labs',
+      isIndicative: true,
+    },
+    urine_culture: {
+      aliases: ['urine culture & sensitivity', 'urine culture'],
+      resultText: 'Urine Culture: Significant growth of a single uropathogen at >10^5 CFU/mL — an occult urinary infection presenting without fever.',
+      turnaroundMinutes: 60,
+      category: 'labs',
+      isIndicative: true,
+    },
+    io_charting: {
+      aliases: ['strict input-output charting', 'input-output charting', 'io charting'],
+      resultText: 'Input-output chart: Reduced urine output over the last recorded interval. Strict charting instituted for ongoing monitoring of fluid balance.',
+      turnaroundMinutes: 5,
+      category: 'monitoring',
+      isIndicative: true,
+    },
+    crp: {
+      aliases: ['crp'],
+      resultText: 'CRP: 4 mg/L (Reference <6 mg/L) — normal. The inflammatory response is blunted in this state, so a normal value does not exclude infection.',
+      turnaroundMinutes: 30,
+      category: 'labs',
+      isIndicative: false,
+    },
+  },
+  therapiesMap: {
+    dextrose_10: {
+      aliases: ['10% dextrose 5 ml/kg iv', '10% dextrose', 'dextrose 10%'],
+      responseText: '10% Dextrose 5 mL/kg given IV as a bolus for hypoglycaemia.',
+      onsetMinutes: 5,
+      vitalsEffect: { grbs: 54 },
+      labShift: {
+        grbs: 'GRBS (repeat): 96 mg/dL (Reference 70–140 mg/dL) — corrected.',
+      },
+      appropriateness: 'indicated',
+      rationale: 'Hypoglycaemia and hypothermia travel together in this degree of wasting and both are treated immediately; untreated hypoglycaemia is a leading and easily missed cause of early death.',
+    },
+    warming: {
+      aliases: ['active warming & kangaroo care', 'active warming', 'kangaroo care'],
+      responseText: 'Active warming instituted with skin-to-skin kangaroo care and a warmed environment.',
+      onsetMinutes: 15,
+      vitalsEffect: { temp: '36.6°C' },
+      appropriateness: 'indicated',
+      rationale: 'A child this wasted cannot thermoregulate effectively because of depleted subcutaneous fat and impaired metabolic reserve; untreated hypothermia carries high mortality.',
+    },
+    sam_fluids: {
+      aliases: ['ringer lactate 15 ml/kg over 1 hour (severe malnutrition)', 'slow rehydration'],
+      responseText: 'Ringer lactate 15 mL/kg given slowly over 1 hour with continuous reassessment for signs of fluid overload.',
+      onsetMinutes: 60,
+      vitalsEffect: { hr: -34, bp: '86/52' },
+      labShift: {
+        electrolytes: 'Serum Electrolytes (repeat): Na+ 132 mEq/L (Reference 135–145 mEq/L), K+ 3.3 mEq/L (Reference 3.5–5.0 mEq/L), Cl- 96 mEq/L (Reference 96–106 mEq/L) — improving but still low.',
+      },
+      appropriateness: 'indicated',
+      rationale: 'Where genuine circulatory compromise is present, a slow, reduced-volume fluid regimen with frequent reassessment avoids overwhelming a heart that has lost muscle mass, unlike a standard rapid paediatric bolus.',
+    },
+    resomal: {
+      aliases: ['resomal (malnutrition rehydration)', 'resomal'],
+      responseText: 'ReSoMal given orally and via nasogastric tube in small, frequent aliquots.',
+      onsetMinutes: 60,
+      appropriateness: 'indicated',
+      rationale: 'This low-sodium, higher-potassium rehydration solution is used for dehydration WITHOUT circulatory compromise and matches the specific electrolyte derangements of this state; standard ORS is too high in sodium to be used here.',
+    },
+    antibiotics: {
+      aliases: ['ampicillin + gentamicin iv', 'ampicillin', 'gentamicin'],
+      responseText: 'IV Ampicillin plus Gentamicin started empirically.',
+      onsetMinutes: 45,
+      appropriateness: 'indicated',
+      rationale: 'Infection is presumed and treated empirically even without fever or a raised CRP, because the usual clinical and inflammatory signs of sepsis are blunted in this degree of wasting.',
+    },
+    f75: {
+      aliases: ['f-75 starter feed', 'f75', 'starter feed'],
+      responseText: 'F-75 starter feed commenced — small, frequent, low-protein, low-sodium feeds.',
+      onsetMinutes: 120,
+      appropriateness: 'indicated',
+      rationale: 'Feeds are reintroduced cautiously in the stabilisation phase. Feeding too much too early risks refeeding syndrome — dangerous shifts in phosphate, potassium and magnesium with fluid overload — so volumes are deliberately kept small at first.',
+    },
+    vitamin_a: {
+      aliases: ['vitamin a'],
+      responseText: 'Vitamin A given per protocol.',
+      onsetMinutes: 120,
+      appropriateness: 'indicated',
+      rationale: 'Vitamin A supplementation is standard in the stabilisation phase and reduces morbidity and mortality, particularly where deficiency is common in this population.',
+    },
+    standard_bolus: {
+      aliases: ['normal saline 30 ml/kg bolus', 'standard bolus', 'rapid saline bolus'],
+      responseText: 'Normal saline 30 mL/kg given as a rapid bolus.',
+      onsetMinutes: 10,
+      vitalsEffect: { hr: 22, rr: 16, spo2: -8 },
+      appropriateness: 'harmful',
+      rationale: 'This is the standard rapid paediatric bolus used in a well-nourished child, but in a child this wasted the myocardium is atrophic and cannot handle a sudden volume load: it precipitates fluid overload and heart failure rather than improving perfusion. This is the single most important teaching point of this case — standard paediatric resuscitation volumes are wrong here.',
+    },
+    furosemide: {
+      aliases: ['furosemide iv', 'furosemide'],
+      responseText: 'IV Furosemide given for peripheral puffiness.',
+      onsetMinutes: 15,
+      vitalsEffect: { hr: 8 },
+      appropriateness: 'harmful',
+      rationale: 'Given for oedema or puffiness, a diuretic worsens the profound total-body potassium and volume depletion already present, and has no place in standard stabilisation-phase management.',
+    },
+  },
+  criticalInterventions: [
+    {
+      orderOrActionPattern: /10% dextrose|dextrose 10%|glucose correction/i,
+      name: 'Correction of Hypoglycaemia',
+      targetMilestoneMinutes: 10,
+    },
+    {
+      orderOrActionPattern: /ampicillin|gentamicin|antibiotic/i,
+      name: 'Empirical Antibiotics',
+      targetMilestoneMinutes: 60,
+    },
+  ],
+  incidentalPool: [
+    {
+      id: 'inc_sam_1',
+      title: 'Delayed Immunisation Schedule',
+      description: 'Immunisation record shows measles and DPT booster doses have not been given.',
+      correctAction: 'Catch-up immunisation once the child is acutely stabilised, per the national schedule.',
+      status: 'unnoticed',
+    },
+    {
+      id: 'inc_sam_2',
+      title: 'Old Healed Rickets',
+      description: 'Mild bowing of both lower limbs with widened wrists is noted on examination, suggestive of old, healed vitamin D-deficiency rickets.',
+      correctAction: 'Vitamin D and calcium supplementation with monitoring; no acute intervention needed.',
+      status: 'unnoticed',
+    },
+  ],
+  gateMilestones: [
+    {
+      roleTag: 'EMERGENCY',
+      patientContext: 'A severely wasted, barely responsive toddler with a critically low blood glucose of 42 mg/dL and a body temperature of 35.4°C, in whom hypoglycaemia and hypothermia must be corrected immediately and simultaneously.',
+      consequenceOnRight: 'Glucose corrected and active warming started at once. The child becomes more responsive.',
+      consequenceOnWrong: 'Correction delayed! Hypoglycaemia and hypothermia both persist, and the risk of death rises sharply.',
+    },
+    {
+      roleTag: 'DIAGNOSIS',
+      patientContext: 'A weight-for-height Z-score below minus three, visible severe wasting, and a mid-upper-arm circumference of 10.2 cm, occurring together with low blood sugar and a low body temperature.',
+      consequenceOnRight: 'Severe wasting correctly recognised and staged, triggering the correct stabilisation-phase protocol.',
+      consequenceOnWrong: 'The degree of wasting is under-recognised, and the child is managed as a routine gastroenteritis case.',
+    },
+    {
+      roleTag: 'MANAGEMENT',
+      patientContext: 'A profoundly wasted child with signs of circulatory compromise, where the usual rapid fluid bolus given to other children of this age would overwhelm a heart that has lost muscle mass, and a slower, reduced-volume regimen must be chosen instead.',
+      consequenceOnRight: 'Slow, reduced-volume fluid therapy given with close reassessment; perfusion improves gradually and safely.',
+      consequenceOnWrong: 'A standard rapid bolus is given. The child develops signs of fluid overload and heart failure.',
+    },
+    {
+      roleTag: 'PHARM',
+      patientContext: 'Selecting empirical antibiotic cover for a wasted child with a normal temperature and a normal inflammatory marker, understanding that the usual signs of infection are blunted in this state.',
+      consequenceOnRight: 'Empirical antibiotics started despite the absence of fever or a raised inflammatory marker.',
+      consequenceOnWrong: 'Antibiotics are withheld because the child is afebrile with a normal CRP, and an occult infection is missed.',
+    },
+    {
+      roleTag: 'PREVENTION',
+      patientContext: 'Before discharge, planning catch-up immunisation and nutritional rehabilitation for a food-insecure family whose child has had recurrent diarrhoeal illness and growth faltering.',
+      consequenceOnRight: 'Catch-up immunisation and a structured nutritional rehabilitation and follow-up plan arranged before discharge.',
+      consequenceOnWrong: 'The child is discharged without a rehabilitation or immunisation plan, and the underlying growth faltering is left unaddressed.',
+    },
+  ],
+};

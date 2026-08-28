@@ -30,6 +30,7 @@ export const CaseView: React.FC<CaseViewProps> = ({
         open={ordersOpen}
         onClose={() => setOrdersOpen(false)}
         onSubmit={onSendCommand}
+        scaffoldId={session.isQuestionLed ? undefined : session.scaffoldId}
       />
       {/* Top Clinical Status Bar */}
       <header
