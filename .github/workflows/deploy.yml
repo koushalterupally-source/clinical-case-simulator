@@ -26,41 +26,30 @@ jobs:
           node-version: 22
           cache: npm
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
       - run: npm ci
 
-      - name: Typecheck case simulator
+      - name: Typecheck
         run: npm run lint
 
-      - name: Test case simulator
+      - name: Test
         run: npm test
 
-      - name: Engine and sanitizer unit tests
-        working-directory: pyq-app
-        run: node --test
-
-      # The question bank lives in a separate repository and is never vendored here.
-      - name: Fetch the question bank
-        run: git clone --depth 1 https://github.com/koushalterupally-source/Medqbank /tmp/medqbank
-
-      - name: Build and stage unified product
+      # A project site is served from /<repo>/, and the asset URLs are baked in at build time,
+      # so the base path has to match or the page loads blank.
+      - name: Build
         env:
-          SITE_BASE: /${{ github.event.repository.name }}/
-        run: bash pyq-app/build/stage.sh /tmp/medqbank/android/app/src/main/assets dist
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm run build
 
-      - name: Add SPA 404 fallbacks
-        run: |
-          cp dist/index.html dist/404.html
-          cp dist/simulator/index.html dist/simulator/404.html
+      # Pages has no SPA rewrite; a deep link would 404 without this.
+      - name: Add SPA 404 fallback
+        run: cp dist/index.html dist/404.html
 
       - uses: actions/configure-pages@v5
         with:
-          # Turn Pages on via the API if it isn't already, so this doesn't
-          # require a manual visit to Settings -> Pages before the first deploy.
+          # Turn Pages on via the API rather than requiring a visit to Settings first.
           enablement: true
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
