@@ -241,6 +241,7 @@ export function buildQuestionLedCase(
     decisionGates,
     currentGateIndex: decisionGates.length > 0 ? 0 : -1,
     incidentalFindings: [],
+    therapyLog: [],
     status: 'active',
     blindMode: !!options.blindMode,
   };

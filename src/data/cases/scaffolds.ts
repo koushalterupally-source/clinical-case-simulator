@@ -1,5 +1,25 @@
 import { CaseScaffold } from '../../types';
 
+/**
+ * Four cases, modelled properly — DKA, STEMI, eclampsia, bacterial meningitis.
+ * The other eight scaffolds this file used to hold were retired: breadth was
+ * hiding the fact that none of them went deep enough to be worth playing, and
+ * none of them modelled a single therapy. See CASE_MODEL.md.
+ *
+ * `investigationsMap` matching is by explicit `aliases`, normalized and
+ * compared for equality — never substring — so two different tests (e.g.
+ * "Serum ketones" vs "Urine ketones") can never collide into one result.
+ *
+ * `therapiesMap` entries are `indicated`, `neutral` or `harmful`. An
+ * indicated therapy is acknowledged, moves vitals toward normal over
+ * `onsetMinutes`, and can change what a REPEATED investigation returns via
+ * `labShift`. A harmful therapy is acted on too, and the patient responds
+ * accordingly — including therapies that are only harmful because of when
+ * they were given (`requiresFirst` / `harmfulSequence*`), the classic
+ * "insulin before fluids" trap in DKA. `rationale` is shown in the scorecard
+ * afterwards, never during the case.
+ */
+
 export const CASE_SCAFFOLDS: CaseScaffold[] = [
   // 1. Acute STEMI
   {
@@ -39,77 +59,166 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
       family: 'Father died of sudden cardiac death at age 52.',
     },
     investigationsMap: {
-      'ecg': {
+      ecg: {
+        aliases: ['12-lead ecg', 'ecg'],
         resultText: '12-lead ECG: Sinus tachycardia at 110 bpm. Hyperacute T waves progressing to 4mm ST elevations in V1-V4. Reciprocal ST depressions in II, III, aVF.',
         turnaroundMinutes: 5,
         category: 'imaging',
         isIndicative: true,
       },
-      'troponin': {
+      troponin: {
+        aliases: ['troponin i', 'stat troponin i', 'troponin', 'ck-mb', 'cardiac enzymes'],
         resultText: 'STAT Troponin I: 3.4 ng/mL (Reference <0.04 ng/mL) — Significantly elevated. CK-MB: 48 U/L (Reference 0–25 U/L).',
         turnaroundMinutes: 30,
         category: 'labs',
         isIndicative: true,
       },
-      'cbc': {
+      cbc: {
+        aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
         resultText: 'CBC: Hb 14.2 g/dL (Reference 13.0–17.0 g/dL), WBC 11,400/mcL (Reference 4,000–11,000/mcL), Platelets 240,000/mcL (Reference 150,000–450,000/mcL).',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
-      'kft': {
+      kft: {
+        aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
         resultText: 'KFT / Renal Panel: Blood Urea 32 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.0 mg/dL (Reference 0.6–1.2 mg/dL), Na+ 138 mEq/L (Reference 135–145 mEq/L), K+ 4.2 mEq/L (Reference 3.5–5.0 mEq/L).',
         turnaroundMinutes: 30,
         category: 'labs',
         isIndicative: true,
       },
-      'cxr': {
+      cxr: {
+        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr'],
         resultText: 'Portable CXR (PA view): Mild pulmonary venous congestion, heart size upper limit of normal. No pneumothorax.',
         turnaroundMinutes: 20,
         category: 'imaging',
         isIndicative: true,
       },
-      'echo': {
+      echo: {
+        aliases: ['bedside echo', 'formal 2d echo', 'echo'],
         resultText: 'Bedside Echocardiogram: Regional wall motion abnormality (anterior wall and apex hypokinesis). LVEF 42%. No pericardial effusion or mechanical rupture.',
         turnaroundMinutes: 25,
         category: 'imaging',
         isIndicative: true,
       },
-      'lft': {
+      lft: {
+        aliases: ['lft'],
         resultText: 'Liver Function Tests: AST 42 U/L (Reference 10–40 U/L), ALT 35 U/L (Reference 7–56 U/L), Total Bilirubin 0.8 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 4.1 g/dL (Reference 3.5–5.0 g/dL).',
         turnaroundMinutes: 30,
         category: 'labs',
         isIndicative: false,
       },
-      'abg': {
+      abg: {
+        aliases: ['abg'],
         resultText: 'ABG (Room Air): pH 7.38 (Reference 7.35–7.45), PaCO2 38 mmHg (Reference 35–45 mmHg), PaO2 84 mmHg (Reference 80–100 mmHg), HCO3 23 mEq/L (Reference 22–26 mEq/L), SaO2 94%.',
         turnaroundMinutes: 10,
         category: 'labs',
         isIndicative: true,
       },
-      'lipid_panel': {
+      lipid_panel: {
+        aliases: ['lipid profile', 'fasting lipid profile', 'lipid panel'],
         resultText: 'Fasting Lipid Profile: Total Cholesterol 240 mg/dL (Reference <200 mg/dL), LDL 162 mg/dL (Reference <100 mg/dL), HDL 38 mg/dL (Reference >40 mg/dL), Triglycerides 210 mg/dL (Reference <150 mg/dL).',
         turnaroundMinutes: 45,
         category: 'labs',
         isIndicative: false,
       },
-      'hba1c': {
+      hba1c: {
+        aliases: ['hba1c'],
         resultText: 'HbA1c: 8.4% (Reference <5.7%, Diabetic target <7.0%) — Suboptimal long-term glycemic control.',
         turnaroundMinutes: 45,
         category: 'labs',
         isIndicative: false,
       },
-      'coag_pt_inr': {
+      coag_pt_inr: {
+        aliases: ['pt / inr', 'pt/inr', 'coagulation profile'],
         resultText: 'Coagulation Profile: PT 12.1 sec (Reference 11–13.5 sec), INR 1.0 (Reference 0.8–1.1), aPTT 28 sec (Reference 25–35 sec).',
         turnaroundMinutes: 30,
         category: 'labs',
         isIndicative: true,
       },
-      'urinalysis': {
+      urinalysis: {
+        aliases: ['urine routine & microscopy', 'urinalysis', 'urine routine'],
         resultText: 'Urine Routine: Specific Gravity 1.018, pH 6.0, Protein Negative, Glucose 1+, Microalbuminuria 45 mg/L (Reference <30 mg/L).',
         turnaroundMinutes: 15,
         category: 'labs',
         isIndicative: false,
+      },
+    },
+    therapiesMap: {
+      aspirin: {
+        aliases: ['aspirin 325 mg chewed', 'aspirin', 'asa'],
+        responseText: 'Aspirin 325 mg given chewed and swallowed for rapid antiplatelet effect.',
+        onsetMinutes: 15,
+        vitalsEffect: { hr: -2 },
+        appropriateness: 'indicated',
+        rationale: 'Immediate chewable, non-enteric aspirin gives rapid antiplatelet effect and reduces mortality in ACS; it should never wait for troponin confirmation.',
+      },
+      p2y12_inhibitor: {
+        aliases: ['clopidogrel 300 mg loading', 'ticagrelor 180 mg loading', 'clopidogrel', 'ticagrelor', 'p2y12 inhibitor', 'dual antiplatelet therapy'],
+        responseText: 'P2Y12 inhibitor loading dose given alongside aspirin.',
+        onsetMinutes: 20,
+        appropriateness: 'indicated',
+        rationale: 'Dual antiplatelet therapy (aspirin plus a P2Y12 inhibitor) is standard in ACS and reduces stent thrombosis/reinfarction risk alongside reperfusion.',
+      },
+      heparin: {
+        aliases: ['unfractionated heparin bolus', 'enoxaparin subcutaneous', 'unfractionated heparin', 'enoxaparin', 'heparin'],
+        responseText: 'Parenteral anticoagulation started alongside antiplatelet therapy.',
+        onsetMinutes: 20,
+        appropriateness: 'indicated',
+        rationale: 'Anticoagulation alongside antiplatelet therapy and reperfusion reduces re-thrombosis risk during the acute phase of STEMI.',
+      },
+      statin: {
+        aliases: ['atorvastatin 80 mg', 'atorvastatin', 'high intensity statin'],
+        responseText: 'High-intensity statin (Atorvastatin 80 mg) started.',
+        onsetMinutes: 60,
+        appropriateness: 'indicated',
+        rationale: 'High-intensity statin therapy started within 24 hours of ACS is guideline-recommended secondary prevention, independent of baseline LDL.',
+      },
+      reperfusion_pci: {
+        aliases: ['primary pci', 'pci', 'percutaneous coronary intervention', 'coronary angioplasty'],
+        responseText: 'Primary PCI performed: culprit vessel identified and stented, flow restored.',
+        onsetMinutes: 60,
+        vitalsEffect: { hr: -15, spo2: 3, bp: '118/76' },
+        labShift: {
+          ecg: '12-lead ECG (repeat): Greater than 50% resolution of the ST-segment elevation in V1-V4, with evolving T-wave inversion — consistent with successful reperfusion.',
+        },
+        appropriateness: 'indicated',
+        rationale: 'Primary PCI within the guideline-recommended window is the preferred reperfusion strategy for STEMI when it can be delivered promptly, restoring epicardial flow and salvaging myocardium.',
+      },
+      thrombolysis: {
+        aliases: ['tenecteplase (thrombolysis)', 'streptokinase infusion', 'tenecteplase', 'streptokinase', 'thrombolysis', 'fibrinolysis'],
+        responseText: 'IV thrombolytic therapy given per weight-based dosing.',
+        onsetMinutes: 90,
+        vitalsEffect: { hr: -10, spo2: 2 },
+        labShift: {
+          ecg: '12-lead ECG (repeat): Partial (around 50%) resolution of the ST-segment elevation — suggestive of successful pharmacological reperfusion; angiography is still advised.',
+        },
+        appropriateness: 'indicated',
+        rationale: 'When primary PCI cannot be delivered within the guideline-recommended window, timely fibrinolysis is an appropriate alternative reperfusion strategy, ideally followed by angiography.',
+      },
+      oxygen: {
+        aliases: ['supplemental oxygen', 'oxygen'],
+        responseText: 'Supplemental oxygen applied by face mask.',
+        onsetMinutes: 10,
+        vitalsEffect: { spo2: 1 },
+        appropriateness: 'neutral',
+        rationale: 'Routine supplemental oxygen has not been shown to improve outcomes in ACS patients who are not hypoxic (SpO2 ≥90%); reasonable here but not clearly beneficial at this saturation.',
+      },
+      nitroglycerin: {
+        aliases: ['nitroglycerin infusion', 'nitroglycerin', 'ntg'],
+        responseText: 'IV Nitroglycerin infusion started and titrated for pain relief.',
+        onsetMinutes: 10,
+        vitalsEffect: { hr: 2 },
+        appropriateness: 'neutral',
+        rationale: 'Nitrates relieve ischemic pain but have not been shown to reduce mortality in STEMI, and must be avoided in hypotension or suspected right ventricular infarction.',
+      },
+      metoprolol: {
+        aliases: ['metoprolol iv', 'metoprolol', 'iv beta blocker'],
+        responseText: 'IV Metoprolol given.',
+        onsetMinutes: 10,
+        vitalsEffect: { hr: -20, bp: '82/54', spo2: -3 },
+        appropriateness: 'harmful',
+        rationale: 'Early IV beta-blockade is discouraged in STEMI with signs of heart failure or risk of cardiogenic shock — this patient has an S4 gallop and bibasal crepitations — and can precipitate hypotension, bradycardia and cardiogenic shock.',
       },
     },
     criticalInterventions: [
@@ -174,179 +283,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
     ],
   },
 
-  // 2. Acute Pulmonary Embolism
-  {
-    id: 'scaffold_pe',
-    title: 'Sudden Dyspnea Post-Operatively',
-    conditionName: 'Acute Pulmonary Embolism',
-    subject: 'Medicine',
-    system: 'Pulmonology',
-    demographics: {
-      name: 'Sunita Sharma',
-      age: 48,
-      gender: 'Female',
-      setting: 'Emergency',
-    },
-    openingVignette: 'A 48-year-old female 6 days post total knee replacement presents with sudden onset sharp pleuritic chest pain and severe breathlessness. She appears anxious, tachypneic, and diaphoretic. No cough or hemoptysis.',
-    initialVitals: {
-      hr: 124,
-      bp: '96/62',
-      rr: 28,
-      spo2: 86,
-      temp: '37.2°C',
-      grbs: 108,
-    },
-    clinchingClue: 'CT Angiography demonstrates a large saddle defect extending into both main arterial branches with right heart strain.',
-    clinchingClueTimeMinutes: 30,
-    examFindingsMap: {
-      chest: 'Lungs clear to auscultation bilaterally. No wheeze, rales, or rhonchi. Marked tachypnea.',
-      cvs: 'Tachycardic, loud P2 component of second heart sound. No gallop or murmurs.',
-      extremities: 'Left calf exhibits 3cm edema compared to right, with mild tenderness on palpation.',
-      neuro: 'Anxious, alert, oriented.',
-      general: 'Tachypneic, cyanotic lip margins on room air.',
-    },
-    historyMap: {
-      allergies: 'No known drug allergies.',
-      past: 'Hypertension 4 years. Total knee arthroplasty 6 days ago. Immobilized at home.',
-      medications: 'Amlodipine 5 mg OD.',
-    },
-    investigationsMap: {
-      'ctpa': {
-        resultText: 'CT Pulmonary Angiography STAT: Large filling defect at main pulmonary bifurcation extending into right and left branches. RV/LV ratio 1.4 (Right heart strain).',
-        turnaroundMinutes: 30,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'ddimer': {
-        resultText: 'Serum D-Dimer (ELISA): 4,850 ng/mL (Reference <500 ng/mL) — Markedly elevated.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'abg': {
-        resultText: 'ABG (Room Air): pH 7.48 (Reference 7.35–7.45), PaCO2 28 mmHg (Reference 35–45 mmHg), PaO2 54 mmHg (Reference 80–100 mmHg), HCO3 21 mEq/L (Reference 22–26 mEq/L), SaO2 86% — Acute respiratory alkalosis with severe hypoxemia.',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'ecg': {
-        resultText: '12-lead ECG: Sinus tachycardia at 124 bpm. S1Q3T3 pattern present (S wave in I, Q wave in III, inverted T wave in III). Right axis deviation.',
-        turnaroundMinutes: 5,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'doppler': {
-        resultText: 'Venous Doppler Lower Limbs: Non-compressible femoral and popliteal vein on left limb with luminal thrombus.',
-        turnaroundMinutes: 25,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'cxr': {
-        resultText: 'Chest X-ray PA view: Oligemia in right lung field (Westermark sign) and subtle wedge-shaped opacity at periphery (Hampton hump). No effusion.',
-        turnaroundMinutes: 15,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'cbc': {
-        resultText: 'CBC: Hb 12.8 g/dL (Reference 12.0–15.5 g/dL), WBC 9,800/mcL (Reference 4,000–11,000/mcL), Platelets 210,000/mcL (Reference 150,000–450,000/mcL).',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'kft': {
-        resultText: 'KFT / Renal Panel: Blood Urea 28 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.9 mg/dL (Reference 0.6–1.2 mg/dL), Na+ 140 mEq/L (Reference 135–145 mEq/L), K+ 4.0 mEq/L (Reference 3.5–5.0 mEq/L).',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'troponin': {
-        resultText: 'High-Sensitivity Troponin T: 0.14 ng/mL (Reference <0.014 ng/mL) — Mild elevation indicative of right ventricular strain.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'bnp': {
-        resultText: 'NT-proBNP: 1,250 pg/mL (Reference <125 pg/mL) — Elevated due to acute right heart dysfunction.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'coag_pt_inr': {
-        resultText: 'Coagulation Profile: PT 11.8 sec (Reference 11–13.5 sec), INR 1.0 (Reference 0.8–1.1), aPTT 30 sec (Reference 25–35 sec).',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'lft': {
-        resultText: 'Liver Function Tests: AST 32 U/L (Reference 10–40 U/L), ALT 28 U/L (Reference 7–56 U/L), Total Bilirubin 0.9 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 3.9 g/dL (Reference 3.5–5.0 g/dL).',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: false,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /oxygen|o2|high flow/i,
-        name: 'Supplemental High-Flow Oxygen',
-        targetMilestoneMinutes: 5,
-      },
-      {
-        orderOrActionPattern: /heparin|lmwh|enoxaparin|anticoagul|thromboly/i,
-        name: 'Immediate Parenteral Anticoagulation',
-        targetMilestoneMinutes: 20,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_pe_1',
-        title: 'Incidental 6mm Thyroid Nodule',
-        description: 'CT chest lower neck cuts note a well-circumscribed 6mm hypoattenuating non-calcified nodule in right lobe of thyroid.',
-        correctAction: 'Recommend routine outpatient thyroid ultrasound in 6-12 months.',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_pe_2',
-        title: 'Subclinical Hypothyroidism',
-        description: 'Routine metabolic panel reveals Serum TSH 7.4 mIU/L (Reference 0.4–4.0 mIU/L) with normal Free T4 1.2 ng/dL.',
-        correctAction: 'Recheck TSH and thyroid antibodies in 6-8 weeks as outpatient; no emergency levothyroxine required.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Sudden onset dyspnea and tachycardia in a post-operative patient on room air.',
-        consequenceOnRight: 'High-flow oxygen started immediately, improving oxygen saturation.',
-        consequenceOnWrong: 'Untreated severe hypoxemia worsens acute right heart strain.',
-      },
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Evaluating high clinical probability score in patient with acute right ventricular strain.',
-        consequenceOnRight: 'Therapeutic decision making correctly prioritized based on clinical risk score.',
-        consequenceOnWrong: 'Inappropriate low-risk pathway selected delaying life-saving management.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Selecting definitive diagnostic thoracic imaging modality.',
-        consequenceOnRight: 'Contrast angiography of chest vessels confirmed acute arterial filling defect.',
-        consequenceOnWrong: 'Non-diagnostic investigations ordered leading to delayed treatment.',
-      },
-      {
-        roleTag: 'PHARM',
-        patientContext: 'Selecting initial parenteral antithrombotic dosing and regimen.',
-        consequenceOnRight: 'Weight-adjusted low molecular weight heparin or unfractionated heparin initiated.',
-        consequenceOnWrong: 'Inadequate heparinization fails to halt clot propagation.',
-      },
-      {
-        roleTag: 'PREVENTION',
-        patientContext: 'Planning long-term oral antithrombotic duration and secondary prophylaxis.',
-        consequenceOnRight: 'DOAC or Vitamin K antagonist prescribed for minimum 3 months.',
-        consequenceOnWrong: 'Premature cessation of antithrombotic therapy leads to fatal recurrence.',
-      },
-    ],
-  },
-
-  // 3. Diabetic Ketoacidosis (DKA)
+  // 2. Diabetic Ketoacidosis (DKA)
   {
     id: 'scaffold_dka',
     title: 'Altered Sensorium with Vomiting',
@@ -383,77 +320,165 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
       medications: 'Insulin Glargine + Insulin Lispro.',
     },
     investigationsMap: {
-      'grbs': {
+      grbs: {
+        aliases: ['rbs / grbs', 'grbs'],
         resultText: 'GRBS: 480 mg/dL (Reference 70–140 mg/dL) — Severely elevated.',
         turnaroundMinutes: 2,
         category: 'labs',
         isIndicative: true,
       },
-      'abg': {
+      abg: {
+        aliases: ['abg'],
         resultText: 'ABG: pH 7.12 (Reference 7.35–7.45), PaCO2 20 mmHg (Reference 35–45 mmHg), PaO2 96 mmHg (Reference 80–100 mmHg), HCO3 8 mEq/L (Reference 22–26 mEq/L), Anion Gap 24 mEq/L (High Anion Gap Metabolic Acidosis).',
         turnaroundMinutes: 10,
         category: 'labs',
         isIndicative: true,
       },
-      'electrolytes': {
+      electrolytes: {
+        aliases: ['serum electrolytes (na, k, cl)', 'electrolytes'],
         resultText: 'Serum Electrolytes: Na+ 130 mEq/L (corrected 136 mEq/L, Ref 135–145), K+ 4.8 mEq/L (Ref 3.5–5.0), Cl- 98 mEq/L (Ref 96–106 mEq/L), Bicarbonate 8 mEq/L.',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: true,
       },
-      'ketones': {
-        resultText: 'Serum Ketones: Positive 4+ (Beta-hydroxybutyrate 5.8 mmol/L, Ref <0.5 mmol/L). Urine Ketones: 4+.',
+      // "Serum ketones" and "Urine ketones" are different orders with different
+      // results — the exact bug this rebuild fixes. Serum beta-hydroxybutyrate
+      // is the test that should be used to track resolution; urine ketones
+      // (acetoacetate) lags behind clinical recovery and should not be used to
+      // guide therapy — which is exactly why the two must never share a result.
+      serum_ketones: {
+        aliases: ['serum ketones'],
+        resultText: 'Serum Ketones: Positive 4+ (Beta-hydroxybutyrate 5.8 mmol/L, Ref <0.5 mmol/L).',
         turnaroundMinutes: 15,
         category: 'labs',
         isIndicative: true,
       },
-      'rft': {
+      urine_ketones: {
+        aliases: ['urine ketones'],
+        resultText: 'Urine Ketones: 4+ (large) on dipstick — a qualitative acetoacetate test; it does not give a numeric ketone level the way the serum test does.',
+        turnaroundMinutes: 10,
+        category: 'labs',
+        isIndicative: true,
+      },
+      rft: {
+        aliases: ['rft / kft (urea, creatinine)', 'rft', 'kft'],
         resultText: 'Renal Function: Blood Urea 54 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.6 mg/dL (Reference 0.6–1.2 mg/dL) — Prerenal azotemia secondary to severe volume depletion.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
-      'cbc': {
+      cbc: {
+        aliases: ['cbc / hemogram', 'cbc'],
         resultText: 'CBC: Hb 15.8 g/dL (hemoconcentration), WBC 16,200/mcL (Reference 4,000–11,000/mcL), Platelets 280,000/mcL.',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: false,
       },
-      'hba1c': {
+      hba1c: {
+        aliases: ['hba1c'],
         resultText: 'HbA1c: 11.2% (Reference <5.7%) — Chronic severe hyperglycemia.',
         turnaroundMinutes: 45,
         category: 'labs',
         isIndicative: false,
       },
-      'blood_cultures': {
+      blood_cultures: {
+        aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures'],
         resultText: 'Blood Cultures x2: Aerobic and anaerobic bottles incubated. No growth at 24 hours.',
         turnaroundMinutes: 60,
         category: 'labs',
         isIndicative: false,
       },
-      'ecg': {
+      ecg: {
+        aliases: ['12-lead ecg', 'ecg'],
         resultText: '12-lead ECG: Sinus tachycardia at 128 bpm. Peaked T waves noted in V2-V4 (early hyperkalemia shift).',
         turnaroundMinutes: 5,
         category: 'imaging',
         isIndicative: true,
       },
-      'cxr': {
+      cxr: {
+        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr'],
         resultText: 'Chest X-ray PA view: Normal lung fields, no infiltrates or consolidation.',
         turnaroundMinutes: 20,
         category: 'imaging',
         isIndicative: false,
       },
-      'urinalysis': {
+      urinalysis: {
+        aliases: ['urine routine & microscopy', 'urinalysis'],
         resultText: 'Urine Routine: Glucose 4+, Ketones 4+, Protein Trace, WBC 2-3/HPF, Nitrites Negative.',
         turnaroundMinutes: 10,
         category: 'labs',
         isIndicative: true,
       },
-      'serum_osmolality': {
+      serum_osmolality: {
+        aliases: ['serum osmolality'],
         resultText: 'Calculated Serum Osmolality: 312 mOsm/kg (Reference 275–295 mOsm/kg).',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: true,
+      },
+    },
+    therapiesMap: {
+      iv_fluids: {
+        aliases: [
+          'normal saline 0.9% 500 ml bolus',
+          'normal saline 30 ml/kg bolus',
+          'ringer lactate 500 ml bolus',
+          'iv fluids',
+          'normal saline',
+          '0.9% saline',
+          'isotonic saline',
+          'ns bolus',
+          'crystalloid',
+        ],
+        responseText: 'IV 0.9% Normal Saline bolus given (15–20 mL/kg over the first hour), with ongoing isotonic fluid replacement.',
+        onsetMinutes: 30,
+        vitalsEffect: { hr: -8, bp: '104/66' },
+        appropriateness: 'indicated',
+        rationale: 'Initial isotonic fluid resuscitation restores intravascular volume and tissue perfusion and is the first priority in DKA, ahead of insulin.',
+      },
+      insulin: {
+        aliases: ['insulin infusion', 'iv insulin', 'regular insulin infusion', 'actrapid', 'insulin'],
+        responseText: 'IV Regular Insulin infusion started at 0.1 units/kg/hr.',
+        onsetMinutes: 60,
+        vitalsEffect: { grbs: -220 },
+        labShift: {
+          abg: 'ABG (repeat): pH 7.32 (Reference 7.35–7.45), PaCO2 30 mmHg, PaO2 92 mmHg, HCO3 18 mEq/L, Anion Gap 14 mEq/L — acidosis improving with insulin and fluid therapy.',
+          serum_ketones: 'Serum Ketones (repeat): Trace positive (Beta-hydroxybutyrate 0.9 mmol/L, Ref <0.5 mmol/L) — improving with treatment.',
+          urine_ketones: 'Urine Ketones (repeat): Still 3+ on dipstick — acetoacetate clearance lags behind the serum beta-hydroxybutyrate improvement; do not use this test to judge resolution.',
+          grbs: 'GRBS: 210 mg/dL (Reference 70–140 mg/dL) — falling with insulin infusion in progress.',
+        },
+        appropriateness: 'indicated',
+        rationale: 'Continuous low-dose IV regular insulin is the definitive therapy that switches off ketogenesis and closes the anion gap. It should follow initial fluid resuscitation (and a check that potassium is not critically low), never precede it.',
+        requiresFirst: ['iv_fluids'],
+        harmfulSequenceResponseText: 'IV Regular Insulin infusion started at 0.1 units/kg/hr, before fluid resuscitation had been given.',
+        harmfulSequenceVitalsEffect: { hr: 10, bp: '80/50' },
+        harmfulSequenceRationale: 'Insulin given before volume resuscitation drives glucose — and potassium — intracellularly while the patient is still profoundly volume-depleted, worsening hypotension and risking sudden severe hypokalemia with cardiac arrhythmia. Fluids (with potassium checked and replaced as needed) must precede or accompany insulin, never follow it.',
+      },
+      potassium_replacement: {
+        aliases: ['potassium chloride in infusion', 'kcl', 'potassium chloride', 'potassium replacement'],
+        responseText: 'Potassium chloride added to IV fluids per serum potassium level.',
+        onsetMinutes: 30,
+        labShift: {
+          electrolytes: 'Serum Electrolytes (repeat): Na+ 136 mEq/L (Ref 135–145), K+ 4.0 mEq/L (Ref 3.5–5.0), Cl- 100 mEq/L, Bicarbonate rising — potassium replacement running alongside the insulin infusion.',
+        },
+        appropriateness: 'indicated',
+        rationale: 'Insulin drives potassium intracellularly; replacement guided by the serum potassium level (withheld if K+ >5.2 mEq/L, given before insulin if K+ <3.3 mEq/L) prevents life-threatening hypokalemia and arrhythmia.',
+      },
+      dextrose_5: {
+        aliases: ['5% dextrose infusion', 'dextrose'],
+        responseText: '5% Dextrose added to IV fluids once glucose approached 250 mg/dL; insulin infusion continued unchanged.',
+        onsetMinutes: 15,
+        vitalsEffect: { grbs: 20 },
+        appropriateness: 'indicated',
+        rationale: 'Adding dextrose once glucose falls near 200–250 mg/dL lets the insulin infusion continue clearing ketosis without causing hypoglycemia.',
+      },
+      sodium_bicarbonate: {
+        aliases: ['sodium bicarbonate iv', 'sodium bicarbonate', 'bicarbonate', 'nahco3'],
+        responseText: 'IV Sodium Bicarbonate given.',
+        onsetMinutes: 20,
+        vitalsEffect: { hr: 4 },
+        appropriateness: 'harmful',
+        rationale: "Bicarbonate is reserved for severe acidosis (pH below roughly 6.9-7.0 by most DKA protocols); this patient's pH is 7.12. Giving it here is not indicated and can cause paradoxical CNS acidosis, worsen hypokalemia, and delay resolution of ketosis without proven benefit.",
       },
     },
     criticalInterventions: [
@@ -523,7 +548,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
     ],
   },
 
-  // 4. Eclampsia
+  // 3. Eclampsia
   {
     id: 'scaffold_eclampsia',
     title: 'Seizure in Pregnant Female at 34 Weeks',
@@ -559,77 +584,118 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
       past: 'Primigravida 34 weeks. Unbooked pregnancy. Complained of severe frontal headache and epigastric pain since morning.',
     },
     investigationsMap: {
-      'urinalysis': {
+      urinalysis: {
+        aliases: ['urine routine & microscopy', 'urinalysis', 'urine dipstick'],
         resultText: 'Urine Dipstick: 3+ Proteinuria (24-hour urine protein 3.8 g, Ref <0.3 g/24h). No glucosuria or nitrites.',
         turnaroundMinutes: 5,
         category: 'labs',
         isIndicative: true,
       },
-      'lft': {
+      lft: {
+        aliases: ['lft'],
         resultText: 'LFT / HELLP Panel: AST 142 U/L (Ref 10–40), ALT 128 U/L (Ref 7–56), Total Bilirubin 1.8 mg/dL (Ref 0.2–1.2), LDH 780 U/L (Ref 140–280 U/L) — Hemolysis & elevated liver enzymes.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
-      'cbc': {
+      cbc: {
+        aliases: ['cbc / hemogram', 'cbc'],
         resultText: 'CBC: Hb 11.0 g/dL, WBC 12,200/mcL, Platelets 88,000/mcL (Reference 150,000–450,000/mcL) — Moderate Thrombocytopenia.',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: true,
       },
-      'usg_fetal': {
+      usg_fetal: {
+        aliases: ['usg abdomen & pelvis', 'obstetric usg', 'fetal ultrasound', 'usg fetal'],
         resultText: 'Obstetric USG: Single live fetus 33 weeks, EFW 1.8 kg (IUGR), Oligohydramnios (AFI 6 cm), Doppler shows umbilical artery reversed end-diastolic flow.',
         turnaroundMinutes: 20,
         category: 'imaging',
         isIndicative: true,
       },
-      'kft': {
+      kft: {
+        aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
         resultText: 'KFT: Blood Urea 42 mg/dL (Ref 15–40), Serum Creatinine 1.3 mg/dL (Ref 0.4–0.8 in pregnancy) — Impaired renal function.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
-      'uric_acid': {
+      uric_acid: {
+        aliases: ['serum uric acid', 'uric acid'],
         resultText: 'Serum Uric Acid: 8.2 mg/dL (Reference 2.5–5.5 mg/dL in pregnancy) — Elevated.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
-      'coag_profile': {
+      coag_profile: {
+        aliases: ['pt / inr', 'coagulation profile'],
         resultText: 'Coagulation Profile: PT 13.0 sec, INR 1.1, Fibrinogen 210 mg/dL (Ref 300–600 mg/dL in pregnancy).',
         turnaroundMinutes: 30,
         category: 'labs',
         isIndicative: true,
       },
-      'peripheral_smear': {
+      peripheral_smear: {
+        aliases: ['peripheral smear'],
         resultText: 'Peripheral Blood Smear: Schistocytes and helmet cells present (microangiopathic hemolytic anemia).',
         turnaroundMinutes: 30,
         category: 'labs',
         isIndicative: true,
       },
-      'abg': {
+      abg: {
+        aliases: ['abg'],
         resultText: 'ABG: pH 7.36, PaCO2 32 mmHg, PaO2 88 mmHg, HCO3 18 mEq/L, SaO2 96%.',
         turnaroundMinutes: 10,
         category: 'labs',
         isIndicative: false,
       },
-      'ecg': {
+      ecg: {
+        aliases: ['12-lead ecg', 'ecg'],
         resultText: '12-lead ECG: Sinus tachycardia at 116 bpm. Left ventricular hypertrophy pattern.',
         turnaroundMinutes: 5,
         category: 'imaging',
         isIndicative: false,
       },
-      'blood_grouping': {
+      blood_grouping: {
+        aliases: ['blood grouping & cross-match', 'blood grouping'],
         resultText: 'Blood Grouping & Rh Typing: O Positive. Antibody screen negative. 2 units PRBC crossmatched.',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: true,
       },
-      'bstp': {
+      bstp: {
+        aliases: ['biophysical profile', 'bpp'],
         resultText: 'Biophysical Profile (BPP): 6/10 (Reduced amniotic fluid volume, non-reactive NST).',
         turnaroundMinutes: 30,
         category: 'imaging',
         isIndicative: true,
+      },
+    },
+    therapiesMap: {
+      magnesium_sulfate: {
+        aliases: ['magnesium sulfate (pritchard regimen)', 'magnesium sulfate', 'mgso4', 'pritchard regimen'],
+        responseText: 'IV Magnesium Sulfate loading dose given (4–6 g IV over 15–20 minutes), followed by a maintenance infusion.',
+        onsetMinutes: 15,
+        vitalsEffect: { hr: -8 },
+        appropriateness: 'indicated',
+        rationale: 'Magnesium sulfate is the anticonvulsant of choice in eclampsia, proven superior to diazepam and phenytoin at preventing recurrent seizures and reducing maternal mortality (MAGPIE trial).',
+      },
+      antihypertensive: {
+        aliases: ['labetalol iv', 'hydralazine iv', 'nifedipine oral', 'labetalol', 'hydralazine', 'nifedipine'],
+        responseText: 'IV antihypertensive given and titrated toward a target BP below 160/110 mmHg (diastolic 90–100 mmHg).',
+        onsetMinutes: 20,
+        vitalsEffect: { hr: -4, bp: '148/96' },
+        labShift: {
+          urinalysis: 'Urine Dipstick (repeat): Still 3+ proteinuria, essentially unchanged. Blood pressure is now controlled, but the underlying renal/vascular process persists — delivery, not medication, is the definitive treatment.',
+        },
+        appropriateness: 'indicated',
+        rationale: 'Rapid-acting antihypertensives reduce the risk of maternal hemorrhagic stroke in severe hypertension; overly aggressive lowering risking uteroplacental hypoperfusion should be avoided.',
+      },
+      alternative_anticonvulsant: {
+        aliases: ['phenytoin loading', 'lorazepam iv', 'levetiracetam iv', 'diazepam'],
+        responseText: 'Anticonvulsant given for seizure control.',
+        onsetMinutes: 15,
+        vitalsEffect: { hr: 5 },
+        appropriateness: 'harmful',
+        rationale: 'Benzodiazepines and phenytoin are inferior to magnesium sulfate at preventing recurrent eclamptic seizures (MAGPIE trial and Cochrane evidence); magnesium sulfate is the evidence-based anticonvulsant of choice and should not be substituted.',
       },
     },
     criticalInterventions: [
@@ -694,172 +760,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
     ],
   },
 
-  // 5. Tension Pneumothorax
-  {
-    id: 'scaffold_pneumothorax',
-    title: 'Severe Respiratory Distress Post-Trauma',
-    conditionName: 'Tension Pneumothorax',
-    subject: 'Surgery',
-    system: 'Trauma & Emergency',
-    demographics: {
-      name: 'Vikram Singh',
-      age: 30,
-      gender: 'Male',
-      setting: 'Emergency',
-    },
-    openingVignette: 'A 30-year-old male is brought to casualty following a high-speed motor vehicle collision. He is in severe respiratory distress, struggling for breath, cyanotic, and sweating profusely. Jugular veins are markedly engorged.',
-    initialVitals: {
-      hr: 138,
-      bp: '72/44',
-      rr: 36,
-      spo2: 78,
-      temp: '36.8°C',
-      grbs: 112,
-    },
-    clinchingClue: 'Trachea deviated to the left, right hemithorax hyperresonant on percussion with completely absent breath sounds, BP 72/44 mmHg.',
-    clinchingClueTimeMinutes: 2,
-    examFindingsMap: {
-      chest: 'Right hemithorax expanded with minimal excursion, hyperresonant percussion note, absent breath sounds on right. Left side vesicular breath sounds present.',
-      neck: 'Trachea palpably deviated to left side. Distended neck veins (JVP elevated).',
-      cvs: 'Tachycardic at 138 bpm, distant heart sounds, severe hypotension 72/44 mmHg.',
-      neuro: 'Agitated, hypoxic encephalopathy, GCS 12/15.',
-    },
-    historyMap: {
-      allergies: 'No known allergies.',
-      past: 'Healthy male, driver in head-on road traffic accident 25 minutes ago.',
-    },
-    investigationsMap: {
-      'cxr': {
-        resultText: 'Portable CXR: Massive right-sided pleural air collection with complete right lung collapse and marked mediastinal shift to the left.',
-        turnaroundMinutes: 15,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'fast': {
-        resultText: 'eFAST Exam: Absence of lung sliding on right hemithorax (Barcode sign on M-mode). No pericardial effusion or intra-abdominal free fluid.',
-        turnaroundMinutes: 5,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'abg': {
-        resultText: 'ABG (High Flow O2): pH 7.22 (Ref 7.35–7.45), PaCO2 58 mmHg (Ref 35–45), PaO2 52 mmHg, HCO3 22 mEq/L, SaO2 78% — Severe uncompensated respiratory acidosis with hypoxemia.',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'cbc': {
-        resultText: 'CBC: Hb 13.5 g/dL, WBC 14,200/mcL, Platelets 220,000/mcL.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'blood_grouping': {
-        resultText: 'Blood Grouping & Crossmatch: A Positive. 2 units O-negative PRBC uncrossmatched available immediately.',
-        turnaroundMinutes: 15,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'kft': {
-        resultText: 'KFT: Urea 34 mg/dL, Serum Creatinine 1.1 mg/dL, Na+ 139 mEq/L, K+ 4.3 mEq/L.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'coag_pt_inr': {
-        resultText: 'Coagulation Profile: PT 12.4 sec, INR 1.1, aPTT 29 sec.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'ecg': {
-        resultText: '12-lead ECG: Sinus tachycardia at 138 bpm. Low voltage QRS complexes and right axis shift.',
-        turnaroundMinutes: 5,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'ct_chest': {
-        resultText: 'CT Chest (Post Decompression): Right lung 80% re-expanded, chest tube in 5th intercostal space anterior axillary line. No pulmonary laceration or aortic injury.',
-        turnaroundMinutes: 45,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'lft': {
-        resultText: 'LFT: AST 38 U/L, ALT 32 U/L, Bilirubin 0.7 mg/dL.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'serum_lactate': {
-        resultText: 'Serum Lactate STAT: 3.8 mmol/L (Reference <1.5 mmol/L) — Tissue hypoperfusion due to obstructive failure.',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'toxic_screen': {
-        resultText: 'Urine Toxicology Screen: Negative for alcohol, opioids, and amphetamines.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: false,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /needle|decompression|thoracostomy|chest tube|icd/i,
-        name: 'Immediate Needle Thoracostomy or Intercostal Drain Placement',
-        targetMilestoneMinutes: 5,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_pneu_1',
-        title: 'Nondisplaced Left 8th Rib Fracture',
-        description: 'Secondary chest survey reveals mild localized left rib cage tenderness without flail segment.',
-        correctAction: 'Provide adequate analgesia (oral/IV Paracetamol) and deep breathing exercises.',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_pneu_2',
-        title: 'Asymptomatic 3mm Right Renal Calculus',
-        description: 'eFAST abdominal cuts note a 3mm non-shadowing calculus in right renal lower pole calyx without hydronephrosis.',
-        correctAction: 'Reassure patient; oral hydration advice post trauma stabilization.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Trauma patient with severe hypotension, tracheal deviation, and unilateral absence of breath sounds; deciding immediate emergency intervention.',
-        consequenceOnRight: 'Immediate 14G needle inserted in 2nd ICS MCL or 5th ICS AAL. Rush of air heard, BP jumps to 110/70 mmHg.',
-        consequenceOnWrong: 'Delaying decompression for CXR causes cardiac arrest due to impaired venous return!',
-      },
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Differentiating obstructive thoracic failure from pericardial tamponade or hemothorax in acute trauma.',
-        consequenceOnRight: 'Clinical examination correctly identifies unilateral pleural space pathology.',
-        consequenceOnWrong: 'Misdiagnosis leads to inappropriate pericardiocentesis or thoracotomy.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Bedside thoracic ultrasound showing absence of lung sliding prior to chest tube insertion.',
-        consequenceOnRight: 'Ultrasonic Barcode sign confirms pleural air collection rapidly.',
-        consequenceOnWrong: 'Delaying definitive tube placement increases risk of re-accumulation.',
-      },
-      {
-        roleTag: 'MANAGEMENT',
-        patientContext: 'Placement of intercostal tube drain connected to under-water seal system.',
-        consequenceOnRight: '28Fr chest tube secured in 5th intercostal space anterior axillary line with continuous bubbling.',
-        consequenceOnWrong: 'Improper chest tube placement fails to evacuate pleural space adequately.',
-      },
-      {
-        roleTag: 'COMPLICATION',
-        patientContext: 'Managing persistent air leak or incomplete lung re-expansion post tube placement.',
-        consequenceOnRight: 'Chest tube position verified on radiograph and low continuous suction applied.',
-        consequenceOnWrong: 'Failure to evaluate persistent leak risks persistent collapse and empyema.',
-      },
-    ],
-  },
-
-  // 6. Bacterial Meningitis
+  // 4. Bacterial Meningitis
   {
     id: 'scaffold_meningitis',
     title: 'Fever, Severe Headache, and Neck Stiffness',
@@ -894,77 +795,151 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
       past: 'Sinusitis 2 weeks ago untreated.',
     },
     investigationsMap: {
-      'csf': {
+      csf: {
+        aliases: ['csf analysis', 'csf'],
         resultText: 'CSF Analysis: Turbid appearance, Opening Pressure 28 cm H2O (elevated). WBC count 2,800/mm3 (88% Polymorphs), Protein 310 mg/dL (Ref 15–45), Glucose 16 mg/dL (CSF/Serum ratio 0.15). Gram stain: Gram-negative intracellular diplococci.',
         turnaroundMinutes: 45,
         category: 'labs',
         isIndicative: true,
       },
-      'blood_cultures': {
+      blood_cultures: {
+        aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures'],
         resultText: 'Blood Cultures x2 STAT: Plated for aerobic/anaerobic organisms. Gram-negative diplococci growing at 24 hours.',
         turnaroundMinutes: 60,
         category: 'labs',
         isIndicative: true,
       },
-      'ct_head': {
+      ct_head: {
+        aliases: ['ct head plain', 'ct head'],
         resultText: 'Non-contrast CT Head: No mass effect, no midline shift, no cerebral edema or hydrocephalus. Cisterns clear.',
         turnaroundMinutes: 30,
         category: 'imaging',
         isIndicative: true,
       },
-      'cbc': {
+      cbc: {
+        aliases: ['cbc / hemogram', 'cbc'],
         resultText: 'CBC: WBC 21,500/mcL with 88% Neutrophils (Left shift), Hb 12.2 g/dL, Platelets 180,000/mcL.',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: true,
       },
-      'crp_esr': {
-        resultText: 'Inflammatory Markers: Serum CRP 185 mg/L (Reference <5 mg/L), ESR 78 mm/hr (Reference <20 mm/hr) — Markedly elevated.',
+      // ESR and CRP are two different tests reported as one combined
+      // "inflammatory markers" entry in the old scaffold — split here for the
+      // same reason serum/urine ketones were split in the DKA case.
+      esr: {
+        aliases: ['esr'],
+        resultText: 'ESR: 78 mm/hr (Reference <20 mm/hr) — Markedly elevated.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
-      'kft': {
+      crp: {
+        aliases: ['crp'],
+        resultText: 'Serum CRP: 185 mg/L (Reference <5 mg/L) — Markedly elevated.',
+        turnaroundMinutes: 25,
+        category: 'labs',
+        isIndicative: true,
+      },
+      kft: {
+        aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
         resultText: 'KFT: Blood Urea 36 mg/dL, Serum Creatinine 1.1 mg/dL, Na+ 132 mEq/L (mild hyponatremia due to SIADH), K+ 4.1 mEq/L.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: false,
       },
-      'lft': {
+      lft: {
+        aliases: ['lft'],
         resultText: 'LFT: AST 34 U/L, ALT 28 U/L, Total Bilirubin 0.9 mg/dL, Albumin 3.8 g/dL.',
         turnaroundMinutes: 30,
         category: 'labs',
         isIndicative: false,
       },
-      'electrolytes': {
+      electrolytes: {
+        aliases: ['serum electrolytes (na, k, cl)', 'electrolytes'],
         resultText: 'Serum Electrolytes: Na+ 132 mEq/L (Ref 135–145), K+ 4.1 mEq/L, Cl- 98 mEq/L.',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: false,
       },
-      'abg': {
+      abg: {
+        aliases: ['abg'],
         resultText: 'ABG: pH 7.42, PaCO2 34 mmHg, PaO2 92 mmHg, HCO3 22 mEq/L, SaO2 97%.',
         turnaroundMinutes: 10,
         category: 'labs',
         isIndicative: false,
       },
-      'coag_pt_inr': {
+      coag_pt_inr: {
+        aliases: ['pt / inr', 'coagulation profile'],
         resultText: 'Coagulation Profile: PT 12.8 sec, INR 1.1, aPTT 31 sec, D-Dimer 850 ng/mL.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
-      'grbs': {
+      grbs: {
+        aliases: ['rbs / grbs', 'grbs'],
         resultText: 'GRBS: 104 mg/dL (Reference 70–140 mg/dL).',
         turnaroundMinutes: 2,
         category: 'labs',
         isIndicative: true,
       },
-      'cxr': {
+      cxr: {
+        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr'],
         resultText: 'Chest X-ray PA view: Normal lung fields, clear costophrenic angles.',
         turnaroundMinutes: 20,
         category: 'imaging',
         isIndicative: false,
+      },
+    },
+    therapiesMap: {
+      ceftriaxone: {
+        aliases: ['ceftriaxone 2 g iv', 'ceftriaxone'],
+        responseText: 'IV Ceftriaxone 2 g given empirically.',
+        onsetMinutes: 30,
+        vitalsEffect: { hr: -6 },
+        labShift: {
+          csf: 'CSF Analysis (repeat): Turbidity clearing. WBC 620/mm3 (predominantly lymphocytes now), Protein 190 mg/dL, Glucose 38 mg/dL (CSF/serum ratio improving) — trending toward resolution on antibiotic therapy; full clearance typically takes 24–48 hours.',
+          crp: 'Serum CRP (repeat): 96 mg/L (Reference <5 mg/L) — declining from admission but still elevated.',
+          cbc: 'CBC (repeat): WBC 14,800/mcL with an improving differential, Hb 12.1 g/dL, Platelets 190,000/mcL — trending toward normal on antibiotics.',
+        },
+        appropriateness: 'indicated',
+        rationale: 'Empiric high-dose ceftriaxone covers the leading community-acquired bacterial meningitis pathogens and should be started immediately, without waiting for imaging or CSF results.',
+      },
+      vancomycin: {
+        aliases: ['vancomycin iv', 'vancomycin'],
+        responseText: 'IV Vancomycin added to empiric coverage.',
+        onsetMinutes: 30,
+        appropriateness: 'indicated',
+        rationale: 'Vancomycin is added empirically alongside a third-generation cephalosporin to cover cephalosporin-non-susceptible Streptococcus pneumoniae until susceptibilities return.',
+      },
+      meropenem: {
+        aliases: ['meropenem iv', 'meropenem'],
+        responseText: 'IV Meropenem given as broad-spectrum empiric cover.',
+        onsetMinutes: 30,
+        appropriateness: 'indicated',
+        rationale: 'Meropenem is a reasonable broad-spectrum empiric alternative for bacterial meningitis, particularly with beta-lactam allergy or concern for resistant Gram-negative organisms.',
+      },
+      ampicillin: {
+        aliases: ['ampicillin', 'ampicillin iv'],
+        responseText: 'IV Ampicillin added for additional coverage.',
+        onsetMinutes: 30,
+        appropriateness: 'indicated',
+        rationale: 'Ampicillin is added empirically to cover Listeria monocytogenes in patients at risk (neonates, pregnancy, older age, or immunocompromise).',
+      },
+      dexamethasone: {
+        aliases: ['dexamethasone iv', 'dexamethasone', 'steroid'],
+        responseText: 'IV Dexamethasone 10 mg given.',
+        onsetMinutes: 20,
+        vitalsEffect: { temp: '38.2°C' },
+        appropriateness: 'indicated',
+        rationale: 'Adjunctive dexamethasone reduces the risk of neurological sequelae, particularly hearing loss, in bacterial meningitis — but only when given with or just before the first antibiotic dose; benefit is reduced if it is delayed until after antibiotics have already been started.',
+      },
+      inadequate_antibiotic: {
+        aliases: ['azithromycin', 'doxycycline'],
+        responseText: 'Antibiotic given.',
+        onsetMinutes: 30,
+        vitalsEffect: { hr: 8, temp: '40.0°C' },
+        appropriateness: 'harmful',
+        rationale: 'Azithromycin and doxycycline do not reliably cover the leading bacterial meningitis pathogens and have poor CNS penetration; neither is an appropriate empiric choice here, and giving one leaves the infection effectively untreated.',
       },
     },
     criticalInterventions: [
@@ -1025,1044 +1000,6 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         patientContext: 'Chemoprophylaxis planning for close household contacts following organism identification.',
         consequenceOnRight: 'Rifampin or single-dose Ciprofloxacin prescribed for close household contacts.',
         consequenceOnWrong: 'Failure to provide contact prophylaxis risks secondary outbreak among contacts.',
-      },
-    ],
-  },
-
-  // 7. Acute Appendicitis
-  {
-    id: 'scaffold_appendicitis',
-    title: 'Migratory Abdominal Pain in Young Male',
-    conditionName: 'Acute Appendicitis',
-    subject: 'Surgery',
-    system: 'Gastroenterology',
-    demographics: {
-      name: 'Rohan Mehta',
-      age: 22,
-      gender: 'Male',
-      setting: 'Emergency',
-    },
-    openingVignette: 'A 22-year-old male presents with 16 hours of right lower quadrant abdominal pain. Pain started periumbilically last night, then migrated to right iliac fossa. Associated with low-grade fever, nausea, and anorexia.',
-    initialVitals: {
-      hr: 98,
-      bp: '122/78',
-      rr: 18,
-      spo2: 99,
-      temp: '38.1°C',
-      grbs: 94,
-    },
-    clinchingClue: 'Marked tenderness at McBurney point with localized guarding, rebound tenderness (Rovsing sign positive), Alvarado Score 8.',
-    clinchingClueTimeMinutes: 10,
-    examFindingsMap: {
-      abdomen: 'Flat, moves with respiration. Maximal tenderness at McBurney point (1/3 distance from ASIS to umbilicus). Guarding present in RIF. Positive Rovsing sign (left-sided pressure elicits RIF pain). Positive Psoas sign.',
-      general: 'Low grade fever (38.1°C), dry tongue.',
-      cvs: 'HR 98, regular pulse.',
-      chest: 'Clear bilaterally.',
-    },
-    historyMap: {
-      allergies: 'No known allergies.',
-      past: 'No previous surgeries. No chronic illness.',
-    },
-    investigationsMap: {
-      'cbc': {
-        resultText: 'CBC: Leukocytosis WBC 14,800/mcL (Reference 4,000–11,000/mcL) with 84% Neutrophils (Left shift). Hb 14.8 g/dL, Platelets 260,000/mcL.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'usg_abdomen': {
-        resultText: 'Ultrasound Abdomen: Non-compressible, blind-ending tubular structure in right iliac fossa measuring 8.2mm in diameter with target sign appearance and surrounding periappendiceal fat stranding.',
-        turnaroundMinutes: 25,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'urinalysis': {
-        resultText: 'Urine Routine: Normal, 1-2 WBCs/HPF, no RBCs or nitrites.',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'crp': {
-        resultText: 'C-Reactive Protein (CRP): 48 mg/L (Reference <5 mg/L) — Elevated acute phase reactant.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'kft': {
-        resultText: 'KFT: Blood Urea 24 mg/dL, Serum Creatinine 0.8 mg/dL, Na+ 138 mEq/L, K+ 4.1 mEq/L.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'lft': {
-        resultText: 'LFT: AST 22 U/L, ALT 25 U/L, Total Bilirubin 0.8 mg/dL, Albumin 4.2 g/dL.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'grbs': {
-        resultText: 'GRBS: 94 mg/dL (Reference 70–140 mg/dL).',
-        turnaroundMinutes: 2,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'coag_pt_inr': {
-        resultText: 'Coagulation Profile: PT 11.9 sec, INR 1.0, aPTT 28 sec.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'blood_grouping': {
-        resultText: 'Blood Grouping & Crossmatch: B Positive.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'ct_abdomen': {
-        resultText: 'CT Abdomen & Pelvis (Oral + IV Contrast): Dilated appendix 9mm with appendicolith and focal wall thickening, periappendiceal fluid. No free air or localized abscess.',
-        turnaroundMinutes: 45,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'ecg': {
-        resultText: '12-lead ECG: Normal sinus rhythm at 98 bpm.',
-        turnaroundMinutes: 5,
-        category: 'imaging',
-        isIndicative: false,
-      },
-      'cxr': {
-        resultText: 'Chest X-ray PA view: Normal lung fields, no subdiaphragmatic free air.',
-        turnaroundMinutes: 20,
-        category: 'imaging',
-        isIndicative: false,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /npo|nil per os|iv fluids/i,
-        name: 'Keep NPO & Start Maintenance IV Fluids',
-        targetMilestoneMinutes: 15,
-      },
-      {
-        orderOrActionPattern: /appendectomy|surgery|consult surgery/i,
-        name: 'Urgent Surgical Consult / Appendectomy',
-        targetMilestoneMinutes: 45,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_app_1',
-        title: 'Solitary Left Renal Cyst',
-        description: 'USG notes a 12mm simple thin-walled cortical cyst in left kidney (Bosniak I).',
-        correctAction: 'Reassure patient — benign finding requiring no follow-up.',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_app_2',
-        title: 'Microcytic Red Cell Indices / Beta-Thalassemia Trait',
-        description: 'Hemogram shows Hb 13.5 g/dL, RBC count 6.2 M/uL (high), MCV 68 fL (marked microcytosis). HbA2 electrophoresis requested post-op shows 5.2%.',
-        correctAction: 'Provide genetic counseling for Beta-Thalassemia Trait; avoid unnecessary iron supplementation.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Young male with migratory right iliac fossa pain, low-grade fever, and local guarding; establishing initial perioperative care.',
-        consequenceOnRight: 'Patient kept NPO, fluid hydration initiated, and analgesia administered.',
-        consequenceOnWrong: 'Allowing oral intake delays surgical induction.',
-      },
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Evaluating clinical prediction score (Alvarado score 8) and localized peritoneal signs.',
-        consequenceOnRight: 'High probability surgical abdomen recognized.',
-        consequenceOnWrong: 'Misinterpreting pain as gastroenteritis risks delayed rupture.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Targeted abdominal ultrasound showing non-compressible tubular structure in right iliac fossa.',
-        consequenceOnRight: 'Ultrasonic target sign confirms tubular inflammation.',
-        consequenceOnWrong: 'Relying solely on non-specific blood markers delays definitive care.',
-      },
-      {
-        roleTag: 'MANAGEMENT',
-        patientContext: 'Administering IV prophylactic broad-spectrum antibiotics and posting for operative intervention.',
-        consequenceOnRight: 'Laparoscopic or open excision performed smoothly without perforation.',
-        consequenceOnWrong: 'Conservative management alone leads to organ rupture and diffuse peritonitis.',
-      },
-      {
-        roleTag: 'COMPLICATION',
-        patientContext: 'Monitoring post-operative fever or localized abdominal collection on Day 3.',
-        consequenceOnRight: 'Ultrasound screening detects pelvic fluid collection treated with targeted antibiotics.',
-        consequenceOnWrong: 'Ignoring post-op fever leads to pelvic abscess formation.',
-      },
-    ],
-  },
-
-  // 8. Severe Acute Malnutrition (SAM) with Shock
-  {
-    id: 'scaffold_sam_shock',
-    title: 'Severe Lethargy & Diarrhea in 14-Month Child',
-    conditionName: 'SAM with Septic/Hypovolemic Shock',
-    subject: 'Pediatrics',
-    system: 'Gastroenterology',
-    demographics: {
-      name: 'Aarav (Child)',
-      age: 1,
-      gender: 'Male',
-      setting: 'Emergency',
-    },
-    openingVignette: 'A 14-month-old male toddler is brought to pediatric emergency by mother with 3 days of watery diarrhea, poor feeding, and extreme lethargy. Weight is 5.8 kg (MUAC 10.5 cm, < -3 SD WFH). He is obtunded with weak rapid pulse and cold peripheries.',
-    initialVitals: {
-      hr: 168,
-      bp: '60/38',
-      rr: 44,
-      spo2: 91,
-      temp: '35.6°C',
-      grbs: 42,
-    },
-    clinchingClue: 'Severe Acute Malnutrition (MUAC 10.5 cm, visible severe wasting) in fluid-refractory shock with Hypoglycemia (GRBS 42 mg/dL) and Hypothermia (35.6°C).',
-    clinchingClueTimeMinutes: 5,
-    examFindingsMap: {
-      general: 'Severe muscle wasting, loss of subcutaneous fat (baggy pants appearance), MUAC 10.5 cm, lethargic, hypothermic (35.6°C).',
-      cvs: 'Tachycardic 168 bpm, weak thready radial pulses, capillary refill time 5 seconds, cold extremities.',
-      chest: 'Tachypneic, vesicular breath sounds.',
-      abdomen: 'Scaphoid, skin pinch goes back very slowly (>2 seconds).',
-      neuro: 'Lethargic, responds weakly to painful stimuli.',
-    },
-    historyMap: {
-      allergies: 'No known allergies.',
-      past: 'Weaned prematurely at 3 months, fed diluted buffalo milk. Unvaccinated.',
-    },
-    investigationsMap: {
-      'grbs': {
-        resultText: 'STAT GRBS: 42 mg/dL (Reference 70–110 mg/dL) — Severe Hypoglycemia!',
-        turnaroundMinutes: 2,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'electrolytes': {
-        resultText: 'Serum Electrolytes: Na+ 124 mEq/L (Ref 135–145), K+ 2.8 mEq/L (Ref 3.5–5.0) — Severe Hypokalemia & Hyponatremia, Ca2+ 7.2 mg/dL (Ref 8.8–10.8 mg/dL).',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'cbc': {
-        resultText: 'CBC: Hb 6.4 g/dL (Severe Microcytic Hypochromic Anemia), WBC 16,500/mcL, Platelets 180,000/mcL.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'blood_cultures': {
-        resultText: 'Blood Cultures x2 STAT: Plated for aerobic bacteria. Gram-negative bacilli detected at 24 hours.',
-        turnaroundMinutes: 60,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'stool_microscopy': {
-        resultText: 'Stool Examination: Pus cells 15-20/HPF, RBCs 5-10/HPF, Giardia lamblia cysts present.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'rft': {
-        resultText: 'Renal Function: Blood Urea 48 mg/dL, Serum Creatinine 0.9 mg/dL (elevated for pediatric age).',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'lft': {
-        resultText: 'LFT: Total Protein 4.2 g/dL (Ref 6.0–8.0), Serum Albumin 1.8 g/dL (Ref 3.5–5.0) — Severe Hypoalbuminemia, AST 45 U/L, ALT 38 U/L.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'serum_calcium_magnesium': {
-        resultText: 'Serum Calcium: 7.2 mg/dL, Serum Magnesium: 1.1 mg/dL (Ref 1.7–2.2 mg/dL) — Hypomagnesemia.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'cxr': {
-        resultText: 'Chest X-ray AP view: Subtle right lower lobe patchy pulmonary opacity. Cardiothoracic ratio normal.',
-        turnaroundMinutes: 20,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'urine_culture': {
-        resultText: 'Urine Culture: >10^5 CFU/mL E. coli sensitive to Amikacin and Ceftriaxone.',
-        turnaroundMinutes: 60,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'abg': {
-        resultText: 'ABG: pH 7.24, PaCO2 28 mmHg, PaO2 78 mmHg, HCO3 12 mEq/L, Lactate 4.2 mmol/L (Metabolic Acidosis).',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'mantoux': {
-        resultText: 'Mantoux Tuberculin Skin Test: 0mm induration at 48 hours (Anergy secondary to severe malnutrition).',
-        turnaroundMinutes: 48,
-        category: 'labs',
-        isIndicative: false,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /10% dextrose|d10w|glucose/i,
-        name: 'Immediate 10% Dextrose Bolus for Hypoglycemia',
-        targetMilestoneMinutes: 5,
-      },
-      {
-        orderOrActionPattern: /resomal|half strength darrow|cautious fluids/i,
-        name: 'ReSoMal Fluid Therapy (Avoiding Rapid Standard Fluid Boluses)',
-        targetMilestoneMinutes: 15,
-      },
-      {
-        orderOrActionPattern: /ampicillin|gentamicin|ceftriaxone|antibiotic/i,
-        name: 'Empiric Broad-Spectrum Parenteral Antibiotics',
-        targetMilestoneMinutes: 20,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_sam_1',
-        title: 'Vitamin A Deficiency / Bitot Spots',
-        description: 'Ophthalmic survey notes bilateral triangular foamy plaques on temporal conjunctiva (Bitot spots).',
-        correctAction: 'Administer WHO Vitamin A protocol (200,000 IU orally on Days 1, 2, and 14).',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_sam_2',
-        title: 'Severe Hookworm Infestation',
-        description: 'Stool examination notes hookworm ova (Ancylostoma duodenale).',
-        correctAction: 'Administer oral Albendazole 200 mg single dose once toddler is hemodynamically stable.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Severely wasted toddler with hypothermia, low blood glucose (42 mg/dL), and weak thready pulses; administering immediate dextrose bolus.',
-        consequenceOnRight: 'IV 10% Dextrose 5 mL/kg bolus administered, preventing hypoglycemic brain injury.',
-        consequenceOnWrong: 'Untreated hypoglycemia leads to seizures and irreversible neurological impairment.',
-      },
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Recognizing fluid-refractory lethargy and delayed capillary refill in a severely malnourished infant.',
-        consequenceOnRight: 'Infective or hypovolemic systemic failure recognized promptly.',
-        consequenceOnWrong: 'Failing to recognize impaired perfusion leads to cardiovascular collapse.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Evaluating severe electrolyte imbalance (potassium, sodium, calcium) in refeeding setup.',
-        consequenceOnRight: 'Electrolyte shifts corrected meticulously under close monitoring.',
-        consequenceOnWrong: 'Ignoring hypokalemia or hypomagnesemia causes fatal cardiac arrhythmias.',
-      },
-      {
-        roleTag: 'MANAGEMENT',
-        patientContext: 'Cautious fluid resuscitation using specialized low-sodium rehydration solution to avoid acute cardiac overload.',
-        consequenceOnRight: 'ReSoMal fluid given cautiously at 5-10 mL/kg/hr preventing cardiac overload.',
-        consequenceOnWrong: 'Rapid standard fluid bolus (e.g. 30 mL/kg) causes acute pulmonary edema and heart failure!',
-      },
-      {
-        roleTag: 'PREVENTION',
-        patientContext: 'Systematic nutritional rehabilitation schedule (F-75 to F-100 transition) and micronutrient administration.',
-        consequenceOnRight: 'WHO 10-step malnutrition management protocol executed cleanly.',
-        consequenceOnWrong: 'Rapid high-protein feeding in initial stabilization phase causes refeeding syndrome.',
-      },
-    ],
-  },
-
-  // 9. Acute Ischemic Stroke
-  {
-    id: 'scaffold_stroke',
-    title: 'Sudden Right Hemiparesis & Aphasia',
-    conditionName: 'Acute Ischemic Stroke (L MCA Territory)',
-    subject: 'Medicine',
-    system: 'Neurology',
-    demographics: {
-      name: 'Gopal Krishnan',
-      age: 62,
-      gender: 'Male',
-      setting: 'Emergency',
-    },
-    openingVignette: 'A 62-year-old male arrives in emergency 75 minutes after sudden onset right-sided weakness, facial droop, and inability to speak while eating breakfast. Accompanied by daughter.',
-    initialVitals: {
-      hr: 88,
-      bp: '168/96',
-      rr: 18,
-      spo2: 98,
-      temp: '36.9°C',
-      grbs: 124,
-    },
-    clinchingClue: 'NIHSS Score 14 (Expressive aphasia, Right hemiplegia 1/5 MRC, Right upper motor neuron facial palsy). Non-contrast CT Head rules out hemorrhage.',
-    clinchingClueTimeMinutes: 20,
-    examFindingsMap: {
-      neuro: 'NIHSS 14. Expressive Broca aphasia. Right UMN facial palsy. Right arm motor 1/5, Right leg motor 2/5. Right plantar extensor (Babinski positive). Left side normal.',
-      cvs: 'S1 S2 heard, irregular pulse noted (Atrial Fibrillation). BP 168/96 mmHg.',
-      general: 'No external head trauma.',
-    },
-    historyMap: {
-      allergies: 'No known allergies.',
-      past: 'Hypertension 10 years, Atrial Fibrillation non-compliant with oral anticoagulation.',
-    },
-    investigationsMap: {
-      'ct_head': {
-        resultText: 'Non-contrast CT Head STAT: No acute intracranial hemorrhage. Subtle loss of insular ribbon on left and hyperdense MCA sign. ASPECT Score 9/10.',
-        turnaroundMinutes: 20,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'ecg': {
-        resultText: '12-lead ECG: Atrial Fibrillation with controlled ventricular response at 88 bpm. No ST elevation.',
-        turnaroundMinutes: 5,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'grbs': {
-        resultText: 'GRBS: 124 mg/dL (Reference 70–140 mg/dL) — Rules out hypoglycemia mimicking focal neurological deficit.',
-        turnaroundMinutes: 2,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'cbc': {
-        resultText: 'CBC: Hb 14.2 g/dL, WBC 8,400/mcL, Platelets 220,000/mcL (Reference >100,000/mcL required for thrombolysis).',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'coag_pt_inr': {
-        resultText: 'Coagulation Profile: PT 12.2 sec, INR 1.1 (Reference <1.7 required for thrombolysis), aPTT 28 sec.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'kft': {
-        resultText: 'KFT: Blood Urea 28 mg/dL, Serum Creatinine 1.0 mg/dL, Na+ 139 mEq/L, K+ 4.2 mEq/L.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'lft': {
-        resultText: 'LFT: AST 26 U/L, ALT 24 U/L, Total Bilirubin 0.8 mg/dL, Albumin 4.0 g/dL.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'lipid_panel': {
-        resultText: 'Fasting Lipid Panel: Total Cholesterol 230 mg/dL, LDL 154 mg/dL (Reference <70 mg/dL for secondary vascular prevention), HDL 42 mg/dL.',
-        turnaroundMinutes: 45,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'hba1c': {
-        resultText: 'HbA1c: 8.6% (Reference <5.7%) — Undiagnosed Type 2 Diabetes Mellitus.',
-        turnaroundMinutes: 45,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'carotid_doppler': {
-        resultText: 'Carotid Duplex Doppler: Left carotid bifurcation 35% non-stenotic fibrocalcific plaque. Right carotid normal.',
-        turnaroundMinutes: 30,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'echo': {
-        resultText: 'Transthoracic Echocardiogram: Left atrial enlargement (LA diameter 4.4 cm), no left ventricular thrombus. LVEF 55%.',
-        turnaroundMinutes: 30,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'troponin': {
-        resultText: 'Troponin I: 0.02 ng/mL (Reference <0.04 ng/mL) — Negative.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: false,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /ct head|ct brain|imaging/i,
-        name: 'Immediate Non-Contrast CT Head to Exclude Hemorrhage',
-        targetMilestoneMinutes: 25,
-      },
-      {
-        orderOrActionPattern: /tpa|alteplase|tenecteplase|thromboly/i,
-        name: 'IV Thrombolysis (Alteplase) within 4.5 Hour Window',
-        targetMilestoneMinutes: 45,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_stroke_1',
-        title: 'Mild Asymptomatic Carotid Plaque',
-        description: 'Carotid Doppler reveals 35% non-stenotic calcified plaque at right carotid bulb.',
-        correctAction: 'Initiate high-intensity statin therapy (Atorvastatin 80 mg OD).',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_stroke_2',
-        title: 'Undiagnosed Type 2 Diabetes Mellitus',
-        description: 'HbA1c panel reveals 8.6% (Reference <5.7%).',
-        correctAction: 'Initiate oral Metformin 500mg twice daily post-acute stroke stabilization.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Elderly male with sudden right-sided hemiparesis and aphasia arriving within 75 minutes of onset; triaging for emergency neuroimaging.',
-        consequenceOnRight: 'Emergency code activated and patient rushed for STAT non-contrast CT head.',
-        consequenceOnWrong: 'Delaying neuroimaging past the door-to-needle window forfeits thrombolysis eligibility.',
-      },
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Excluding acute intracranial fluid extravasation on non-contrast cranial CT.',
-        consequenceOnRight: 'Non-contrast CT head confirms absence of parenchymal hemorrhage.',
-        consequenceOnWrong: 'Misinterpreting CT findings leads to inappropriate withholding or administration of thrombolytics.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Evaluating eligibility criteria for intravenous thrombolytic therapy within 4.5 hour window.',
-        consequenceOnRight: 'IV Alteplase 0.9 mg/kg administered within door-to-needle target time.',
-        consequenceOnWrong: 'Failure to administer thrombolysis causes permanent disability.',
-      },
-      {
-        roleTag: 'PHARM',
-        patientContext: 'Selecting secondary antithrombotic and statin therapy following 24 hours post thrombolysis.',
-        consequenceOnRight: 'Aspirin and Atorvastatin 80mg started at 24 hours post-thrombolysis after repeat CT.',
-        consequenceOnWrong: 'Starting antiplatelet within 24 hours of thrombolysis increases intracerebral hemorrhage risk.',
-      },
-      {
-        roleTag: 'PREVENTION',
-        patientContext: 'Evaluating cardiac rhythm monitoring for embolic source and starting oral anticoagulation.',
-        consequenceOnRight: 'DOAC or Warfarin initiated for stroke secondary to Atrial Fibrillation.',
-        consequenceOnWrong: 'Discharging on antiplatelet alone for Atrial Fibrillation leads to recurrent embolic events.',
-      },
-    ],
-  },
-
-  // 10. Acute Upper GI Bleed
-  {
-    id: 'scaffold_ugib',
-    title: 'Hematemesis and Melena in Emergency',
-    conditionName: 'Acute Variceal Upper GI Bleed',
-    subject: 'Medicine',
-    system: 'Gastroenterology',
-    demographics: {
-      name: 'Mukesh Sharma',
-      age: 51,
-      gender: 'Male',
-      setting: 'Emergency',
-    },
-    openingVignette: 'A 51-year-old male is brought to emergency by family after vomiting 400 mL of fresh red blood with clots 1 hour ago. He reports passing dark sticky foul-smelling stools for 2 days. On exam, he is pale, sweating, with postural dizziness and spider nevi on chest.',
-    initialVitals: {
-      hr: 122,
-      bp: '88/54',
-      rr: 24,
-      spo2: 95,
-      temp: '36.7°C',
-      grbs: 110,
-    },
-    clinchingClue: 'Urgent Upper GI Endoscopy demonstrates grade 3 submucosal vascular swellings in lower third of esophagus with active spurting blood.',
-    clinchingClueTimeMinutes: 45,
-    examFindingsMap: {
-      general: 'Pale, diaphoretic, spider angiomas on upper chest, palmar erythema, mild jaundice in sclera.',
-      cvs: 'Tachycardic 122 bpm, postural drop in BP to 78/46 mmHg on sitting.',
-      chest: 'Clear to auscultation bilaterally.',
-      abdomen: 'Distended with flank dullness, palpable splenomegaly 3cm below costal margin, non-tender.',
-      neuro: 'Mild asterixis (flapping tremor), lethargic but easily arousable.',
-    },
-    historyMap: {
-      allergies: 'No known allergies.',
-      past: 'Chronic alcohol intake for 18 years (120g/day). Known Cirrhosis of liver for 2 years.',
-      medications: 'Spironolactone, Propranolol (discontinued 3 days ago).',
-    },
-    investigationsMap: {
-      'endoscopy': {
-        resultText: 'Upper GI Endoscopy STAT: Grade III submucosal vascular dilations in lower 5cm with active oozing. Endoscopic Variceal Ligation (EVL) bands applied successfully with complete hemostasis.',
-        turnaroundMinutes: 45,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'cbc': {
-        resultText: 'CBC: Hb 6.8 g/dL (Reference 13.0–17.0 g/dL) — Severe Acute Anemia, WBC 9,200/mcL, Platelets 68,000/mcL (Thrombocytopenia secondary to hypersplenism).',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'lft': {
-        resultText: 'LFT / Liver Panel: Total Bilirubin 3.2 mg/dL (Ref 0.2–1.2), Direct Bilirubin 2.1 mg/dL, AST 88 U/L, ALT 54 U/L, Serum Albumin 2.6 g/dL (Ref 3.5–5.0), INR 1.8.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'blood_grouping': {
-        resultText: 'Blood Grouping & Crossmatch: B Positive. 2 units Packed Red Blood Cells (PRBC) crossmatched.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'coag_pt_inr': {
-        resultText: 'Coagulation Profile: PT 21.4 sec (Ref 11–13.5), INR 1.8, aPTT 44 sec, Fibrinogen 180 mg/dL.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'kft': {
-        resultText: 'KFT: Blood Urea 68 mg/dL (elevated due to blood protein digestion in gut), Serum Creatinine 1.4 mg/dL, Na+ 132 mEq/L, K+ 3.8 mEq/L.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'electrolytes': {
-        resultText: 'Serum Electrolytes: Na+ 132 mEq/L, K+ 3.8 mEq/L, Cl- 98 mEq/L.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'abg': {
-        resultText: 'ABG: pH 7.32, PaCO2 32 mmHg, PaO2 88 mmHg, HCO3 16 mEq/L, Lactate 3.4 mmol/L (Lactic acidosis secondary to hemorrhagic shock).',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'blood_cultures': {
-        resultText: 'Blood Cultures x2: Aerobic and anaerobic bottles. Pending 24-48h incubations.',
-        turnaroundMinutes: 60,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'usg_abdomen': {
-        resultText: 'Ultrasound Abdomen: Shrunken nodular liver with coarse echo texture, splenomegaly 14.5cm, moderate free fluid in perihepatic and pelvic space (ascites). Portal vein diameter 14mm.',
-        turnaroundMinutes: 25,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'ecg': {
-        resultText: '12-lead ECG: Sinus tachycardia at 122 bpm. Low voltage QRS complexes.',
-        turnaroundMinutes: 5,
-        category: 'imaging',
-        isIndicative: false,
-      },
-      'cxr': {
-        resultText: 'Chest X-ray PA view: Elevated right hemidiaphragm, no aspiration opacity.',
-        turnaroundMinutes: 20,
-        category: 'imaging',
-        isIndicative: false,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /iv fluids|normal saline|wide bore|fluid resuscitation/i,
-        name: 'Wide-Bore IV Access & Crystalloid Resuscitation',
-        targetMilestoneMinutes: 10,
-      },
-      {
-        orderOrActionPattern: /octreotide|terlipressin|somatostatin/i,
-        name: 'Vasoactive Agent (Terlipressin or Octreotide) Infusion',
-        targetMilestoneMinutes: 15,
-      },
-      {
-        orderOrActionPattern: /ceftriaxone|norfloxacin|antibiotic/i,
-        name: 'Prophylactic IV Antibiotics (Ceftriaxone)',
-        targetMilestoneMinutes: 20,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_ugib_1',
-        title: 'Mild Asymptomatic Umbilical Hernia',
-        description: 'Abdominal exam notes 1.5cm reducible non-tender umbilical hernia.',
-        correctAction: 'Conservative observation — surgical repair deferred until ascites and liver disease stabilized.',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_ugib_2',
-        title: 'Asymptomatic Colonic Diverticulosis',
-        description: 'Abdominal USG notes multiple non-inflamed outpouchings in sigmoid colon wall.',
-        correctAction: 'Provide high-fiber diet counseling post-discharge; no acute intervention required.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Cirrhotic male with massive hematemesis, postural hypotension (88/54 mmHg), and tachycardia; establishing wide-bore IV access and fluid resuscitation.',
-        consequenceOnRight: 'Two 16G peripheral lines secured and fluid resuscitation initiated target MAP >65 mmHg.',
-        consequenceOnWrong: 'Delaying fluid resuscitation leads to irreversible hemorrhagic shock and cardiac arrest.',
-      },
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Evaluating clinical presentation of severe acute gastrointestinal fluid loss in setting of portal hypertension.',
-        consequenceOnRight: 'High probability splanchnic venous bleed identified.',
-        consequenceOnWrong: 'Misidentifying source delays targeted vasoactive and endoscopic management.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Initiating early intravenous vasoactive infusion (somatostatin analogue) and prophylactic broad-spectrum antibiotics.',
-        consequenceOnRight: 'Terlipressin bolus + infusion started along with IV Ceftriaxone to prevent spontaneous bacterial peritonitis.',
-        consequenceOnWrong: 'Omitting prophylactic antibiotics significantly increases mortality from bacterial infections.',
-      },
-      {
-        roleTag: 'MANAGEMENT',
-        patientContext: 'Performing urgent therapeutic endoscopic band placement within 12 hours.',
-        consequenceOnRight: 'Endoscopic band ligation successfully arrests active vascular hemorrhage.',
-        consequenceOnWrong: 'Delaying endoscopy leads to exsanguinating hemorrhage.',
-      },
-      {
-        roleTag: 'PREVENTION',
-        patientContext: 'Initiating non-selective beta-blocker therapy for secondary portal pressure reduction upon recovery.',
-        consequenceOnRight: 'Propranolol or Carvedilol started post-bleeding resolution with titration to HR 55-60 bpm.',
-        consequenceOnWrong: 'Failure to start non-selective beta blocker leads to high rate of re-bleeding within 6 weeks.',
-      },
-    ],
-  },
-
-  // 11. Urosepsis with Septic Shock
-  {
-    id: 'scaffold_urosepsis',
-    title: 'High Fever, Rigors, and Confusion in Elderly Female',
-    conditionName: 'Urosepsis with Septic Shock',
-    subject: 'Medicine',
-    system: 'Infectious Disease',
-    demographics: {
-      name: 'Kamla Devi',
-      age: 70,
-      gender: 'Female',
-      setting: 'Emergency',
-    },
-    openingVignette: 'A 70-year-old diabetic female is brought to casualty with 24 hours of high-grade fever with shaking chills, dysuria, flank pain, and progressive altered mental status. On exam, she is lethargic, hypotensive (BP 82/48 mmHg), and oliguric.',
-    initialVitals: {
-      hr: 132,
-      bp: '82/48',
-      rr: 28,
-      spo2: 93,
-      temp: '39.8°C',
-      grbs: 260,
-    },
-    clinchingClue: 'Left costovertebral angle tenderness, Urine Microscopy >100 WBCs/HPF with Gram-negative bacilli, Serum Lactate 4.6 mmol/L, refractory hypotension requiring vasopressors.',
-    clinchingClueTimeMinutes: 15,
-    examFindingsMap: {
-      general: 'Febrile (39.8°C), toxic-looking, obtunded, dry oral mucosa.',
-      abdomen: 'Left costovertebral angle (CVA) marked tenderness on light percussion. Suprapubic tenderness present.',
-      cvs: 'Tachycardic 132 bpm, weak peripheral pulses, BP 82/48 mmHg.',
-      chest: 'Bilateral basal crackles.',
-      neuro: 'GCS 12/15 (E3V4M5), disoriented to time and place.',
-    },
-    historyMap: {
-      allergies: 'No known allergies.',
-      past: 'Type 2 Diabetes Mellitus for 15 years, recurrent UTIs.',
-    },
-    investigationsMap: {
-      'lactate': {
-        resultText: 'Serum Lactate STAT: 4.6 mmol/L (Reference <1.5 mmol/L) — Severe Tissue Hypoperfusion / Lactic Acidosis.',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'urinalysis': {
-        resultText: 'Urine Routine: Cloudy, Leukocyte Esterase positive, Nitrites positive, >100 WBCs/HPF, Gram-negative rods seen.',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'cbc': {
-        resultText: 'CBC: WBC 22,400/mcL with 92% Neutrophils (Bandemia 12%), Hb 11.2 g/dL, Platelets 110,000/mcL.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'usg_kubb': {
-        resultText: 'USG KUB: Enlarged hydronephrotic left kidney with perinephric fluid collection consistent with acute focal tissue breakdown / impending abscess.',
-        turnaroundMinutes: 25,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'blood_cultures': {
-        resultText: 'Blood Cultures x2 STAT: Gram-negative bacilli (E. coli) growing in both bottles.',
-        turnaroundMinutes: 60,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'urine_culture': {
-        resultText: 'Urine Culture: >10^5 CFU/mL E. coli sensitive to Meropenem, Piperacillin-Tazobactam.',
-        turnaroundMinutes: 60,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'kft': {
-        resultText: 'KFT: Blood Urea 72 mg/dL (Ref 15–40), Serum Creatinine 2.4 mg/dL (Ref 0.6–1.2) — Acute Kidney Injury Stage 2.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'electrolytes': {
-        resultText: 'Serum Electrolytes: Na+ 130 mEq/L, K+ 5.1 mEq/L, Cl- 96 mEq/L, HCO3 14 mEq/L.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'lft': {
-        resultText: 'LFT: AST 48 U/L, ALT 42 U/L, Total Bilirubin 1.8 mg/dL (mild reactive jaundice), Albumin 2.8 g/dL.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'abg': {
-        resultText: 'ABG: pH 7.26, PaCO2 28 mmHg, PaO2 82 mmHg, HCO3 14 mEq/L, Lactate 4.6 mmol/L (High Anion Gap Lactic Acidosis).',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'grbs': {
-        resultText: 'GRBS: 260 mg/dL (Reference 70–140 mg/dL) — Stress Hyperglycemia.',
-        turnaroundMinutes: 2,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'cxr': {
-        resultText: 'Chest X-ray PA view: Mild bilateral pulmonary vascular congestion, no focal lobar consolidation.',
-        turnaroundMinutes: 20,
-        category: 'imaging',
-        isIndicative: false,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /blood culture|urine culture|culture/i,
-        name: 'Blood & Urine Cultures Before Antibiotics',
-        targetMilestoneMinutes: 10,
-      },
-      {
-        orderOrActionPattern: /meropenem|piperacillin|tazobactam|ceftriaxone|broad spectrum/i,
-        name: 'Empiric Broad-Spectrum IV Antibiotics',
-        targetMilestoneMinutes: 15,
-      },
-      {
-        orderOrActionPattern: /fluid bolus|30 ml\/kg|crystalloid|normal saline/i,
-        name: '30 mL/kg Crystalloid Fluid Resuscitation for Septic Shock',
-        targetMilestoneMinutes: 20,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_urosep_1',
-        title: 'Asymptomatic 4mm Non-Obstructing Right Renal Calculus',
-        description: 'USG KUB notes a 4mm non-shadowing stone in right lower pole calyx without hydronephrosis.',
-        correctAction: 'Conservative management with oral hydration post-recovery.',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_urosep_2',
-        title: 'Asymptomatic Sigmoid Diverticulosis',
-        description: 'USG notes non-inflamed diverticula in sigmoid colon.',
-        correctAction: 'Provide high-fiber dietary advice post discharge.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Elderly diabetic female with high fever, rigors, left flank pain, and hypotension; initiating hour-1 resuscitation bundle.',
-        consequenceOnRight: 'Hour-1 Sepsis Bundle completed: Cultures, Lactate, IV Antibiotics, and 30 mL/kg fluid bolus.',
-        consequenceOnWrong: 'Delayed fluid resuscitation and broad-spectrum coverage leads to multi-organ dysfunction syndrome (MODS).',
-      },
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Evaluating severe urinary tract infection with elevated serum lactate (4.6 mmol/L) and refractory low blood pressure.',
-        consequenceOnRight: 'Systemic vascular failure correctly identified.',
-        consequenceOnWrong: 'Misinterpreting hypotension as simple dehydration delays vasopressor therapy.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Obtaining blood and urine cultures prior to broad-spectrum parenteral antimicrobial administration.',
-        consequenceOnRight: 'Cultures drawn cleanly allowing targeted de-escalation later.',
-        consequenceOnWrong: 'Starting antibiotics without cultures sterilizes samples and prevents pathogen identification.',
-      },
-      {
-        roleTag: 'MANAGEMENT',
-        patientContext: 'Administering 30 mL/kg crystalloid fluid bolus and evaluating vasopressor requirement.',
-        consequenceOnRight: 'Norepinephrine started to achieve target MAP >65 mmHg following fluid loading.',
-        consequenceOnWrong: 'Relying solely on fluids in vasoplegic shock causes fluid overload and pulmonary edema.',
-      },
-      {
-        roleTag: 'COMPLICATION',
-        patientContext: 'Renal ultrasound demonstrating perinephric fluid collection requiring urological drainage evaluation.',
-        consequenceOnRight: 'Urology consult requested for percutaneous drainage of perinephric collection.',
-        consequenceOnWrong: 'Failing to drain localized collection leads to persistent sepsis and mortality.',
-      },
-    ],
-  },
-
-  // 12. Post-MI Mechanical Complication (VSR)
-  {
-    id: 'scaffold_post_mi_comp',
-    title: 'Sudden Hypotension and New Murmur Post-MI',
-    conditionName: 'Post-MI Ventricular Septal Rupture (VSR)',
-    subject: 'Medicine',
-    system: 'Cardiology',
-    demographics: {
-      name: 'Harish Chandra',
-      age: 65,
-      gender: 'Male',
-      setting: 'ICU',
-    },
-    openingVignette: 'A 65-year-old male on Day 4 post extensive anterior wall MI develops sudden collapse, dyspnea, and severe hypotension in the cardiac ward. On exam, he is cold, clammy, with a new harsh pan-systolic murmur with palpable thrill at lower left sternal border.',
-    initialVitals: {
-      hr: 126,
-      bp: '76/42',
-      rr: 30,
-      spo2: 84,
-      temp: '36.5°C',
-      grbs: 140,
-    },
-    clinchingClue: 'Bedside Echocardiogram reveals 14mm solution of continuity in muscular interventricular septum with left-to-right shunt and RV volume overload.',
-    clinchingClueTimeMinutes: 15,
-    examFindingsMap: {
-      cvs: 'Tachycardic 126 bpm, Grade 4/6 harsh pansystolic murmur loudest at 4th left intercostal space with palpable thrill. Elevated JVP.',
-      chest: 'Bilateral extensive crepitations throughout lung fields (Acute Pulmonary Edema).',
-      general: 'Cardiogenic shock, cold clammy extremities, oliguria.',
-      neuro: 'Drowsy, confused due to low cerebral perfusion.',
-    },
-    historyMap: {
-      allergies: 'No known drug allergies.',
-      past: 'Anterior wall STEMI 4 days ago managed conservatively at home before presentation.',
-    },
-    investigationsMap: {
-      'echo': {
-        resultText: 'Bedside Transthoracic Echocardiogram: 14mm defect in muscular septum with high velocity Left-to-Right shunt on color Doppler. Severe RV strain, severe pulmonary hypertension.',
-        turnaroundMinutes: 15,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'cxr': {
-        resultText: 'Bedside CXR: Bilateral dense pulmonary edema (butterfly/bat-wing appearance) with cardiomegaly.',
-        turnaroundMinutes: 15,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'abg': {
-        resultText: 'ABG: pH 7.22 (Ref 7.35–7.45), PaCO2 32 mmHg, PaO2 52 mmHg, HCO3 13 mEq/L, Lactate 5.2 mmol/L (Cardiogenic Shock with severe Lactic Acidosis).',
-        turnaroundMinutes: 10,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'cbc': {
-        resultText: 'CBC: Hb 12.8 g/dL, WBC 14,500/mcL, Platelets 210,000/mcL.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'troponin': {
-        resultText: 'Troponin I STAT: 18.4 ng/mL (Reference <0.04 ng/mL) — Markedly elevated persistent myocardial injury.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'kft': {
-        resultText: 'KFT: Blood Urea 58 mg/dL, Serum Creatinine 1.8 mg/dL (Acute tubular necrosis secondary to low cardiac output state).',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'lft': {
-        resultText: 'LFT: AST 140 U/L, ALT 120 U/L, Total Bilirubin 1.6 mg/dL (Ischemic hepatitis / shock liver).',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'coag_pt_inr': {
-        resultText: 'Coagulation Profile: PT 15.2 sec, INR 1.3, aPTT 38 sec.',
-        turnaroundMinutes: 25,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'electrolytes': {
-        resultText: 'Serum Electrolytes: Na+ 134 mEq/L, K+ 4.8 mEq/L, Cl- 98 mEq/L.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: false,
-      },
-      'bnp': {
-        resultText: 'NT-proBNP STAT: 8,400 pg/mL (Reference <125 pg/mL) — Extremely high left ventricular filling pressures.',
-        turnaroundMinutes: 30,
-        category: 'labs',
-        isIndicative: true,
-      },
-      'ecg': {
-        resultText: '12-lead ECG: Sinus tachycardia at 126 bpm. Q waves and persistent ST segment elevation in V1-V4.',
-        turnaroundMinutes: 5,
-        category: 'imaging',
-        isIndicative: true,
-      },
-      'blood_grouping': {
-        resultText: 'Blood Grouping & Crossmatch: A Positive. 4 units PRBC and 2 units FFP crossmatched for surgical operating room.',
-        turnaroundMinutes: 20,
-        category: 'labs',
-        isIndicative: true,
-      },
-    },
-    criticalInterventions: [
-      {
-        orderOrActionPattern: /iabp|intra-aortic balloon|inotropes|norepinephrine|dobutamine/i,
-        name: 'Hemodynamic Support (Inotropes / IABP)',
-        targetMilestoneMinutes: 15,
-      },
-      {
-        orderOrActionPattern: /cardiac surgery|surgical consult|vsr repair/i,
-        name: 'Urgent Cardiac Surgical Consult for Operative Repair',
-        targetMilestoneMinutes: 30,
-      },
-    ],
-    incidentalPool: [
-      {
-        id: 'inc_vsr_1',
-        title: 'Prostate Enlargement with Urinary Retention',
-        description: 'Abdominal ultrasound notes 45cc enlarged prostate with 150mL post-void residual volume.',
-        correctAction: 'Place Foley catheter for accurate hourly urine output monitoring in low output state.',
-        status: 'unnoticed',
-      },
-      {
-        id: 'inc_vsr_2',
-        title: 'Mild Asymptomatic Carotid Artery Stenosis',
-        description: 'Carotid Doppler notes 30% calcified non-stenotic plaque at right carotid bulb.',
-        correctAction: 'Continue secondary antiplatelet and statin therapy; no acute carotid intervention needed.',
-        status: 'unnoticed',
-      },
-    ],
-    gateMilestones: [
-      {
-        roleTag: 'DIAGNOSIS',
-        patientContext: 'Day 4 post ischemic event patient presenting with sudden low cardiac output state and new pansystolic murmur with thrill.',
-        consequenceOnRight: 'Acute structural intra-cardiac defect correctly identified.',
-        consequenceOnWrong: 'Misdiagnosed as acute re-infarction delaying definitive mechanical repair.',
-      },
-      {
-        roleTag: 'INVESTIGATION',
-        patientContext: 'Performing urgent bedside echocardiogram to identify intra-cardiac blood flow shunting.',
-        consequenceOnRight: 'Color Doppler demonstrates high velocity left-to-right shunt across muscular defect.',
-        consequenceOnWrong: 'Delaying bedside echocardiogram leads to unmanaged acute heart failure.',
-      },
-      {
-        roleTag: 'EMERGENCY',
-        patientContext: 'Initiating invasive hemodynamic support with intra-aortic counterpulsation or inotropes.',
-        consequenceOnRight: 'IABP inserted reducing afterload and left-to-right shunt fraction.',
-        consequenceOnWrong: 'Failure to reduce afterload causes rapidly worsening pulmonary edema and death.',
-      },
-      {
-        roleTag: 'MANAGEMENT',
-        patientContext: 'Requesting immediate cardiac surgical consultation for operative repair.',
-        consequenceOnRight: 'Urgent cardiac surgical repair scheduled.',
-        consequenceOnWrong: 'Delaying surgical consultation leads to multi-organ failure and mortality.',
-      },
-      {
-        roleTag: 'COMPLICATION',
-        patientContext: 'Managing acute dual-chamber cardiac failure and severe pulmonary hypertension pre-operatively.',
-        consequenceOnRight: 'Inodilator and vasopressor support titrated meticulously in ICU prior to operating room.',
-        consequenceOnWrong: 'Inappropriate fluid administration worsens pulmonary edema and right ventricular failure.',
       },
     ],
   },

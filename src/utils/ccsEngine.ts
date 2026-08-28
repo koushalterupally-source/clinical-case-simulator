@@ -5,8 +5,12 @@ import {
   EndOfCaseScorecard,
   LocationType,
   PYQItem,
+  Vitals,
+  CaseScaffold,
+  TherapyLogEntry,
 } from '../types';
 import { CASE_SCAFFOLDS } from '../data/cases/scaffolds';
+import { ORDER_GROUPS, OrderGroup } from '../data/orderSets';
 
 /**
  * Utility: Convert sim time object to total minutes from Day 1, 00:00
@@ -170,6 +174,171 @@ export function inferOrderCategory(name: string): OrderResultItem['category'] {
 }
 
 /**
+ * Normalizes an order name for alias comparison: lowercase, punctuation
+ * collapsed to single spaces, trimmed. Two strings that normalize equal are
+ * considered the same order; nothing shorter is ever treated as a match.
+ *
+ * This is the fix for the bug that let "ketones" swallow both "Serum
+ * ketones" and "Urine ketones": matching is now equality against an explicit
+ * alias list, never `a.includes(b)` in either direction.
+ */
+export function normalizeOrderText(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+/** Finds the scaffold map entry (investigation or therapy) whose `aliases`
+ *  list contains this exact order name, once both sides are normalized. */
+export function findByAlias<T extends { aliases: string[] }>(
+  map: Record<string, T>,
+  orderName: string
+): { key: string; entry: T } | null {
+  const norm = normalizeOrderText(orderName);
+  if (!norm) return null;
+  for (const [key, entry] of Object.entries(map)) {
+    for (const alias of entry.aliases) {
+      if (normalizeOrderText(alias) === norm) {
+        return { key, entry };
+      }
+    }
+  }
+  return null;
+}
+
+/** Additively applies a therapy's vitals effect. Numeric fields (hr, rr,
+ *  spo2, grbs) are deltas off the current value, clamped to physiologically
+ *  sane bounds; bp/temp are free-text and are replaced outright when given. */
+function applyVitalsEffect(vitals: Vitals, effect: Partial<Vitals>): void {
+  if (effect.hr !== undefined) vitals.hr = Math.max(30, Math.min(220, vitals.hr + effect.hr));
+  if (effect.rr !== undefined) vitals.rr = Math.max(6, Math.min(60, vitals.rr + effect.rr));
+  if (effect.spo2 !== undefined) vitals.spo2 = Math.max(50, Math.min(100, vitals.spo2 + effect.spo2));
+  if (effect.grbs !== undefined) vitals.grbs = Math.max(20, Math.min(800, vitals.grbs + effect.grbs));
+  if (effect.bp !== undefined) vitals.bp = effect.bp;
+  if (effect.temp !== undefined) vitals.temp = effect.temp;
+}
+
+/** Looks up whether any already-administered, onset-elapsed therapy shifts
+ *  this investigation's result — the mechanism that makes a REPEATED
+ *  investigation come back different once treatment has taken effect. */
+function shiftedInvestigationResult(
+  therapyLog: TherapyLogEntry[],
+  investigationKey: string,
+  baseResultText: string,
+  currentMinutes: number
+): string {
+  let resultText = baseResultText;
+  let latestAt = -1;
+  for (const t of therapyLog) {
+    if (!t.labShift || !t.labShift[investigationKey]) continue;
+    if (currentMinutes - t.atMinutes < t.onsetMinutes) continue;
+    if (t.atMinutes > latestAt) {
+      latestAt = t.atMinutes;
+      resultText = t.labShift[investigationKey];
+    }
+  }
+  return resultText;
+}
+
+/**
+ * Resolves one order against a scaffold's therapiesMap and investigationsMap,
+ * enforcing sequence-dependent safety (e.g. insulin before fluids in DKA) and
+ * never inventing a result for anything the scaffold does not model.
+ */
+function resolveOrder(
+  scaffold: CaseScaffold,
+  orderName: string,
+  therapyLog: TherapyLogEntry[],
+  currentMinutes: number
+): {
+  resultText: string;
+  turnaround: number;
+  category: OrderResultItem['category'];
+  newTherapyLogEntry?: TherapyLogEntry;
+} {
+  const therapyMatch = findByAlias(scaffold.therapiesMap, orderName);
+  if (therapyMatch) {
+    const { key, entry } = therapyMatch;
+    const givenKeys = new Set(therapyLog.map((t) => t.key));
+    const sequenceOk = !entry.requiresFirst || entry.requiresFirst.every((k) => givenKeys.has(k));
+
+    const appropriateness = sequenceOk ? entry.appropriateness : 'harmful';
+    const rationale = sequenceOk ? entry.rationale : entry.harmfulSequenceRationale || entry.rationale;
+    const vitalsEffect = sequenceOk ? entry.vitalsEffect : entry.harmfulSequenceVitalsEffect || entry.vitalsEffect;
+    const responseText = sequenceOk
+      ? entry.responseText
+      : entry.harmfulSequenceResponseText || entry.responseText;
+
+    return {
+      resultText: responseText,
+      turnaround: 2,
+      category: inferOrderCategory(orderName),
+      newTherapyLogEntry: {
+        key,
+        orderName,
+        atMinutes: currentMinutes,
+        onsetMinutes: entry.onsetMinutes,
+        effectApplied: false,
+        appropriateness,
+        rationale,
+        vitalsEffect,
+        labShift: entry.labShift,
+      },
+    };
+  }
+
+  const investigationMatch = findByAlias(scaffold.investigationsMap, orderName);
+  if (investigationMatch) {
+    const { key, entry } = investigationMatch;
+    return {
+      resultText: shiftedInvestigationResult(therapyLog, key, entry.resultText, currentMinutes),
+      turnaround: entry.turnaroundMinutes,
+      category: entry.category,
+    };
+  }
+
+  // Not modelled in this scaffold — say so rather than inventing a result.
+  return {
+    resultText: 'Not modelled in this case.',
+    turnaround: 20,
+    category: inferOrderCategory(orderName),
+  };
+}
+
+/**
+ * Filters the order sheet catalogue down to what a given scaffold actually
+ * models (its investigationsMap and therapiesMap aliases), dropping any
+ * section or group that ends up empty. This is what stops the sheet from
+ * offering 175 options when a case only models a couple of dozen of them —
+ * everything else is still reachable as free text, which the engine will
+ * honestly report as "Not modelled in this case" rather than invent a result
+ * for.
+ */
+export function getOrderableGroupsForScaffold(scaffold: CaseScaffold | undefined): OrderGroup[] {
+  if (!scaffold) return ORDER_GROUPS;
+
+  const modeled = new Set<string>();
+  for (const entry of Object.values(scaffold.investigationsMap)) {
+    for (const alias of entry.aliases) modeled.add(normalizeOrderText(alias));
+  }
+  for (const entry of Object.values(scaffold.therapiesMap)) {
+    for (const alias of entry.aliases) modeled.add(normalizeOrderText(alias));
+  }
+
+  return ORDER_GROUPS.map((group) => ({
+    ...group,
+    sections: group.sections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) => modeled.has(normalizeOrderText(item))),
+      }))
+      .filter((section) => section.items.length > 0),
+  })).filter((group) => group.sections.length > 0);
+}
+
+/**
  * Main Offline Simulation Turn Engine
  */
 export function processTurnOffline(
@@ -179,6 +348,7 @@ export function processTurnOffline(
   gateIndex?: number
 ): CaseSession {
   const updatedSession: CaseSession = JSON.parse(JSON.stringify(session));
+  if (!updatedSession.therapyLog) updatedSession.therapyLog = []; // older saved sessions predate this field
   const scaffold = CASE_SCAFFOLDS.find((s) => s.id === updatedSession.scaffoldId) || CASE_SCAFFOLDS[0];
 
   let timeSpentMins = 5; // Default turn duration
@@ -322,33 +492,19 @@ export function processTurnOffline(
 
       timeSpentMins = Math.min(15, 2 + orderNames.length);
       const placedLines: string[] = [];
+      // Orders resolve against the scaffold's therapy/investigation maps using
+      // the sim time as it stands right now — before this turn's own clock
+      // advance — so a therapy given earlier this session has already had its
+      // onset window measured against real elapsed minutes.
+      const orderMinutesNow = simTimeToMinutes(updatedSession.simTime);
 
       for (const orderName of orderNames) {
         const orderLower = orderName.toLowerCase();
-        let matchedKey: string | null = null;
 
-        for (const key of Object.keys(scaffold.investigationsMap)) {
-          if (orderLower.includes(key) || key.includes(orderLower)) {
-            matchedKey = key;
-            break;
-          }
-        }
-
-        let resultText = '';
-        let turnaround = 15;
-        let category: any = 'labs';
-
-        if (matchedKey) {
-          const item = scaffold.investigationsMap[matchedKey];
-          resultText = item.resultText;
-          turnaround = item.turnaroundMinutes;
-          category = item.category;
-        } else {
-          // Not modelled in this scaffold — say so rather than inventing a
-          // normal result.
-          resultText = `Not modelled in this case.`;
-          turnaround = 20;
-          category = inferOrderCategory(orderName);
+        const resolved = resolveOrder(scaffold, orderName, updatedSession.therapyLog, orderMinutesNow);
+        const { resultText, turnaround, category } = resolved;
+        if (resolved.newTherapyLogEntry) {
+          updatedSession.therapyLog.push(resolved.newTherapyLogEntry);
         }
 
         const readySimTimeStr = formatSimTime(addMinutesToSimTime(updatedSession.simTime, turnaround));
@@ -412,6 +568,21 @@ export function processTurnOffline(
   });
 
   updatedSession.pendingOrders = remainingPending;
+
+  // 4.5 Apply delayed therapy effects (Scaffold cases only). Each administered
+  // therapy's vitalsEffect fires exactly once, the first turn where enough sim
+  // time has passed to reach its onsetMinutes — this is what makes treating
+  // the patient visibly change the patient, on the timeline it would in life.
+  if (!updatedSession.isQuestionLed) {
+    updatedSession.therapyLog.forEach((entry) => {
+      if (!entry.effectApplied && currentTotalMinutes - entry.atMinutes >= entry.onsetMinutes) {
+        entry.effectApplied = true;
+        if (entry.vitalsEffect) {
+          applyVitalsEffect(updatedSession.patient.currentVitals, entry.vitalsEffect);
+        }
+      }
+    });
+  }
 
   // 5. Evaluate Trajectory & Patient Deterioration (Scaffold cases only)
   if (!updatedSession.isQuestionLed) {
@@ -490,17 +661,29 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
   const totalGates = gateResults.length;
   const pyqPercentage = totalGates > 0 ? Math.round((correctGates / totalGates) * 100) : 100;
 
-  // Over-ordering list (orders placed that were not indicative)
+  // Over-ordering list (investigations placed that were not indicative).
+  // Therapies are graded separately below, by appropriateness — a drug order
+  // is never counted here even when the map has no entry for it.
   const allOrders = [...session.completedOrders, ...session.pendingOrders];
   const overOrders = allOrders.filter((ord) => {
-    const keyMatch = Object.keys(scaffold.investigationsMap).find((k) => ord.orderName.toLowerCase().includes(k));
-    if (!keyMatch) return true; // Not in scaffold map = unindicated
-    return !scaffold.investigationsMap[keyMatch].isIndicative;
+    if (findByAlias(scaffold.therapiesMap, ord.orderName)) return false;
+    const invMatch = findByAlias(scaffold.investigationsMap, ord.orderName);
+    if (!invMatch) return true; // Not modelled in this scaffold = unindicated
+    return !invMatch.entry.isIndicative;
   });
 
   const overOrderingList = overOrders.map(
     (o) => `${o.orderName} — not indicated here; it cost ${o.turnaroundMinutes} minutes.`
   );
+
+  // Therapies given, graded and explained — surfaced only here, never during
+  // the case itself.
+  const therapiesGiven = session.therapyLog.map((t) => ({
+    orderName: t.orderName,
+    appropriateness: t.appropriateness,
+    rationale: t.rationale,
+    time: formatSimTime(addMinutesToSimTime({ day: 1, hour: 0, minute: 0 }, t.atMinutes)),
+  }));
 
   // Critical Delays
   const currentTotalMins = simTimeToMinutes(session.simTime);
@@ -555,6 +738,7 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
       incidentalFindingsReport: [],
       criticalDelays: [],
       overOrderingList: [],
+      therapiesGiven: [],
       preventionChecklist: [],
       topConceptsToRevise,
       overallGrade: qGrade,
@@ -565,8 +749,11 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
 
   // Calculate Overall Score for scaffold simulation
   const overOrderingPenalty = overOrders.length * 5;
+  const harmfulTherapyPenalty = therapiesGiven.filter((t) => t.appropriateness === 'harmful').length * 8;
   const gateContribution = totalGates > 0 ? (correctGates / totalGates) * 80 : 80;
-  const rawScore = Math.round(gateContribution + addressedIncCount * 10 - overOrderingPenalty);
+  const rawScore = Math.round(
+    gateContribution + addressedIncCount * 10 - overOrderingPenalty - harmfulTherapyPenalty
+  );
   const overallScore = Math.min(100, Math.max(0, rawScore));
 
   let grade: 'S' | 'A' | 'B' | 'C' | 'F' = 'B';
@@ -589,6 +776,7 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
     incidentalFindingsReport: incidentalReport,
     criticalDelays,
     overOrderingList,
+    therapiesGiven,
     preventionChecklist: [
       { item: 'Adult Tdap Booster Vaccination', status: addressedIncCount > 0 ? 'done' : 'missed' },
     ],

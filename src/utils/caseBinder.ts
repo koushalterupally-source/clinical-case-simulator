@@ -235,6 +235,7 @@ export function buildCaseSessionFromScaffold(
     decisionGates,
     currentGateIndex: 0,
     incidentalFindings,
+    therapyLog: [],
     status: 'active',
     blindMode: mode === 'blind',
   };

@@ -83,6 +83,49 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
             </Row>
           )}
 
+          {card.therapiesGiven.length > 0 && (
+            <Row label="Therapies given">
+              <div className="space-y-3">
+                {card.therapiesGiven.map((t, i) => (
+                  <div key={i} className="flex gap-3">
+                    <span
+                      className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full"
+                      style={{
+                        background:
+                          t.appropriateness === 'indicated'
+                            ? 'var(--ok)'
+                            : t.appropriateness === 'harmful'
+                            ? 'var(--danger)'
+                            : 'var(--text-faint)',
+                      }}
+                    />
+                    <div>
+                      <div>
+                        {t.orderName}{' '}
+                        <span
+                          className="text-[12px] uppercase tracking-wide"
+                          style={{
+                            color:
+                              t.appropriateness === 'indicated'
+                                ? 'var(--ok)'
+                                : t.appropriateness === 'harmful'
+                                ? 'var(--danger)'
+                                : 'var(--text-faint)',
+                          }}
+                        >
+                          {t.appropriateness}
+                        </span>
+                      </div>
+                      <div className="text-[13px]" style={{ color: 'var(--text-faint)' }}>
+                        {t.rationale}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Row>
+          )}
+
           {card.overOrderingList.length > 0 && (
             <Row label="Unindicated Investigations">
               <div className="space-y-1.5 text-[14px]" style={{ color: 'var(--text-muted)' }}>

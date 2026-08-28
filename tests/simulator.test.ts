@@ -7,11 +7,15 @@ import {
   inferOrderCategory,
   simTimeToMinutes,
   formatSimTime,
+  normalizeOrderText,
+  findByAlias,
+  getOrderableGroupsForScaffold,
 } from '../src/utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from '../src/utils/caseBinder';
 import { exportQBankToJSON, importQBankFromJSON } from '../src/utils/qbankParser';
 import { DEFAULT_PYQ_INDEX } from '../src/data/defaultQBank';
 import { CASE_SCAFFOLDS } from '../src/data/cases/scaffolds';
+import { ORDER_GROUPS } from '../src/data/orderSets';
 import { buildQuestionLedCase, buildIdf } from '../src/utils/questionLedCase';
 import {
   rankForXp,
@@ -395,6 +399,119 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
   assert(spo2Severity(0) === 'normal', '0 SpO2 returns normal');
   assert(rrSeverity(0) === 'normal', '0 RR returns normal');
   assert(grbsSeverity(0) === 'normal', '0 GRBS returns normal');
+
+  // 11. Alias Matching — the exact bug this rebuild fixes
+  console.log('\n--- Test Suite 11: Alias Matching ---');
+  const dkaScaffold = CASE_SCAFFOLDS.find((s) => s.id === 'scaffold_dka')!;
+
+  assert(
+    normalizeOrderText('Normal saline 0.9% 500 mL bolus') === normalizeOrderText('normal saline 0.9% 500 ml bolus'),
+    'normalizeOrderText is case-insensitive and punctuation-insensitive'
+  );
+  assert(
+    findByAlias(dkaScaffold.investigationsMap, 'Serum ketones')?.key === 'serum_ketones',
+    'findByAlias matches "Serum ketones" to the serum_ketones entry'
+  );
+  assert(
+    findByAlias(dkaScaffold.investigationsMap, 'Urine ketones')?.key === 'urine_ketones',
+    'findByAlias matches "Urine ketones" to the urine_ketones entry — a different key from serum ketones'
+  );
+  assert(
+    findByAlias(dkaScaffold.investigationsMap, 'Serum ketones panel extended') === null,
+    'Matching is exact-normalized equality, not substring — a near-miss order name matches nothing'
+  );
+
+  let ketonesSession = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  ketonesSession = processTurnOffline(ketonesSession, 'order: Serum ketones, Urine ketones');
+  const serumOrd = ketonesSession.pendingOrders.find((o) => o.orderName === 'Serum ketones');
+  const urineOrd = ketonesSession.pendingOrders.find((o) => o.orderName === 'Urine ketones');
+  assert(!!serumOrd && !!urineOrd, 'Serum ketones and Urine ketones are placed as two separate orders');
+  assert(
+    !!serumOrd && !!urineOrd && serumOrd.resultText !== urineOrd.resultText,
+    'PINNED: "Serum ketones" and "Urine ketones" return DIFFERENT results'
+  );
+  assert(
+    /beta-hydroxybutyrate/i.test(serumOrd?.resultText || ''),
+    'Serum ketones result quantifies beta-hydroxybutyrate'
+  );
+  assert(
+    !/beta-hydroxybutyrate/i.test(urineOrd?.resultText || ''),
+    'Urine ketones result does not claim to quantify beta-hydroxybutyrate'
+  );
+
+  // An order the scaffold does not model must never invent a clinical result.
+  let unmodeledSession = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  unmodeledSession = processTurnOffline(unmodeledSession, 'order: Colonoscopy');
+  const unmodeledOrd = unmodeledSession.pendingOrders[0];
+  assert(
+    !!unmodeledOrd && unmodeledOrd.resultText === 'Not modelled in this case.',
+    'An unmodelled order is honestly reported as such, never given a fabricated result'
+  );
+
+  // 12. Therapy Model — treating the patient changes the patient
+  console.log('\n--- Test Suite 12: Therapy Model ---');
+
+  // An indicated therapy is acknowledged, and once its onset elapses it moves
+  // vitals toward normal and changes what a REPEATED investigation returns.
+  let dkaTx = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  const grbsBefore = dkaTx.patient.currentVitals.grbs;
+  dkaTx = processTurnOffline(dkaTx, 'order: Normal saline 0.9% 500 mL bolus');
+  dkaTx = processTurnOffline(dkaTx, 'order: Insulin infusion');
+  const insulinEntry = dkaTx.therapyLog.find((t) => t.key === 'insulin');
+  assert(!!insulinEntry && insulinEntry.appropriateness === 'indicated', 'Insulin given after fluids is graded indicated');
+  dkaTx = processTurnOffline(dkaTx, 'advance 65 minutes');
+  assert(
+    dkaTx.patient.currentVitals.grbs < grbsBefore,
+    'An indicated therapy (insulin, correctly sequenced after fluids) visibly lowers GRBS once its onset elapses'
+  );
+  dkaTx = processTurnOffline(dkaTx, 'order: ABG');
+  const repeatAbg = dkaTx.pendingOrders.find((o) => o.orderName === 'ABG');
+  assert(
+    !!repeatAbg && /improving/i.test(repeatAbg.resultText),
+    'A REPEATED investigation after indicated treatment returns a changed (improving) result via labShift'
+  );
+
+  // Sequence matters: insulin before fluids in DKA is the canonical harmful case.
+  let dkaHarmfulSeq = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+  dkaHarmfulSeq = processTurnOffline(dkaHarmfulSeq, 'order: Insulin infusion');
+  const earlyInsulinEntry = dkaHarmfulSeq.therapyLog.find((t) => t.key === 'insulin');
+  assert(
+    !!earlyInsulinEntry && earlyInsulinEntry.appropriateness === 'harmful',
+    'Insulin given BEFORE fluids in DKA is graded harmful — sequence matters'
+  );
+  assert(
+    !dkaHarmfulSeq.turns.some((t) => /hypokalemia|arrhythmia/i.test(t.whatHappened || '')),
+    'The harmful-sequence rationale is never leaked into the case narrative during play'
+  );
+  const dkaEnded = processTurnOffline(dkaHarmfulSeq, 'end case');
+  const dkaCard = dkaEnded.scorecard!;
+  assert(
+    dkaCard.therapiesGiven.some((t) => t.appropriateness === 'harmful' && /hypokalemia/i.test(t.rationale)),
+    'The rationale for a harmful therapy is surfaced in the scorecard AFTERWARDS'
+  );
+
+  // A harmful therapy is acted on and the patient responds — never a no-op.
+  let stemiHarmful = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_stemi', mode: 'standard' });
+  const hrBeforeMetoprolol = stemiHarmful.patient.currentVitals.hr;
+  stemiHarmful = processTurnOffline(stemiHarmful, 'order: Metoprolol IV');
+  stemiHarmful = processTurnOffline(stemiHarmful, 'advance 15 minutes');
+  const metoprololEntry = stemiHarmful.therapyLog.find((t) => t.key === 'metoprolol');
+  assert(!!metoprololEntry && metoprololEntry.appropriateness === 'harmful', 'Metoprolol is graded harmful in this STEMI scaffold (heart-failure signs present)');
+  assert(
+    stemiHarmful.patient.currentVitals.hr !== hrBeforeMetoprolol,
+    'A harmful therapy is acted on and the patient responds accordingly — not a no-op'
+  );
+
+  // 13. Order Sheet Filtering — the sheet stops lying
+  console.log('\n--- Test Suite 13: Order Sheet Filtering ---');
+  const totalSheetItems = ORDER_GROUPS.reduce((n, g) => n + g.sections.reduce((m, s) => m + s.items.length, 0), 0);
+  const dkaGroups = getOrderableGroupsForScaffold(dkaScaffold);
+  const dkaSheetItems = dkaGroups.reduce((n, g) => n + g.sections.reduce((m, s) => m + s.items.length, 0), 0);
+  assert(dkaSheetItems < totalSheetItems, 'The order sheet is filtered down to what the DKA case actually models');
+  const dkaFlatItems = new Set(dkaGroups.flatMap((g) => g.sections.flatMap((s) => s.items)));
+  assert(dkaFlatItems.has('Serum ketones') && dkaFlatItems.has('Urine ketones'), 'Both ketone orders remain distinct entries on the filtered sheet');
+  assert(!dkaFlatItems.has('Magnesium sulfate (Pritchard regimen)'), 'A drug this case does not model (eclampsia-only) is not offered on the DKA sheet');
+  assert(getOrderableGroupsForScaffold(undefined).length === ORDER_GROUPS.length, 'With no scaffold (question-led case), the full catalogue is shown');
 
   console.log(`\n🎉 Verification Suite Complete: ${passed} Passed, ${failed} Failed.`);
   if (failed > 0) {

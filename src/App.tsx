@@ -116,7 +116,7 @@ export default function App() {
     }
   };
 
-  // Build a case from the whole bank rather than the 12 authored conditions.
+  // Build a case from the whole bank rather than the 4 authored conditions.
   const handleStartQuestionLed = async () => {
     setIsStarting(true);
     setErrorMessage(null);

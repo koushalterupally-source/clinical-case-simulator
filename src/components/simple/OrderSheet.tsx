@@ -1,10 +1,15 @@
 import React from 'react';
 import { ORDER_GROUPS, HISTORY_PROMPTS, EXAM_SYSTEMS } from '../../data/orderSets';
+import { CASE_SCAFFOLDS } from '../../data/cases/scaffolds';
+import { getOrderableGroupsForScaffold } from '../../utils/ccsEngine';
 
 interface OrderSheetProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (command: string) => void;
+  /** When set, the sheet shows only what this case models — plus free text
+   *  for anything else — instead of the full 175-item catalogue. */
+  scaffoldId?: string;
 }
 
 type Tab = 'orders' | 'history' | 'exam';
@@ -14,11 +19,18 @@ type Tab = 'orders' | 'history' | 'exam';
  * go — the way a real order set works. Typing free text still exists in the
  * composer, but nothing should require it.
  */
-export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit }) => {
+export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit, scaffoldId }) => {
   const [tab, setTab] = React.useState<Tab>('orders');
-  const [groupId, setGroupId] = React.useState(ORDER_GROUPS[0].id);
   const [selected, setSelected] = React.useState<string[]>([]);
   const [query, setQuery] = React.useState('');
+
+  // A question-led case has no scaffold to filter against — show the full
+  // catalogue there; a scaffold case is filtered to what it actually models.
+  const scaffold = scaffoldId ? CASE_SCAFFOLDS.find((s) => s.id === scaffoldId) : undefined;
+  const orderGroups = getOrderableGroupsForScaffold(scaffold);
+  const isFiltered = orderGroups.length !== ORDER_GROUPS.length;
+
+  const [groupId, setGroupId] = React.useState(orderGroups[0]?.id || ORDER_GROUPS[0].id);
 
   React.useEffect(() => {
     if (!open) {
@@ -27,17 +39,24 @@ export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit 
     }
   }, [open]);
 
+  React.useEffect(() => {
+    if (!orderGroups.some((g) => g.id === groupId)) {
+      setGroupId(orderGroups[0]?.id || ORDER_GROUPS[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scaffoldId]);
+
   if (!open) return null;
 
   const toggle = (item: string) =>
     setSelected((prev) => (prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]));
 
   const q = query.trim().toLowerCase();
-  const group = ORDER_GROUPS.find((g) => g.id === groupId) || ORDER_GROUPS[0];
+  const group = orderGroups.find((g) => g.id === groupId) || orderGroups[0];
 
-  // Searching looks across every group, not just the open one.
+  // Searching looks across every visible group, not just the open one.
   const searchHits = q
-    ? ORDER_GROUPS.flatMap((g) =>
+    ? orderGroups.flatMap((g) =>
         g.sections.flatMap((s) =>
           s.items.filter((i) => i.toLowerCase().includes(q)).map((i) => ({ group: g.label, item: i }))
         )
@@ -120,11 +139,17 @@ export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit 
                 className="w-full rounded-xl px-3.5 py-2 text-[14px] ring-focus"
                 style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}
               />
+              {isFiltered && (
+                <p className="mt-2 text-[12px]" style={{ color: 'var(--text-faint)' }}>
+                  Showing only what this case models. Type anything else in the message box below —
+                  it will be honestly reported as not modelled here rather than given a made-up result.
+                </p>
+              )}
             </div>
 
             {!q && (
               <div className="flex gap-1.5 overflow-x-auto px-4 pt-3 pb-1">
-                {ORDER_GROUPS.map((g) => (
+                {orderGroups.map((g) => (
                   <button
                     key={g.id}
                     onClick={() => setGroupId(g.id)}
@@ -155,7 +180,7 @@ export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit 
                   </div>
                 )
               ) : (
-                group.sections.map((s) => (
+                (group?.sections || []).map((s) => (
                   <div key={s.label} className="mb-5">
                     <div
                       className="text-[12px] uppercase tracking-wide mb-2"
