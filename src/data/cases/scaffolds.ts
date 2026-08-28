@@ -1,10 +1,21 @@
 import { CaseScaffold } from '../../types';
+import { SCAFFOLD_ASTHMA } from './asthma';
+import { SCAFFOLD_VARICEAL_BLEED } from './varicealBleed';
+import { SCAFFOLD_STATUS_EPILEPTICUS } from './statusEpilepticus';
+import { SCAFFOLD_MALARIA } from './malaria';
+import { SCAFFOLD_PNEUMOTHORAX } from './pneumothorax';
+import { SCAFFOLD_MALNUTRITION } from './malnutrition';
+import { SCAFFOLD_ANAPHYLAXIS } from './anaphylaxis';
+import { SCAFFOLD_PPH } from './pph';
 
 /**
- * Four cases, modelled properly — DKA, STEMI, eclampsia, bacterial meningitis.
- * The other eight scaffolds this file used to hold were retired: breadth was
- * hiding the fact that none of them went deep enough to be worth playing, and
- * none of them modelled a single therapy. See CASE_MODEL.md.
+ * Twelve cases, all modelled to the same standard. Four are defined inline
+ * here — DKA, STEMI, eclampsia, bacterial meningitis — and eight live in
+ * their own files alongside this one. The twelve *shallow* scaffolds this
+ * file used to hold were retired first: breadth was hiding the fact that none
+ * of them went deep enough to be worth playing, and none of them modelled a
+ * single therapy. The library was then grown back to twelve against the
+ * invariants in Test Suite 14. See CASE_MODEL.md.
  *
  * `investigationsMap` matching is by explicit `aliases`, normalized and
  * compared for equality — never substring — so two different tests (e.g.
@@ -130,7 +141,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: false,
       },
       coag_pt_inr: {
-        aliases: ['pt / inr', 'pt/inr', 'coagulation profile'],
+        aliases: ['pt / inr', 'coagulation profile'],
         resultText: 'Coagulation Profile: PT 12.1 sec (Reference 11–13.5 sec), INR 1.0 (Reference 0.8–1.1), aPTT 28 sec (Reference 25–35 sec).',
         turnaroundMinutes: 30,
         category: 'labs',
@@ -1003,4 +1014,15 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
       },
     ],
   },
+
+  // 5-12. Authored to the same standard, one file each, so a case can be read
+  // and reviewed on its own without scrolling past three others.
+  SCAFFOLD_ASTHMA,
+  SCAFFOLD_VARICEAL_BLEED,
+  SCAFFOLD_STATUS_EPILEPTICUS,
+  SCAFFOLD_MALARIA,
+  SCAFFOLD_PNEUMOTHORAX,
+  SCAFFOLD_MALNUTRITION,
+  SCAFFOLD_ANAPHYLAXIS,
+  SCAFFOLD_PPH,
 ];

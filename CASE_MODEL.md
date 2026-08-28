@@ -31,6 +31,42 @@ do not.
 The four: **DKA**, **STEMI**, **eclampsia**, **bacterial meningitis** — all common in Indian PG
 exams, all with unambiguous, guideline-level emergency management.
 
+### Growing the library back — the bar, not the count
+
+Eight further cases were then authored **to this same standard**, taking the library to twelve:
+acute severe asthma, variceal upper GI bleed, convulsive status epilepticus, severe falciparum
+malaria, tension pneumothorax, severe acute malnutrition, anaphylaxis, and atonic postpartum
+haemorrhage. The spread is deliberate — Medicine, Surgery, Paediatrics, OBGY and Emergency — because
+a library that is entirely Medicine is not representative of the exam.
+
+The count is not the point; the bar is. Test Suite 14 in `tests/simulator.test.ts` enforces it over
+the **whole** library rather than a hand-picked case, because the defect this project actually
+shipped was not one broken case — it was twelve nobody had checked. Every case must:
+
+- model at least three therapies, one of which is `indicated`, and at least six investigations;
+- give every therapy at least one alias that matches the order-sheet catalogue, so it can be
+  **tapped**, not only typed — a therapy invisible on the sheet may as well not exist;
+- resolve every order name to exactly one thing (no alias claimed by two entries);
+- have no dangling `requiresFirst` or `labShift` key — both fail silently at runtime, so a typo
+  just means the effect never happens;
+- explain every `harmful` grading and every sequence dependency in its `rationale`;
+- carry only timed `criticalInterventions` that some modelled therapy can actually satisfy,
+  so a candidate is never marked down for missing something they could not order;
+- not name its own diagnosis in the opening vignette or in any decision gate.
+
+Those invariants found two real defects in the original four the moment they were written: a
+therapy in the meningitis case that no order-sheet item could reach, and a duplicate alias in the
+STEMI case. That is the argument for enforcing them library-wide.
+
+### Sourcing
+
+The cases are **authored originals**, written against standard published guidance. A search for
+freely-licensed case material found nothing that could responsibly be vendored: the licences that
+looked usable could not be verified from this environment, and the one source that could be pinned
+down — the official NBME/USMLE sample CCS cases — is explicitly all-rights-reserved, non-commercial
+and non-redistributable. Clinical facts and management pathways are not copyrightable; the specific
+prose, vitals tables and order sequences of a particular source are. So nothing was copied.
+
 ### 1. Therapy is modelled
 
 New on `CaseScaffold`:
