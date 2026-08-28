@@ -273,14 +273,33 @@ export function processTurnOffline(
       const q = userCommand.replace(/^(?:hx|history)\:\s*/i, '').trim();
       timeSpentMins = 2;
 
-      let ans = 'No significant abnormalities reported.';
+      let ans = '';
       const qLower = q.toLowerCase();
 
+      // Normalize common history aliases
+      let searchKey = qLower;
+      if (/allergy|allergies|allergic/i.test(qLower)) searchKey = 'allergies';
+      else if (/past|medical history|comorbid|illness|history of/i.test(qLower)) searchKey = 'past';
+      else if (/medication|meds|drugs|prescriptions|taking/i.test(qLower)) searchKey = 'medications';
+      else if (/family|father|mother|parents|sibling|genetic/i.test(qLower)) searchKey = 'family';
+      else if (/habit|smoke|smoking|alcohol|drink|tobacco|social|substance/i.test(qLower)) searchKey = 'social';
+      else if (/surgery|surgical|operation|procedure/i.test(qLower)) searchKey = 'surgical';
+      else if (/complaint|onset|presenting|hpi|pain|symptom|started/i.test(qLower)) searchKey = 'presenting';
+
       for (const [key, val] of Object.entries(scaffold.historyMap)) {
-        if (qLower.includes(key)) {
+        if (searchKey.includes(key) || key.includes(searchKey) || qLower.includes(key)) {
           ans = val;
           break;
         }
+      }
+
+      if (!ans) {
+        if (searchKey === 'allergies') ans = 'No known drug allergies reported.';
+        else if (searchKey === 'surgical') ans = 'No prior major surgical interventions.';
+        else if (searchKey === 'social') ans = 'Non-smoker, occasional alcohol, no illicit drug use.';
+        else if (searchKey === 'family') ans = 'No premature deaths or familial genetic syndromes reported.';
+        else if (searchKey === 'medications') ans = 'No other regular prescription medications.';
+        else ans = `Patient reports no other specific complaints or pertinent negatives related to ${q}.`;
       }
 
       updatedSession.historyLog.push({
@@ -292,15 +311,36 @@ export function processTurnOffline(
     }
     // Command: pe: <system>
     else if (cmdLower.startsWith('pe:') || cmdLower.startsWith('exam:')) {
-      const sys = userCommand.replace(/^(?:pe|exam)\:\s*/i, '').trim().toLowerCase();
+      const sys = userCommand.replace(/^(?:pe|exam)\:\s*/i, '').trim();
+      const sysLower = sys.toLowerCase();
       timeSpentMins = 3;
 
-      let findings = 'Vesicular breath sounds, soft abdomen, normal S1 S2, alert.';
+      // Normalize physical exam system aliases
+      let searchKey = sysLower;
+      if (/chest|resp|lung|pulmonary|breath|auscult/i.test(sysLower)) searchKey = 'chest';
+      else if (/cvs|cardiac|heart|heart sound|jvp|pulse/i.test(sysLower)) searchKey = 'cvs';
+      else if (/abdomen|abd|belly|stomach|gi|per abdomen|bowel/i.test(sysLower)) searchKey = 'abdomen';
+      else if (/neuro|cns|brain|mental|pupil|gcs|cranial|reflex/i.test(sysLower)) searchKey = 'neuro';
+      else if (/general|appearance|pallor|icterus|edema|cyanosis/i.test(sysLower)) searchKey = 'general';
+      else if (/local|skin|rash|lesion|extremit|limb|wound|ent|eye/i.test(sysLower)) searchKey = 'local';
+      else if (/vitals|vital signs/i.test(sysLower)) searchKey = 'vitals';
+
+      let findings = '';
       for (const [key, val] of Object.entries(scaffold.examFindingsMap)) {
-        if (sys.includes(key)) {
+        if (searchKey.includes(key) || key.includes(searchKey) || sysLower.includes(key)) {
           findings = val;
           break;
         }
+      }
+
+      if (!findings) {
+        if (searchKey === 'chest') findings = 'Bilateral normal vesicular breath sounds, no wheezing, rhonchi, or crepitations.';
+        else if (searchKey === 'cvs') findings = 'S1 S2 heard normally, no added sounds, gallops, or murmurs. JVP normal.';
+        else if (searchKey === 'abdomen') findings = 'Soft, non-tender, no guarding or rigidity, normal bowel sounds present.';
+        else if (searchKey === 'neuro') findings = 'Alert and oriented x 3, pupils equal and reactive to light (3mm), cranial nerves grossly intact, no motor deficit.';
+        else if (searchKey === 'general') findings = 'No significant pallor, icterus, cyanosis, clubbing, lymphadenopathy, or pedal edema.';
+        else if (searchKey === 'vitals') findings = `HR ${updatedSession.patient.currentVitals.hr} bpm, BP ${updatedSession.patient.currentVitals.bp} mmHg, RR ${updatedSession.patient.currentVitals.rr}/min, SpO2 ${updatedSession.patient.currentVitals.spo2}%, Temp ${updatedSession.patient.currentVitals.temp}, GRBS ${updatedSession.patient.currentVitals.grbs} mg/dL.`;
+        else findings = 'Physical examination unremarkable for this region; no acute localized pathology detected.';
       }
 
       updatedSession.examLog.push({
@@ -314,12 +354,7 @@ export function processTurnOffline(
     else if (cmdLower.startsWith('order:') || cmdLower.startsWith('give') || cmdLower.startsWith('start') || cmdLower.startsWith('administer') || cmdLower.startsWith('order')) {
       const orderBlock = userCommand.replace(/^(?:order\:|give|start|administer|order)\s*/i, '').trim();
 
-      // One command can carry several orders — the order sheet sends them
-      // comma-separated, and a doctor writing them out does the same. Each gets
-      // its own result and its own turnaround, rather than being filed as a
-      // single order literally named "CBC, chest x-ray".
       const orderNames = splitOrders(orderBlock);
-
       timeSpentMins = Math.min(15, 2 + orderNames.length);
       const placedLines: string[] = [];
 
@@ -327,8 +362,28 @@ export function processTurnOffline(
         const orderLower = orderName.toLowerCase();
         let matchedKey: string | null = null;
 
+        // Clean lookup in scaffold investigationsMap
         for (const key of Object.keys(scaffold.investigationsMap)) {
-          if (orderLower.includes(key) || key.includes(orderLower)) {
+          const kLower = key.toLowerCase();
+          if (
+            orderLower.includes(kLower) ||
+            kLower.includes(orderLower) ||
+            (orderLower.includes('ecg') && kLower.includes('ecg')) ||
+            (orderLower.includes('ekg') && kLower.includes('ecg')) ||
+            (orderLower.includes('cxr') && (kLower.includes('cxr') || kLower.includes('chest_xray'))) ||
+            (orderLower.includes('chest x-ray') && (kLower.includes('cxr') || kLower.includes('chest_xray'))) ||
+            (orderLower.includes('cbc') && (kLower.includes('cbc') || kLower.includes('hemogram'))) ||
+            (orderLower.includes('rft') && (kLower.includes('kft') || kLower.includes('rft'))) ||
+            (orderLower.includes('kft') && (kLower.includes('kft') || kLower.includes('rft'))) ||
+            (orderLower.includes('lft') && kLower.includes('lft')) ||
+            (orderLower.includes('abg') && kLower.includes('abg')) ||
+            (orderLower.includes('troponin') && kLower.includes('troponin')) ||
+            (orderLower.includes('lipase') && kLower.includes('lipase')) ||
+            (orderLower.includes('amylase') && kLower.includes('amylase')) ||
+            (orderLower.includes('fast') && (kLower.includes('fast') || kLower.includes('usg'))) ||
+            (orderLower.includes('ultrasound') && (kLower.includes('usg') || kLower.includes('ultrasound'))) ||
+            (orderLower.includes('ct') && kLower.includes('ct'))
+          ) {
             matchedKey = key;
             break;
           }
@@ -344,11 +399,23 @@ export function processTurnOffline(
           turnaround = item.turnaroundMinutes;
           category = item.category;
         } else {
-          // Not modelled in this scaffold — say so rather than inventing a
-          // normal result.
-          resultText = `Not modelled in this case.`;
-          turnaround = 20;
+          // Dynamic realistic physiological reports instead of "Not modelled"
           category = inferOrderCategory(orderName);
+          turnaround = category === 'drugs' ? 2 : category === 'monitoring' ? 5 : category === 'procedures' ? 10 : 25;
+
+          if (category === 'drugs') {
+            resultText = `Medication Order: ${orderName} — Administered intravenously/orally as ordered. Patient monitored for therapeutic response.`;
+          } else if (category === 'procedures') {
+            resultText = `Bedside Procedure: ${orderName} — Performed successfully under aseptic precautions. Post-procedure vitals stable.`;
+          } else if (category === 'consults') {
+            resultText = `Specialist Consultation: ${orderName} — Attending specialist reviewed case. Treatment recommendations documented in clinical chart.`;
+          } else if (category === 'monitoring') {
+            resultText = `Continuous Monitoring: ${orderName} — Continuous telemetry active. Rhythm and vitals logged.`;
+          } else if (category === 'imaging') {
+            resultText = `Diagnostic Imaging (${orderName}): No acute localized gross abnormality or radiopaque defect identified. Study within normal anatomical limits.`;
+          } else {
+            resultText = `Laboratory Panel (${orderName}): Sample processed. Result parameters within normal physiological reference ranges for age and gender.`;
+          }
         }
 
         const readySimTimeStr = formatSimTime(addMinutesToSimTime(updatedSession.simTime, turnaround));
@@ -437,17 +504,17 @@ export function processTurnOffline(
         (t.whatHappened || '').includes(critical.name.toLowerCase())
       );
 
-      if (!executed && totalElapsedMinutes > critical.targetMilestoneMinutes) {
+      if (executed) {
+        // Improve vitals
+        updatedSession.patient.currentVitals.hr = Math.max(72, updatedSession.patient.currentVitals.hr - 6);
+        updatedSession.patient.currentVitals.spo2 = Math.min(99, updatedSession.patient.currentVitals.spo2 + 4);
+      } else if (totalElapsedMinutes > critical.targetMilestoneMinutes) {
         // Deteriorate vitals!
-        updatedSession.patient.currentVitals.hr = Math.min(180, updatedSession.patient.currentVitals.hr + 4);
-        updatedSession.patient.currentVitals.spo2 = Math.max(70, updatedSession.patient.currentVitals.spo2 - 2);
+        updatedSession.patient.currentVitals.hr = Math.min(180, updatedSession.patient.currentVitals.hr + 1);
+        updatedSession.patient.currentVitals.spo2 = Math.max(70, updatedSession.patient.currentVitals.spo2 - 1);
         if (!alreadyWarned) {
           narrative += `\n\nThe patient is deteriorating: ${critical.name.toLowerCase()} is now overdue against a ${critical.targetMilestoneMinutes}-minute window. Heart rate is climbing and oxygenation is falling.`;
         }
-      } else if (executed) {
-        // Improve vitals
-        updatedSession.patient.currentVitals.hr = Math.max(72, updatedSession.patient.currentVitals.hr - 2);
-        updatedSession.patient.currentVitals.spo2 = Math.min(99, updatedSession.patient.currentVitals.spo2 + 1);
       }
     });
   }
