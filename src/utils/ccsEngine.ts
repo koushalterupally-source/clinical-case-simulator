@@ -243,6 +243,37 @@ function shiftedInvestigationResult(
 }
 
 /**
+ * Three-way grade for an investigation. `appropriateness` wins when a case sets
+ * it; otherwise it is derived from `isIndicative`, so every case written before
+ * the field existed keeps its original meaning.
+ */
+export function investigationGrade(entry: {
+  isIndicative: boolean;
+  appropriateness?: 'indicated' | 'neutral' | 'harmful';
+}): 'indicated' | 'neutral' | 'harmful' {
+  if (entry.appropriateness) return entry.appropriateness;
+  return entry.isIndicative ? 'indicated' : 'neutral';
+}
+
+/**
+ * The sentence appended to a result the moment it comes back, when the test was
+ * not worth ordering. A case can say exactly why in `yieldNote`; without one,
+ * these say the honest generic thing rather than inventing a clinical reason.
+ */
+export function yieldSuffix(entry: {
+  isIndicative: boolean;
+  appropriateness?: 'indicated' | 'neutral' | 'harmful';
+  yieldNote?: string;
+}): string {
+  const grade = investigationGrade(entry);
+  if (grade === 'indicated') return '';
+  if (entry.yieldNote) return `\n\n[LOW YIELD] ${entry.yieldNote}`;
+  return grade === 'harmful'
+    ? '\n\n[LOW YIELD] This test carried a risk that was not justified here, and it did not change management.'
+    : '\n\n[LOW YIELD] This result does not change management here. The time it took is what it cost.';
+}
+
+/**
  * Resolves one order against a scaffold's therapiesMap and investigationsMap,
  * enforcing sequence-dependent safety (e.g. insulin before fluids in DKA) and
  * never inventing a result for anything the scaffold does not model.
@@ -292,8 +323,13 @@ function resolveOrder(
   const investigationMatch = findByAlias(scaffold.investigationsMap, orderName);
   if (investigationMatch) {
     const { key, entry } = investigationMatch;
+    const body = shiftedInvestigationResult(therapyLog, key, entry.resultText, currentMinutes);
+    // A test that did not earn its place says so WITH the result, rather than
+    // waiting for the scorecard. By the time a result is back the time it cost
+    // is already spent, so this is feedback on a decision already made, not a
+    // hint toward the answer — which is why it never names the diagnosis.
     return {
-      resultText: shiftedInvestigationResult(therapyLog, key, entry.resultText, currentMinutes),
+      resultText: body + yieldSuffix(entry),
       turnaround: entry.turnaroundMinutes,
       category: entry.category,
     };
@@ -669,12 +705,19 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
     if (findByAlias(scaffold.therapiesMap, ord.orderName)) return false;
     const invMatch = findByAlias(scaffold.investigationsMap, ord.orderName);
     if (!invMatch) return true; // Not modelled in this scaffold = unindicated
-    return !invMatch.entry.isIndicative;
+    return investigationGrade(invMatch.entry) !== 'indicated';
   });
 
-  const overOrderingList = overOrders.map(
-    (o) => `${o.orderName} — not indicated here; it cost ${o.turnaroundMinutes} minutes.`
-  );
+  // A test that risked something is not the same mistake as one that merely
+  // wasted time, so the scorecard does not flatten the two into one sentence.
+  const overOrderingList = overOrders.map((o) => {
+    const invMatch = findByAlias(scaffold.investigationsMap, o.orderName);
+    const grade = invMatch ? investigationGrade(invMatch.entry) : 'neutral';
+    const why = invMatch?.entry.yieldNote ? ` ${invMatch.entry.yieldNote}` : '';
+    return grade === 'harmful'
+      ? `${o.orderName} — carried a risk that was not justified here, and cost ${o.turnaroundMinutes} minutes.${why}`
+      : `${o.orderName} — not indicated here; it cost ${o.turnaroundMinutes} minutes.${why}`;
+  });
 
   // Therapies given, graded and explained — surfaced only here, never during
   // the case itself.

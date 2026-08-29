@@ -241,6 +241,28 @@ export interface CaseScaffold {
     turnaroundMinutes: number;
     category: OrderCategory;
     isIndicative: boolean; // True if indicated for this condition (false = over-ordering)
+    /**
+     * Three-way grading, mirroring how therapies are graded. Optional: when it
+     * is absent the grade is derived from `isIndicative` (true -> 'indicated',
+     * false -> 'neutral'), so every case that predates this field keeps working.
+     *
+     * 'neutral'  the test is not wrong to consider, it simply does not change
+     *            management here — it costs time and nothing else.
+     * 'harmful'  ordering it actively costs the patient something: transporting
+     *            an unstable patient to the scanner, contrast in acute kidney
+     *            injury, a lumbar puncture before imaging in raised intracranial
+     *            pressure. A harmful test MUST explain itself in `yieldNote`.
+     */
+    appropriateness?: 'indicated' | 'neutral' | 'harmful';
+    /**
+     * Shown WITH THE RESULT, at the moment it comes back — not held until the
+     * scorecard. The time is already spent by then, so saying "this did not
+     * contribute" is feedback rather than a hint, and it is how the learner
+     * finds out an order was pointless while the case is still in front of
+     * them. It must never name the diagnosis: it explains why THIS test does
+     * not help, not what the answer is.
+     */
+    yieldNote?: string;
   }>;
   // Therapies this case models. An `indicated` therapy is acknowledged, moves
   // vitals toward normal over `onsetMinutes`, and can change what a REPEATED
