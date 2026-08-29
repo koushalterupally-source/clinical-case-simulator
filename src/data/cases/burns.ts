@@ -8,7 +8,8 @@ import { CaseScaffold } from '../../types';
  *  - securing the airway EARLY on the strength of clinical signs (hoarseness,
  *    singed nasal hair, soot, facial burns) — before progressive oedema makes
  *    intubation difficult or impossible, rather than waiting for stridor;
- *  - the Parkland formula (4 mL x weight(kg) x %TBSA, crystalloid only), with
+ *  - burn fluid resuscitation started at the current ABA rate (2 mL x weight(kg)
+ *    x %TBSA, crystalloid only) rather than the classic Parkland 4 mL, with
  *    the first half given over the first 8 hours counted from the TIME OF
  *    INJURY, not from arrival — it is only a starting estimate, titrated
  *    against hourly urine output rather than followed as a fixed rate;
@@ -198,7 +199,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
     parkland_fluids: {
       aliases: ['ringer lactate maintenance', 'ringer lactate infusion', 'parkland formula fluids', 'lactated ringers infusion'],
       responseText:
-        'IV Ringer Lactate infusion started at the calculated Parkland rate: 4 mL × 70 kg × 40% TBSA = 11,200 mL over 24 hours, with half given over the first 8 hours counted from the time of injury (not from arrival) and the remainder over the following 16 hours.',
+        'IV Ringer Lactate infusion started at the calculated starting rate: 2 mL × 70 kg × 40% TBSA = 5,600 mL over 24 hours, with half given over the first 8 hours counted from the time of injury (not from arrival) and the remainder over the following 16 hours. The rate is then titrated hourly against urine output.',
       onsetMinutes: 20,
       vitalsEffect: { hr: -10, bp: '112/72' },
       labShift: {
@@ -207,7 +208,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
       },
       appropriateness: 'indicated',
       rationale:
-        'The Parkland formula (4 mL/kg per %TBSA burned, crystalloid only, half over the first 8 hours from the time of injury and half over the following 16 hours) is the standard starting estimate for burn fluid resuscitation. It is only a starting point — the actual running rate must then be titrated up or down against hourly urine output, not given as an unadjusted fixed rate for 24 hours.',
+        'Burn fluid resuscitation is calculated as volume per kg per %TBSA burned, crystalloid only, with half given over the first 8 hours FROM THE TIME OF INJURY and half over the following 16 hours. Note the number: the American Burn Association moved the recommended STARTING rate down from the classic Parkland 4 mL/kg/%TBSA to 2 mL/kg/%TBSA in 2011, and ATLS follows the same lower figure, because starting at 4 mL routinely produced over-resuscitation — "fluid creep" — with its own morbidity from oedema and compartment syndrome. Many Indian textbooks and question banks still print 4 mL as the Parkland number, so expect to see it; the point that matters clinically is that whichever figure starts the infusion, it is only an estimate, and the running rate is then titrated hourly against a urine output of about 0.5 mL/kg/hr rather than given as a fixed rate for 24 hours.',
     },
     foley_catheter: {
       aliases: ['foley catheterisation', 'foley catheter', 'urinary catheterisation'],

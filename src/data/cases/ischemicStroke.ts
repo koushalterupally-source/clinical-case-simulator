@@ -155,7 +155,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       rationale: 'Thrombolysis requires blood pressure below 185/110 mmHg beforehand, because higher pressures sharply raise the risk of bleeding into the treated territory. A titratable short-acting agent brings it under that ceiling in a controlled, predictable way without dropping it further than needed.',
     },
     thrombolysis_iv: {
-      aliases: ['tenecteplase (thrombolysis)'],
+      aliases: ['tenecteplase (thrombolysis)', 'alteplase (rtpa) iv'],
       responseText: 'Intravenous thrombolysis given within the safe window, non-contrast CT already excluding bleeding and blood pressure already controlled below the required ceiling. Over the next hour the right-sided weakness and slurring begin to improve.',
       onsetMinutes: 45,
       vitalsEffect: { hr: -4 },
@@ -164,7 +164,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       harmfulSequenceResponseText: 'Intravenous thrombolysis is given before any brain imaging has been reviewed. Within the hour the weakness deepens further and his level of consciousness drops; a scan obtained only now shows extensive haemorrhage within the affected territory.',
       harmfulSequenceVitalsEffect: { hr: 22, bp: '210/118' },
       harmfulSequenceRationale: 'Thrombolysis is only appropriate for a clot, and is absolutely contraindicated if the cause is bleeding — the two look identical at the bedside and are told apart only by a non-contrast CT head. Giving it before that scan is reviewed can turn a treatable event into a fatal intracranial haemorrhage, and the few minutes imaging takes are never a reason to skip it.',
-      rationale: 'Intravenous thrombolysis is indicated for a disabling focal deficit within the licensed time window once haemorrhage has been excluded on non-contrast CT, blood pressure is controlled below 185/110 mmHg, and there is no other contraindication (recent surgery, active bleeding, anticoagulation with a deranged INR, or a very low platelet count).',
+      rationale: 'Intravenous thrombolysis is indicated for a disabling focal deficit within the licensed time window once haemorrhage has been excluded on non-contrast CT, blood pressure is controlled below 185/110 mmHg, and there is no other contraindication (recent surgery, active bleeding, anticoagulation with a deranged INR, or a very low platelet count). Either agent is accepted here. Tenecteplase 0.25 mg/kg as a single bolus (maximum 25 mg) and alteplase 0.9 mg/kg as a bolus followed by an infusion now carry equal weight in the 2026 AHA/ASA guideline, and the European Stroke Organisation leans toward tenecteplase for the practical reason that one bolus is easier to give than an hour-long infusion. Be aware that much Indian teaching and many question banks still treat alteplase as the single textbook answer, so a paper may expect it even though current guidance no longer requires it.',
     },
     thrombectomy: {
       aliases: ['mechanical thrombectomy'],

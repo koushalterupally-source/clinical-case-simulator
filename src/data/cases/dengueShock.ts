@@ -145,7 +145,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
         cbc: 'CBC (repeat): Haematocrit 37% (Reference for age 33–39%), Platelets 74,000/mcL — the haematocrit falling back toward baseline is the expected, reassuring response to adequate plasma volume replacement, with platelets beginning to stabilise.',
       },
       appropriateness: 'indicated',
-      rationale: 'An isotonic crystalloid bolus is the first-line treatment for compensated shock from plasma leakage. It is titrated against the response of the pulse pressure, capillary refill and — most specifically — the haematocrit trend, rather than given as one fixed volume and stopped.',
+      rationale: 'An isotonic crystalloid bolus is the first-line treatment for compensated shock from plasma leakage. WHO dengue guidance separates the dosing by how far the child has decompensated: roughly 5-10 mL/kg over an hour for compensated shock like this one, against a rapid 20 mL/kg over about fifteen minutes once the blood pressure has actually fallen. Ringer lactate is the preferred solution, with one caveat worth carrying — in significant metabolic acidosis, normal saline is used instead, since a lactate load is unhelpful in a child who is already acidotic. It is titrated against the response of the pulse pressure, capillary refill and, most specifically, the haematocrit trend, rather than given as one fixed volume and stopped.',
     },
     supplemental_oxygen: {
       aliases: ['supplemental oxygen'],
