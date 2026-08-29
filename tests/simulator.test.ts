@@ -10,6 +10,7 @@ import {
   normalizeOrderText,
   findByAlias,
   getOrderableGroupsForScaffold,
+  investigationGrade,
 } from '../src/utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from '../src/utils/caseBinder';
 import { exportQBankToJSON, importQBankFromJSON } from '../src/utils/qbankParser';
@@ -635,6 +636,40 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
 
     assert(sc.incidentalPool.length >= 2, `${where}: carries at least two incidental findings`);
     assert(sc.gateMilestones.length >= 3, `${where}: carries at least three decision gates`);
+
+    // A case where every test is worth ordering does not teach a candidate when NOT to
+    // order one, and ordering everything would score perfectly. Each case must therefore
+    // carry at least one investigation that does not earn its place.
+    const invEntries = Object.entries(sc.investigationsMap);
+    const nonIndicated = invEntries.filter(([, e]) => investigationGrade(e) !== 'indicated');
+    assert(
+      nonIndicated.length >= 1,
+      `${where}: carries at least one low-yield investigation (has ${nonIndicated.length})`
+    );
+
+    for (const [k, entry] of invEntries) {
+      const grade = investigationGrade(entry);
+
+      // A test graded 'harmful' claims ordering it costs the patient something. That claim
+      // has to be stated, or the candidate is penalised without ever being told why.
+      if (grade === 'harmful') {
+        assert(
+          !!entry.yieldNote && entry.yieldNote.trim().length > 0,
+          `${where}: harmful investigation "${k}" explains the harm in yieldNote`
+        );
+      }
+
+      // yieldNote is shown DURING the case, so it is held to the same rule as the vignette
+      // and the gates: it may say why this test does not help, never what the answer is.
+      if (entry.yieldNote) {
+        for (const term of condTerms) {
+          assert(
+            !new RegExp(`\\b${term}\\b`).test(entry.yieldNote.toLowerCase()),
+            `${where}: yieldNote for "${k}" does not name the diagnosis ("${term}")`
+          );
+        }
+      }
+    }
 
     // The sheet must be filtered, and must not be filtered down to nothing.
     const groups = getOrderableGroupsForScaffold(sc);

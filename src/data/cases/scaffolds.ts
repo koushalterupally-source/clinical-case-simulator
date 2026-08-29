@@ -7,6 +7,14 @@ import { SCAFFOLD_PNEUMOTHORAX } from './pneumothorax';
 import { SCAFFOLD_MALNUTRITION } from './malnutrition';
 import { SCAFFOLD_ANAPHYLAXIS } from './anaphylaxis';
 import { SCAFFOLD_PPH } from './pph';
+import { SCAFFOLD_ORGANOPHOSPHATE } from './organophosphate';
+import { SCAFFOLD_SNAKE_BITE } from './snakeBite';
+import { SCAFFOLD_ECTOPIC } from './ectopicPregnancy';
+import { SCAFFOLD_APPENDICITIS } from './appendicitis';
+import { SCAFFOLD_BURNS } from './burns';
+import { SCAFFOLD_NEONATAL_SEPSIS } from './neonatalSepsis';
+import { SCAFFOLD_DENGUE_SHOCK } from './dengueShock';
+import { SCAFFOLD_ISCHEMIC_STROKE } from './ischemicStroke';
 
 /**
  * Twelve cases, all modelled to the same standard. Four are defined inline
@@ -1025,4 +1033,17 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
   SCAFFOLD_MALNUTRITION,
   SCAFFOLD_ANAPHYLAXIS,
   SCAFFOLD_PPH,
+
+  // 13-20. INICET-weighted batch. Chosen as much for spread as for topic: the
+  // library was seven-twelfths Medicine before these, which is not what the exam
+  // looks like. These bring Emergency, Surgery, Paediatrics and OBGY to three
+  // apiece.
+  SCAFFOLD_ORGANOPHOSPHATE,
+  SCAFFOLD_SNAKE_BITE,
+  SCAFFOLD_ECTOPIC,
+  SCAFFOLD_APPENDICITIS,
+  SCAFFOLD_BURNS,
+  SCAFFOLD_NEONATAL_SEPSIS,
+  SCAFFOLD_DENGUE_SHOCK,
+  SCAFFOLD_ISCHEMIC_STROKE,
 ];
