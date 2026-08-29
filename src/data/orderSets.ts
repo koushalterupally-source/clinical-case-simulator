@@ -205,6 +205,7 @@ export const ORDER_GROUPS: OrderGroup[] = [
           'Unfractionated heparin bolus',
           'Enoxaparin subcutaneous',
           'Tenecteplase (thrombolysis)',
+          'Alteplase (rtPA) IV',
           'Streptokinase infusion',
           'Metoprolol IV',
           'Nitroglycerin infusion',

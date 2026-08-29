@@ -68,7 +68,7 @@ export const SCAFFOLD_ECTOPIC: CaseScaffold = {
     },
     serum_bhcg: {
       aliases: ['serum beta-hcg', 'quantitative beta-hcg', 'beta-hcg', 'serum hcg'],
-      resultText: 'Serum Beta-hCG (quantitative): 1,650 mIU/mL — above the discriminatory zone (roughly 1,500–2,000 mIU/mL) at which an intrauterine gestational sac should normally already be visible on transvaginal scan. No intrauterine sac is seen on this patient’s scan, which favours an implantation outside the uterine cavity over a very early normal one.',
+      resultText: 'Serum Beta-hCG (quantitative): 1,650 mIU/mL — above the discriminatory zone (commonly quoted as 1,500–3,500 mIU/mL, widened from the older 1,500–2,000 figure because it varies with operator and equipment) at which an intrauterine gestational sac should normally already be visible on transvaginal scan. No intrauterine sac is seen on this patient’s scan, which favours an implantation outside the uterine cavity over a very early normal one.',
       turnaroundMinutes: 45,
       category: 'labs',
       isIndicative: true,
