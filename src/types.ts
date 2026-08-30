@@ -171,6 +171,9 @@ export interface EndOfCaseScorecard {
   }[];
   criticalDelays: string[];
   overOrderingList: string[];
+  /** Orders the case does not model at all. Listed for transparency, never
+   *  scored: the case has no clinical opinion about them. */
+  unmodelledList: string[];
   /** Every therapy given, with its clinical appropriateness and the reasoning
    *  behind that grading — surfaced only here, never during the case itself. */
   therapiesGiven: {

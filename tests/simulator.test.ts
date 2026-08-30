@@ -684,6 +684,90 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
   const subjects = new Set(CASE_SCAFFOLDS.map((s) => s.subject));
   assert(subjects.size >= 4, `Cases span at least four subjects (spans ${subjects.size}: ${[...subjects].join(', ')})`);
 
+  // ---------------------------------------------------------------------------
+  // Test Suite 15: Playability — can the case actually be PLAYED?
+  //
+  // Suite 14 proves a case is well FORMED. It does not prove it is winnable.
+  // A full DKA playthrough found that typing "normal saline 1 L bolus" — the
+  // first-line treatment — matched no alias, so it was never given, the
+  // sequence gate for insulin never opened, insulin was graded harmful, and
+  // the glucose never moved. The case was structurally perfect and unwinnable.
+  //
+  // These assertions drive the real engine the way a candidate drives it.
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Test Suite 15: Playability ---');
+
+  for (const sc of CASE_SCAFFOLDS) {
+    const where = sc.id;
+
+    // Every therapy must be reachable by ITS OWN aliases through the real
+    // order path. This is the check that would have caught the DKA fluid bug:
+    // an alias that resolves to nothing means the treatment cannot be given.
+    for (const [key, entry] of Object.entries(sc.therapiesMap)) {
+      for (const alias of entry.aliases) {
+        const match = findByAlias(sc.therapiesMap, alias);
+        assert(
+          !!match && match.key === key,
+          `${where}: therapy "${key}" is reachable by its own alias "${alias}"` +
+            (match ? ` (resolved to "${match.key}" instead)` : ' (resolved to nothing)')
+        );
+      }
+    }
+
+    // Same for investigations — a result you cannot order is a result that
+    // does not exist.
+    for (const [key, entry] of Object.entries(sc.investigationsMap)) {
+      for (const alias of entry.aliases) {
+        const match = findByAlias(sc.investigationsMap, alias);
+        assert(
+          !!match && match.key === key,
+          `${where}: investigation "${key}" is reachable by its own alias "${alias}"`
+        );
+      }
+    }
+
+    // A sequence-dependent therapy is only teachable if its prerequisite can
+    // actually be given first. If requiresFirst names a therapy that cannot be
+    // reached, the safe path through the case does not exist and the candidate
+    // is forced into the harmful branch — which is what happened in DKA.
+    for (const [key, entry] of Object.entries(sc.therapiesMap)) {
+      for (const req of entry.requiresFirst || []) {
+        const prereq = sc.therapiesMap[req];
+        assert(
+          !!prereq && prereq.aliases.length > 0,
+          `${where}: prerequisite "${req}" of "${key}" is orderable, so the safe path exists`
+        );
+      }
+    }
+
+    // The case must be winnable: at least one indicated therapy must have no
+    // unmet prerequisite, or there is no legal first move.
+    const therapyEntries = Object.entries(sc.therapiesMap);
+    const openingMoves = therapyEntries.filter(
+      ([, e]) => e.appropriateness === 'indicated' && (e.requiresFirst || []).length === 0
+    );
+    assert(
+      openingMoves.length > 0,
+      `${where}: has at least one indicated therapy with no prerequisite (a legal opening move)`
+    );
+
+    // requiresFirst must not form a cycle — two therapies each demanding the
+    // other can never both be satisfied, and the case would be unplayable.
+    const seen = new Map<string, number>();
+    const visit = (k: string, stack: string[]): boolean => {
+      if (stack.includes(k)) return false;
+      if (seen.get(k) === 1) return true;
+      seen.set(k, 1);
+      for (const r of sc.therapiesMap[k]?.requiresFirst || []) {
+        if (!visit(r, [...stack, k])) return false;
+      }
+      return true;
+    };
+    for (const [key] of therapyEntries) {
+      assert(visit(key, []), `${where}: therapy "${key}" has no circular requiresFirst chain`);
+    }
+  }
+
   console.log(`\n🎉 Verification Suite Complete: ${passed} Passed, ${failed} Failed.`);
   if (failed > 0) {
     process.exit(1);

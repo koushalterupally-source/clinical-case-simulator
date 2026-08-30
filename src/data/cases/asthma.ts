@@ -54,7 +54,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
   },
   investigationsMap: {
     pefr: {
-      aliases: ['peak expiratory flow rate (pefr)', 'pefr', 'peak flow', 'peak expiratory flow rate'],
+      aliases: ['peak expiratory flow rate (pefr)', 'pefr', 'peak flow', 'peak expiratory flow rate', 'pef'],
       resultText:
         'Peak Expiratory Flow Rate (PEFR): 28% of predicted (Reference >80% of predicted) — severely reduced.',
       turnaroundMinutes: 2,
@@ -70,7 +70,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
       isIndicative: true,
     },
     cxr: {
-      aliases: ['chest x-ray pa', 'cxr', 'chest x ray'],
+      aliases: ['chest x-ray pa', 'cxr', 'chest x ray', 'chest xray'],
       resultText:
         'Chest X-ray PA: Hyperinflated lung fields with flattened diaphragms; no focal consolidation, pneumothorax, or pneumomediastinum.',
       turnaroundMinutes: 20,
@@ -78,7 +78,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
       resultText:
         'CBC: Hb 13.5 g/dL (Reference 12.0–15.5 g/dL), WBC 9,800/mcL (Reference 4,000–11,000/mcL), Platelets 260,000/mcL (Reference 150,000–450,000/mcL) — mild leukocytosis in keeping with the preceding viral illness.',
       turnaroundMinutes: 25,
@@ -86,7 +86,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
       isIndicative: true,
     },
     electrolytes: {
-      aliases: ['serum electrolytes (na, k, cl)', 'electrolytes'],
+      aliases: ['serum electrolytes (na, k, cl)', 'electrolytes', 'serum electrolytes', 'na k cl'],
       resultText:
         'Serum Electrolytes: Na+ 138 mEq/L (Reference 135–145 mEq/L), K+ 3.3 mEq/L (Reference 3.5–5.0 mEq/L), Cl- 101 mEq/L (Reference 96–106 mEq/L) — mild hypokalaemia, an expected effect of repeated beta-agonist nebulisation and worth monitoring.',
       turnaroundMinutes: 20,
@@ -94,7 +94,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
       isIndicative: true,
     },
     crp: {
-      aliases: ['crp'],
+      aliases: ['crp', 'c reactive protein'],
       resultText:
         'CRP: 18 mg/L (Reference <6 mg/L) — mildly elevated, consistent with the preceding viral upper respiratory infection rather than a bacterial process.',
       turnaroundMinutes: 45,
@@ -128,7 +128,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
   },
   therapiesMap: {
     salbutamol_neb: {
-      aliases: ['salbutamol nebulisation', 'salbutamol', 'neb', 'albuterol', 'bronchodilator nebulisation'],
+      aliases: ['salbutamol nebulisation', 'salbutamol', 'neb', 'albuterol', 'bronchodilator nebulisation', 'salbutamol nebulization', 'nebulizer', 'inhaled salbutamol'],
       responseText:
         'Salbutamol given as back-to-back nebulisation (continuous nebulisation over the first hour) via an oxygen-driven nebuliser.',
       onsetMinutes: 10,
@@ -150,7 +150,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
         'Adding an inhaled anticholinergic to a short-acting beta-agonist produces greater bronchodilation than either agent alone in severe exacerbations and reduces the likelihood of hospital admission.',
     },
     hydrocortisone: {
-      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid', 'systemic corticosteroid', 'iv corticosteroid'],
+      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid', 'systemic corticosteroid', 'iv corticosteroid', 'inj hydrocortisone', 'oral corticosteroid', 'prednisolone'],
       responseText: 'IV Hydrocortisone given.',
       onsetMinutes: 60,
       appropriateness: 'indicated',
@@ -158,7 +158,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
         'Systemic corticosteroids reduce airway inflammation and prevent relapse, but take hours to act; they must still be given early even though no immediate change in vitals is expected.',
     },
     magnesium: {
-      aliases: ['magnesium sulfate 2 g iv infusion', 'magnesium', 'magnesium sulfate', 'mgso4'],
+      aliases: ['magnesium sulfate 2 g iv infusion', 'magnesium', 'magnesium sulfate', 'mgso4', 'iv magnesium sulfate', 'mgso4 infusion'],
       responseText: 'Magnesium sulfate 2 g IV given as a single infusion over 20 minutes.',
       onsetMinutes: 30,
       vitalsEffect: { spo2: 2 },
@@ -191,7 +191,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
         'Evidence for non-invasive ventilation in acute asthma is weak and inconsistent, unlike its established role in COPD; it must never be used to delay intubation in a patient who is tiring, as shown by a rising PaCO2 and a quiet chest.',
     },
     intubation: {
-      aliases: ['endotracheal intubation', 'intubation', 'intubate'],
+      aliases: ['endotracheal intubation', 'intubation', 'intubate', 'mechanical ventilation'],
       responseText: 'Endotracheal intubation performed for respiratory exhaustion and a silent chest.',
       onsetMinutes: 15,
       vitalsEffect: { spo2: 6, rr: -10 },
@@ -200,7 +200,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
         'Intubation is indicated for a silent chest, exhaustion, or a rising PaCO2 despite maximal therapy. Because of dynamic hyperinflation, positive-pressure ventilation afterwards carries a real risk of breath-stacking and hypotension; a long expiratory time and a permissive-hypercapnia strategy are needed.',
     },
     morphine: {
-      aliases: ['morphine iv', 'morphine', 'morphine sulphate'],
+      aliases: ['morphine iv', 'morphine', 'morphine sulphate', 'morphine sulfate'],
       responseText: 'Morphine IV given for distress.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -6, rr: -10, spo2: -8 },

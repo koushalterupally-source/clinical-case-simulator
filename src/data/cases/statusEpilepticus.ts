@@ -60,7 +60,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
   },
   investigationsMap: {
     grbs: {
-      aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar', 'bedside glucose'],
+      aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar', 'bedside glucose', 'capillary glucose', 'glucometer'],
       resultText:
         'RBS / GRBS: 96 mg/dL (Reference 70–140 mg/dL) — normal; checking bedside glucose immediately in every convulsing patient is mandatory to exclude hypoglycaemia as a reversible cause, even though it is normal here.',
       turnaroundMinutes: 2,
@@ -68,7 +68,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText:
         'ABG: pH 7.28 (Reference 7.35–7.45), PaCO2 44 mmHg (Reference 35–45 mmHg), PaO2 68 mmHg (Reference 80–100 mmHg), HCO3 20 mEq/L (Reference 22–26 mEq/L) — a mixed respiratory and lactic acidosis expected from prolonged muscular activity and transient hypoventilation; it should resolve once the convulsions stop.',
       turnaroundMinutes: 10,
@@ -76,7 +76,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: true,
     },
     electrolytes: {
-      aliases: ['serum electrolytes (na, k, cl)', 'electrolytes'],
+      aliases: ['serum electrolytes (na, k, cl)', 'electrolytes', 'serum electrolytes', 'na k cl'],
       resultText:
         'Serum Electrolytes: Na+ 138 mEq/L (Reference 135–145 mEq/L), K+ 3.6 mEq/L (Reference 3.5–5.0 mEq/L), Cl- 102 mEq/L (Reference 96–106 mEq/L) — normal, effectively excluding a metabolic electrolyte disturbance as the trigger.',
       turnaroundMinutes: 20,
@@ -91,7 +91,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
       resultText:
         'CBC: Hb 14.0 g/dL (Reference 13.0–17.0 g/dL), WBC 13,200/mcL (Reference 4,000–11,000/mcL), Platelets 250,000/mcL (Reference 150,000–450,000/mcL) — mild stress leukocytosis expected after prolonged muscular activity.',
       turnaroundMinutes: 20,
@@ -99,7 +99,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: true,
     },
     ct_head: {
-      aliases: ['ct head plain', 'ct head', 'ct brain'],
+      aliases: ['ct head plain', 'ct head', 'ct brain', 'ct scan head'],
       resultText:
         'CT Head (Plain): No acute haemorrhage, midline shift, or space-occupying lesion. No evidence of raised intracranial pressure.',
       turnaroundMinutes: 30,
@@ -107,7 +107,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function test'],
       resultText:
         'Liver Function Tests: AST 32 U/L (Reference 10–40 U/L), ALT 28 U/L (Reference 7–56 U/L), Total Bilirubin 0.7 mg/dL (Reference 0.2–1.2 mg/dL) — normal; relevant baseline given ongoing anti-seizure medication use.',
       turnaroundMinutes: 30,
@@ -131,7 +131,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: false,
     },
     gcs_charting: {
-      aliases: ['hourly gcs charting', 'gcs charting', 'glasgow coma scale monitoring'],
+      aliases: ['hourly gcs charting', 'gcs charting', 'glasgow coma scale monitoring', 'gcs monitoring'],
       resultText:
         'Hourly GCS Charting instituted: score fluctuating 8–10/15 between episodes, improving as the convulsions are controlled.',
       turnaroundMinutes: 5,

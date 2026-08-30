@@ -711,12 +711,32 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
   // Therapies are graded separately below, by appropriateness — a drug order
   // is never counted here even when the map has no entry for it.
   const allOrders = [...session.completedOrders, ...session.pendingOrders];
+
+  // An order this case does not model is NOT a clinical error, and must never be
+  // scored as one. The case has no opinion about it — saying "not indicated
+  // here" asserts a judgement that was never authored, which is the same
+  // dishonesty as inventing a result. It is also usually the model's fault
+  // rather than the candidate's: typing a real treatment in a phrasing the
+  // alias list happens not to carry once cost a full DKA run, where "normal
+  // saline 1 L bolus" was counted as over-ordering and the sequence gate for
+  // insulin then never opened. These are listed separately and carry no penalty.
+  const unmodelledOrders = allOrders.filter(
+    (ord) =>
+      !findByAlias(scaffold.therapiesMap, ord.orderName) &&
+      !findByAlias(scaffold.investigationsMap, ord.orderName)
+  );
+
   const overOrders = allOrders.filter((ord) => {
     if (findByAlias(scaffold.therapiesMap, ord.orderName)) return false;
     const invMatch = findByAlias(scaffold.investigationsMap, ord.orderName);
-    if (!invMatch) return true; // Not modelled in this scaffold = unindicated
+    if (!invMatch) return false; // unmodelled — handled above, never penalised
     return investigationGrade(invMatch.entry) !== 'indicated';
   });
+
+  const unmodelledList = unmodelledOrders.map(
+    (o) =>
+      `${o.orderName} — this case does not model that order, so it was neither performed nor graded. It cost ${o.turnaroundMinutes} minutes of simulated time.`
+  );
 
   // A test that risked something is not the same mistake as one that merely
   // wasted time, so the scorecard does not flatten the two into one sentence.
@@ -791,6 +811,7 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
       incidentalFindingsReport: [],
       criticalDelays: [],
       overOrderingList: [],
+      unmodelledList: [],
       therapiesGiven: [],
       preventionChecklist: [],
       topConceptsToRevise,
@@ -829,6 +850,7 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
     incidentalFindingsReport: incidentalReport,
     criticalDelays,
     overOrderingList,
+    unmodelledList,
     therapiesGiven,
     preventionChecklist: [
       { item: 'Adult Tdap Booster Vaccination', status: addressedIncCount > 0 ? 'done' : 'missed' },
