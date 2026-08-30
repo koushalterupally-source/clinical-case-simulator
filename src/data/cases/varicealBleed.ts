@@ -54,7 +54,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
       resultText:
         'CBC: Hb 6.8 g/dL (Reference 13.0–17.0 g/dL), WBC 9,200/mcL (Reference 4,000–11,000/mcL), Platelets 88,000/mcL (Reference 150,000–450,000/mcL) — significant anaemia with thrombocytopenia.',
       turnaroundMinutes: 20,
@@ -62,7 +62,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function test'],
       resultText:
         'Liver Function Tests: Total Bilirubin 3.4 mg/dL (Reference 0.2–1.2 mg/dL), AST 98 U/L (Reference 10–40 U/L), ALT 62 U/L (Reference 7–56 U/L), Albumin 2.6 g/dL (Reference 3.5–5.0 g/dL) — hyperbilirubinaemia and hypoalbuminaemia consistent with impaired synthetic function.',
       turnaroundMinutes: 30,
@@ -70,7 +70,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     coag_pt_inr: {
-      aliases: ['pt / inr', 'coagulation profile'],
+      aliases: ['pt / inr', 'coagulation profile', 'coagulation panel', 'prothrombin time'],
       resultText:
         'Coagulation Profile: PT 19.5 sec (Reference 11–13.5 sec), INR 1.8 (Reference 0.8–1.1), aPTT 38 sec (Reference 25–35 sec) — prolonged, reflecting reduced hepatic synthesis of clotting factors rather than a discrete deficiency.',
       turnaroundMinutes: 30,
@@ -78,7 +78,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'renal function test', 'kidney function test'],
       resultText:
         'Renal Function: Blood Urea 68 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.1 mg/dL (Reference 0.6–1.2 mg/dL) — urea disproportionately raised relative to creatinine, consistent with a large digested blood load in the gut.',
       turnaroundMinutes: 25,
@@ -86,7 +86,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     electrolytes: {
-      aliases: ['serum electrolytes (na, k, cl)', 'electrolytes'],
+      aliases: ['serum electrolytes (na, k, cl)', 'electrolytes', 'serum electrolytes', 'na k cl'],
       resultText:
         'Serum Electrolytes: Na+ 133 mEq/L (Reference 135–145 mEq/L), K+ 3.4 mEq/L (Reference 3.5–5.0 mEq/L), Cl- 96 mEq/L (Reference 96–106 mEq/L) — mild hyponatraemia and hypokalaemia.',
       turnaroundMinutes: 20,
@@ -94,14 +94,14 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     blood_group: {
-      aliases: ['blood grouping & cross-match', 'blood group', 'cross match', 'type and crossmatch'],
+      aliases: ['blood grouping & cross-match', 'blood group', 'cross match', 'type and crossmatch', 'blood grouping', 'grouping and crossmatch'],
       resultText: 'Blood Group: O Positive. Cross-match: 4 units packed red cells held, compatible.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     endoscopy: {
-      aliases: ['upper gi endoscopy', 'endoscopy', 'ogd', 'upper gi scopy'],
+      aliases: ['upper gi endoscopy', 'endoscopy', 'ogd', 'upper gi scopy', 'egd'],
       resultText:
         'Upper GI Endoscopy: Three columns of large oesophageal varices with red wale signs; an adherent clot with active ooze noted at the gastro-oesophageal junction. No gastric or duodenal ulcer seen.',
       turnaroundMinutes: 20,
@@ -109,7 +109,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     usg_abdomen: {
-      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen'],
+      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen', 'abdominal ultrasound'],
       resultText:
         'USG Abdomen & Pelvis: Liver coarse and shrunken in echotexture with an irregular surface; portal vein dilated to 14 mm; spleen enlarged at 15 cm; moderate ascites present.',
       turnaroundMinutes: 30,
@@ -125,7 +125,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     ascitic_fluid: {
-      aliases: ['ascitic fluid analysis', 'ascites fluid analysis', 'sbp workup', 'diagnostic paracentesis'],
+      aliases: ['ascitic fluid analysis', 'ascites fluid analysis', 'sbp workup', 'diagnostic paracentesis', 'ascitic tap'],
       resultText:
         'Ascitic Fluid Analysis: Total protein 1.1 g/dL, Polymorphonuclear cell count 120 cells/mm3 (Reference <250 cells/mm3) — no evidence of spontaneous bacterial peritonitis at this count.',
       turnaroundMinutes: 45,
@@ -151,7 +151,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'iv cannula', 'large bore cannula', 'two iv lines'],
       responseText: 'Two large-bore IV cannulae secured for rapid volume and blood-product access.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
@@ -159,7 +159,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Reliable large-bore venous access is the first practical step in any major upper GI bleed, needed before transfusion, vasoactive drugs, or endoscopy can safely proceed.',
     },
     terlipressin: {
-      aliases: ['terlipressin'],
+      aliases: ['terlipressin', 'iv terlipressin', 'inj terlipressin'],
       responseText: 'IV Terlipressin started before endoscopy.',
       onsetMinutes: 20,
       vitalsEffect: { bp: '96/62', hr: -8 },
@@ -168,7 +168,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'A splanchnic vasoconstrictor such as terlipressin reduces portal pressure and bleeding, and should be started as soon as variceal bleeding is suspected, before endoscopy confirms it — waiting for confirmation delays a proven mortality benefit.',
     },
     octreotide: {
-      aliases: ['octreotide infusion', 'octreotide'],
+      aliases: ['octreotide infusion', 'octreotide', 'iv octreotide'],
       responseText: 'Octreotide infusion started as a splanchnic vasoconstrictor.',
       onsetMinutes: 20,
       vitalsEffect: { bp: '94/60', hr: -6 },
@@ -177,7 +177,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Octreotide is an acceptable alternative splanchnic vasoconstrictor to terlipressin where the latter is unavailable, and should likewise be started before endoscopy.',
     },
     ceftriaxone: {
-      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'iv antibiotic', 'antibiotic prophylaxis'],
+      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'iv antibiotic', 'antibiotic prophylaxis', 'iv ceftriaxone'],
       responseText: 'IV Ceftriaxone 2 g given as antibiotic prophylaxis.',
       onsetMinutes: 30,
       appropriateness: 'indicated',
@@ -185,7 +185,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Short-course antibiotic prophylaxis reduces mortality, rebleeding, and the risk of spontaneous bacterial peritonitis in a variceal bleed with underlying chronic liver disease — a high-yield point often missed in favour of purely haemostatic measures.',
     },
     prbc_restrictive: {
-      aliases: ['packed red cells', 'prbc', 'packed red blood cells', 'blood transfusion'],
+      aliases: ['packed red cells', 'prbc', 'packed red blood cells', 'blood transfusion', 'prbc transfusion', 'transfuse blood'],
       responseText: 'Packed red cells transfused using a restrictive strategy targeting a haemoglobin around 7–8 g/dL.',
       onsetMinutes: 30,
       vitalsEffect: { hr: -18, bp: '106/68' },
@@ -197,7 +197,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'A restrictive transfusion strategy targeting Hb around 7–8 g/dL improves survival in a variceal bleed compared with liberal transfusion, which raises portal pressure and increases rebleeding risk.',
     },
     band_ligation: {
-      aliases: ['endoscopic variceal band ligation', 'band ligation', 'variceal banding', 'egvl'],
+      aliases: ['endoscopic variceal band ligation', 'band ligation', 'variceal banding', 'egvl', 'evl'],
       responseText: 'Endoscopic variceal band ligation performed, achieving haemostasis at the bleeding varix.',
       onsetMinutes: 40,
       vitalsEffect: { hr: -10, bp: '112/70' },
@@ -212,7 +212,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Endoscopic band ligation is the definitive haemostatic procedure for bleeding oesophageal varices once the patient has been resuscitated enough to tolerate the procedure safely.',
     },
     pantoprazole: {
-      aliases: ['pantoprazole infusion', 'pantoprazole', 'ppi infusion'],
+      aliases: ['pantoprazole infusion', 'pantoprazole', 'ppi infusion', 'iv pantoprazole', 'iv ppi'],
       responseText: 'IV Pantoprazole infusion started empirically.',
       onsetMinutes: 15,
       appropriateness: 'neutral',
@@ -220,7 +220,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'A proton pump inhibitor is reasonable empirical cover before the bleeding source is confirmed, but once endoscopy confirms a variceal source it has no proven mortality benefit and is not definitive therapy.',
     },
     lactulose: {
-      aliases: ['lactulose'],
+      aliases: ['lactulose', 'oral lactulose'],
       responseText: 'Oral/rectal lactulose started.',
       onsetMinutes: 60,
       appropriateness: 'indicated',
@@ -228,7 +228,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Digested blood in the gut is a large protein and ammonia load; lactulose reduces colonic ammonia absorption and helps prevent hepatic encephalopathy being precipitated after a large gastrointestinal bleed.',
     },
     balloon_tamponade: {
-      aliases: ['balloon tamponade (sengstaken-blakemore)', 'balloon tamponade', 'sengstaken blakemore tube'],
+      aliases: ['balloon tamponade (sengstaken-blakemore)', 'balloon tamponade', 'sengstaken blakemore tube', 'sb tube'],
       responseText: 'Balloon tamponade tube placed as a temporising measure for ongoing uncontrolled bleeding.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -10, bp: '100/64' },
@@ -237,7 +237,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Balloon tamponade is a temporising bridge for uncontrolled bleeding awaiting definitive endoscopic or radiological therapy, not a definitive treatment itself, and it carries a real risk of aspiration and oesophageal rupture.',
     },
     ffp: {
-      aliases: ['fresh frozen plasma', 'ffp'],
+      aliases: ['fresh frozen plasma', 'ffp', 'fresh frozen plasma transfusion'],
       responseText: 'Fresh frozen plasma transfused to correct the prolonged INR.',
       onsetMinutes: 45,
       appropriateness: 'neutral',
@@ -245,7 +245,20 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'A raised INR in this setting reflects reduced hepatic synthetic function rather than a discrete, correctable coagulopathy; routine correction with FFP has not been shown to reduce bleeding and is not recommended as a routine measure.',
     },
     over_transfusion: {
-      aliases: ['normal saline 30 ml/kg bolus', 'aggressive fluid bolus', 'large volume saline', 'normal saline bolus 30'],
+      aliases: [
+        'normal saline 30 ml/kg bolus',
+        'aggressive fluid bolus',
+        'large volume saline',
+        'normal saline bolus 30',
+        'normal saline',
+        'iv fluids',
+        'fluid bolus',
+        'ns bolus',
+        'crystalloid bolus',
+        'iv fluid bolus',
+        'normal saline 1 l bolus',
+        'ns 1 litre',
+      ],
       responseText:
         'A large-volume Normal Saline bolus (30 mL/kg) given rapidly; shortly afterward fresh haematemesis recurs.',
       onsetMinutes: 10,
