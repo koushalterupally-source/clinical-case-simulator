@@ -136,6 +136,16 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
             </Row>
           )}
 
+          {card.unmodelledList.length > 0 && (
+            <Row label="Not modelled in this case">
+              <div className="space-y-1.5 text-[14px]" style={{ color: 'var(--text-muted)' }}>
+                {card.unmodelledList.map((ord, i) => (
+                  <div key={i}>• {ord}</div>
+                ))}
+              </div>
+            </Row>
+          )}
+
           {card.gateResults.length > 0 && (
             <Row label="Decisions">
               <div className="space-y-2.5">
