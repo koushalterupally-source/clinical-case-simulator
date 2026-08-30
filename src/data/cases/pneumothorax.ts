@@ -44,7 +44,7 @@ export const SCAFFOLD_PNEUMOTHORAX: CaseScaffold = {
   },
   investigationsMap: {
     cxr_portable: {
-      aliases: ['chest x-ray portable', 'portable cxr', 'chest x-ray'],
+      aliases: ['chest x-ray portable', 'portable cxr', 'chest x-ray', 'cxr', 'cxr portable', 'portable chest x ray'],
       resultText: 'Portable CXR (obtained only after decompression): Right-sided pleural air with lung collapse and mediastinal shift, confirming the bedside diagnosis — the time spent waiting for this film would have been time the patient could not spare; decompression must never wait for imaging.',
       turnaroundMinutes: 20,
       category: 'imaging',
@@ -58,14 +58,14 @@ export const SCAFFOLD_PNEUMOTHORAX: CaseScaffold = {
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText: 'ABG (on high-flow oxygen): pH 7.29 (Reference 7.35–7.45), PaCO2 30 mmHg (Reference 35–45 mmHg), PaO2 58 mmHg (Reference 80–100 mmHg), HCO3 18 mEq/L (Reference 22–26 mEq/L) — combined hypoxaemia and metabolic acidosis from shock.',
       turnaroundMinutes: 10,
       category: 'labs',
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 12.8 g/dL (Reference 13.0–17.0 g/dL), WBC 13,400/mcL (Reference 4,000–11,000/mcL), Platelets 260,000/mcL (Reference 150,000–450,000/mcL).',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -107,7 +107,7 @@ export const SCAFFOLD_PNEUMOTHORAX: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: 'LFT: AST 34 U/L (Reference 10–40 U/L), ALT 28 U/L (Reference 7–56 U/L), Total Bilirubin 0.9 mg/dL (Reference 0.2–1.2 mg/dL) — not a priority test in the initial resuscitation of this injury.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -116,7 +116,7 @@ export const SCAFFOLD_PNEUMOTHORAX: CaseScaffold = {
   },
   therapiesMap: {
     needle_decompression: {
-      aliases: ['needle decompression 2nd ics', 'needle decompression', 'needle thoracostomy'],
+      aliases: ['needle decompression 2nd ics', 'needle decompression', 'needle thoracostomy', 'needle thoracocentesis', 'decompression', 'needle decompression 2nd intercostal space'],
       responseText: 'Needle decompression performed at the second intercostal space, midclavicular line, on the right side. A rush of air is heard escaping.',
       onsetMinutes: 2,
       vitalsEffect: { hr: -30, bp: '108/70', spo2: 12, rr: -12 },
@@ -143,14 +143,14 @@ export const SCAFFOLD_PNEUMOTHORAX: CaseScaffold = {
       rationale: 'High-flow oxygen supports oxygenation while definitive decompression is arranged and should be started immediately in any breathless trauma patient.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide-bore cannula'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide-bore cannula', 'access', 'iv two wide bore cannulae', 'two wide bore cannulae'],
       responseText: 'Two large-bore (14–16G) IV cannulae secured in the antecubital fossae.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
       rationale: 'Wide-bore venous access is essential early in any trauma resuscitation for fluids, blood products and drugs.',
     },
     fluid_bolus: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'rl bolus'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'rl bolus', 'ringer lactate bolus'],
       responseText: 'Ringer lactate 500 mL bolus given.',
       onsetMinutes: 15,
       vitalsEffect: { bp: '96/60', hr: -8 },
@@ -158,7 +158,7 @@ export const SCAFFOLD_PNEUMOTHORAX: CaseScaffold = {
       rationale: 'Judicious crystalloid supports perfusion while the mechanical cause of shock is corrected, though it is not a substitute for decompression.',
     },
     morphine: {
-      aliases: ['morphine iv', 'morphine'],
+      aliases: ['morphine iv', 'morphine', 'iv morphine'],
       responseText: 'IV Morphine given in titrated doses for analgesia.',
       onsetMinutes: 10,
       appropriateness: 'neutral',

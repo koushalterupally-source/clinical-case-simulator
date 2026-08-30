@@ -61,7 +61,7 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 13.6 g/dL (Reference 13.0–17.0 g/dL), MCV 104 fL (Reference 80–100 fL, mildly macrocytic), WBC 13,100/mcL (Reference 4,000–11,000/mcL, mild stress leukocytosis), Platelets 118,000/mcL (Reference 150,000–450,000/mcL, mildly low) — a pattern consistent with long-standing heavy alcohol use rather than acute infection.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -82,7 +82,7 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: 'Liver Function Tests: AST 96 U/L, ALT 42 U/L (AST:ALT ratio > 2, Reference 10–40 U/L each), GGT elevated, Total Bilirubin 1.4 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 3.4 g/dL — a pattern of alcohol-related liver injury without features of liver failure.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -98,7 +98,7 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       yieldNote: 'A serum ammonia level does not track reliably with how confused a patient is, and a normal or mildly raised value here neither confirms nor rules out a contribution from his liver — the assessment of his mental state has to stay clinical and cannot lean on this number.',
     },
     grbs_lab: {
-      aliases: ['rbs / grbs', 'rbs', 'grbs', 'blood glucose'],
+      aliases: ['rbs / grbs', 'rbs', 'grbs', 'blood glucose', 'random blood sugar', 'rbs random blood sugar'],
       resultText: 'Laboratory Blood Glucose: 108 mg/dL (Reference 70–140 mg/dL) — normal, excluding hypoglycaemia as a cause of the confusion.',
       turnaroundMinutes: 10,
       category: 'labs',
@@ -112,14 +112,14 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText: 'Arterial Blood Gas: pH 7.47, pCO2 30 mmHg, pO2 88 mmHg, HCO3 21 mEq/L on room air — a mild respiratory alkalosis consistent with agitation and rapid breathing, no significant hypoxia.',
       turnaroundMinutes: 15,
       category: 'labs',
       isIndicative: true,
     },
     blood_culture: {
-      aliases: ['blood culture ×2 (before antibiotics)', 'blood culture', 'blood cultures'],
+      aliases: ['blood culture ×2 (before antibiotics)', 'blood culture', 'blood cultures', 'blood culture before antibiotics'],
       resultText: 'Blood Culture ×2: No organisms seen on Gram stain; no growth reported at 48 hours — no evidence of bloodstream infection driving the fever and tachycardia.',
       turnaroundMinutes: 60,
       category: 'labs',
@@ -144,14 +144,14 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'access', 'iv two wide bore cannulae', 'two wide bore cannulae'],
       responseText: 'Two wide-bore IV cannulae secured for fluids, thiamine and the sedative infusion.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable venous access is needed before thiamine, fluids or a benzodiazepine can be given, and should be one of the first things secured.',
     },
     thiamine: {
-      aliases: ['thiamine iv', 'thiamine', 'vitamin b1'],
+      aliases: ['thiamine iv', 'thiamine', 'vitamin b1', 'iv thiamine'],
       responseText: 'Thiamine 500 mg given intravenously.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
@@ -169,7 +169,7 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       harmfulSequenceRationale: 'In a thiamine-deficient patient, a glucose load is used up by cells as fuel through a thiamine-dependent enzyme step, and doing so consumes what little thiamine reserve remains. That can precipitate an acute, largely irreversible brain injury (Wernicke encephalopathy — the triad of confusion, eye-movement abnormality and unsteady gait) that then persists even after the withdrawal itself is treated. This is exactly why parenteral thiamine must be given before, or at the very least alongside, the first dextrose-containing fluid — never after.',
     },
     benzodiazepine: {
-      aliases: ['lorazepam iv', 'lorazepam', 'benzodiazepine'],
+      aliases: ['lorazepam iv', 'lorazepam', 'benzodiazepine', 'iv lorazepam'],
       responseText: 'Lorazepam given intravenously, dosed against the bedside withdrawal severity score and repeated as that score dictates, rather than on a fixed schedule.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -22, bp: '138/86', rr: -6, temp: '37.4°C' },
@@ -177,7 +177,7 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       rationale: 'A benzodiazepine is the definitive treatment: it substitutes for alcohol at the GABA-A receptor and treats the underlying neurochemical process, not just the symptoms. Symptom-triggered dosing against a validated withdrawal scale, titrated to light somnolence — rousable, calm, not agitated and not deeply sedated — controls the withdrawal with less total drug than a fixed schedule and lets the dose track how the patient is actually doing.',
     },
     magnesium_therapy: {
-      aliases: ['magnesium sulfate 2 g iv infusion', 'magnesium sulfate', 'iv magnesium'],
+      aliases: ['magnesium sulfate 2 g iv infusion', 'magnesium sulfate', 'iv magnesium', 'iv magnesium sulfate infusion', 'magnesium', 'magnesium sulfate infusion', 'magnesium sulfate iv infusion'],
       responseText: 'Magnesium sulfate 2 g given as an intravenous infusion.',
       onsetMinutes: 30,
       labShift: {
@@ -187,7 +187,7 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       rationale: 'Hypomagnesaemia is common with sustained heavy drinking, lowers the seizure threshold, and makes potassium harder to correct until it is replaced — correcting it supports both seizure prevention and the potassium repletion given alongside it.',
     },
     potassium_therapy: {
-      aliases: ['potassium chloride in infusion', 'potassium chloride', 'iv potassium'],
+      aliases: ['potassium chloride in infusion', 'potassium chloride', 'iv potassium', 'potassium', 'potassium chloride in'],
       responseText: 'Potassium chloride given in an intravenous infusion, with cardiac monitoring running throughout.',
       onsetMinutes: 30,
       labShift: {
@@ -197,7 +197,7 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       rationale: 'Correcting hypokalaemia reduces the risk of a cardiac arrhythmia in a patient who is already tachycardic and catecholamine-driven, and should be replaced under monitoring alongside magnesium.',
     },
     iv_fluids: {
-      aliases: ['normal saline 0.9% 500 ml bolus', 'normal saline', 'ns bolus'],
+      aliases: ['normal saline 0.9% 500 ml bolus', 'normal saline', 'ns bolus', 'normal saline 0 9 bolus'],
       responseText: 'Normal saline 0.9% 500 mL bolus given intravenously for volume depletion from sweating and poor intake.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -6, bp: '150/92' },
@@ -205,14 +205,14 @@ export const SCAFFOLD_DELIRIUM_TREMENS: CaseScaffold = {
       rationale: 'Profuse sweating, tachypnoea and poor oral intake over the preceding day produce a real volume deficit that supports the circulation while the sedative and electrolyte repletion take effect.',
     },
     cardiac_monitoring: {
-      aliases: ['continuous cardiac monitoring', 'cardiac monitoring', 'continuous ecg monitoring'],
+      aliases: ['continuous cardiac monitoring', 'cardiac monitoring', 'continuous ecg monitoring', 'continuous electrocardiogram monitoring'],
       responseText: 'Continuous cardiac monitoring commenced.',
       onsetMinutes: 2,
       appropriateness: 'indicated',
       rationale: 'Autonomic instability, hypokalaemia and hypomagnesaemia together carry a real arrhythmia risk, and monitoring should run throughout electrolyte replacement and sedation.',
     },
     haloperidol_sole_therapy: {
-      aliases: ['haloperidol 5 mg iv', 'haloperidol'],
+      aliases: ['haloperidol 5 mg iv', 'haloperidol', 'haloperidol iv', 'iv haloperidol'],
       responseText: 'Haloperidol given intravenously as the sole agent for the agitation and hallucinations, with no benzodiazepine given.',
       onsetMinutes: 20,
       vitalsEffect: { hr: 10, bp: '172/104' },

@@ -74,7 +74,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
   },
   investigationsMap: {
     abg_cooximetry: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText:
         'ABG with co-oximetry: pH 7.31 (Reference 7.35–7.45), PaCO2 34 mmHg (Reference 35–45 mmHg), PaO2 88 mmHg (Reference 80–100 mmHg), HCO3 17 mEq/L (Reference 22–26 mEq/L) — Carboxyhaemoglobin (COHb) 32% (Reference <3% in non-smokers, <10% in smokers) — significant carbon monoxide poisoning. Standard pulse oximetry cannot detect this, since it cannot distinguish carboxyhaemoglobin from oxyhaemoglobin.',
       turnaroundMinutes: 15,
@@ -90,7 +90,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText:
         'CBC: Hb 16.8 g/dL (Reference 13.0–17.0 g/dL), Hct 50% (Reference 40–50%), WBC 14,200/mcL (Reference 4,000–11,000/mcL), Platelets 260,000/mcL (Reference 150,000–450,000/mcL) — haemoconcentration from early plasma volume loss into the injured tissue.',
       turnaroundMinutes: 20,
@@ -98,7 +98,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText:
         'Renal Function: Blood Urea 34 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.1 mg/dL (Reference 0.6–1.2 mg/dL) — upper-normal, consistent with early intravascular volume depletion; should be trended alongside urine output.',
       turnaroundMinutes: 25,
@@ -114,7 +114,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
       isIndicative: true,
     },
     cxr: {
-      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr'],
+      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest x ray', 'cxr pa', 'cxr portable'],
       resultText:
         'Portable Chest X-ray: No infiltrate, effusion or pneumothorax at this stage. A normal early film does not rule out significant smoke-related airway or lung injury, which often takes 24–48 hours to appear on imaging — clinical signs, not the X-ray, should drive the decision to secure the airway now.',
       turnaroundMinutes: 20,
@@ -122,7 +122,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
       isIndicative: true,
     },
     ecg: {
-      aliases: ['12-lead ecg', 'ecg'],
+      aliases: ['12-lead ecg', 'ecg', '12 lead electrocardiogram', 'electrocardiogram', 'lead ecg'],
       resultText: '12-lead ECG: Sinus tachycardia at 126 bpm, no acute ST-T changes.',
       turnaroundMinutes: 5,
       category: 'imaging',
@@ -154,7 +154,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText:
         'Liver Function Tests: AST 32 U/L (Reference 10–40 U/L), ALT 28 U/L (Reference 7–56 U/L), Total Bilirubin 0.7 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 4.0 g/dL (Reference 3.5–5.0 g/dL) — normal at this stage.',
       turnaroundMinutes: 30,
@@ -176,7 +176,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
         'Signs of impending airway compromise — hoarseness, singed nasal hair, soot in the oropharynx and facial burns — mean the airway should be secured immediately, before progressive oedema over the next several hours makes intubation difficult or impossible. Waiting for stridor to appear is too late.',
     },
     high_flow_oxygen: {
-      aliases: ['high-flow nasal oxygen', '100% oxygen', 'non-rebreather mask oxygen', 'high flow oxygen'],
+      aliases: ['high-flow nasal oxygen', '100% oxygen', 'non-rebreather mask oxygen', 'high flow oxygen', 'oxygen'],
       responseText: 'High-flow 100% oxygen applied.',
       onsetMinutes: 10,
       vitalsEffect: { spo2: 1 },
@@ -189,7 +189,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
         'High-flow 100% oxygen dramatically shortens the half-life of carboxyhaemoglobin and should be started immediately on clinical suspicion of carbon monoxide poisoning, regardless of a normal-looking pulse oximeter reading, which cannot distinguish oxyhaemoglobin from carboxyhaemoglobin.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'Two large-bore IV cannulae sited, through unburned skin where possible.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
@@ -197,7 +197,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
         'Reliable large-bore venous access is required before the calculated fluid regimen can be delivered, and should be secured immediately alongside airway and breathing assessment.',
     },
     parkland_fluids: {
-      aliases: ['ringer lactate maintenance', 'ringer lactate infusion', 'parkland formula fluids', 'lactated ringers infusion'],
+      aliases: ['ringer lactate maintenance', 'ringer lactate infusion', 'parkland formula fluids', 'lactated ringers infusion', 'lactated ringers', 'ringer lactate'],
       responseText:
         'IV Ringer Lactate infusion started at the calculated starting rate: 2 mL × 70 kg × 40% TBSA = 5,600 mL over 24 hours, with half given over the first 8 hours counted from the time of injury (not from arrival) and the remainder over the following 16 hours. The rate is then titrated hourly against urine output.',
       onsetMinutes: 20,
@@ -228,7 +228,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
         'The full-thickness injury is circumferential across the chest and right arm; as tissue oedema builds beneath the inelastic burnt skin, it can compress the chest wall enough to restrict ventilation and compress limb vessels enough to cause ischaemia. Escharotomy through the eschar (not into viable tissue) relieves this pressure and is a clinical decision based on the exam findings, not one that should wait for distal pulses to disappear.',
     },
     morphine_analgesia: {
-      aliases: ['morphine iv', 'morphine', 'iv opioid analgesia'],
+      aliases: ['morphine iv', 'morphine', 'iv opioid analgesia', 'iv morphine', 'opioid analgesia'],
       responseText: 'IV morphine given in small titrated doses for pain.',
       onsetMinutes: 5,
       vitalsEffect: { hr: -6 },
@@ -276,7 +276,7 @@ export const SCAFFOLD_BURNS: CaseScaffold = {
         'Burns above roughly 20% TBSA are commonly complicated by paralytic ileus and gastric dilatation; an early nasogastric tube decompresses the stomach and reduces the risk of aspiration, which matters even more with the airway already at risk.',
     },
     prophylactic_antibiotics: {
-      aliases: ['ceftriaxone 2 g iv', 'piperacillin-tazobactam iv', 'vancomycin iv', 'prophylactic antibiotics'],
+      aliases: ['ceftriaxone 2 g iv', 'piperacillin-tazobactam iv', 'vancomycin iv', 'prophylactic antibiotics', 'ceftriaxone', 'ceftriaxone iv', 'iv ceftriaxone', 'iv piperacillin tazobactam', 'iv vancomycin', 'piperacillin tazobactam', 'vancomycin'],
       responseText: 'Broad-spectrum IV antibiotics started as a precaution, despite no clinical signs of infection.',
       onsetMinutes: 30,
       vitalsEffect: { hr: 4 },

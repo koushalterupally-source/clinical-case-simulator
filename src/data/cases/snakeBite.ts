@@ -55,14 +55,14 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
   },
   investigationsMap: {
     wbct20: {
-      aliases: ['20 minute whole blood clotting test', '20wbct', 'whole blood clotting test', 'bedside clotting test'],
+      aliases: ['20 minute whole blood clotting test', '20wbct', 'whole blood clotting test', 'bedside clotting test', 'minute whole blood clotting test'],
       resultText: '20-Minute Whole Blood Clotting Test: 2 mL of venous blood placed in a clean, dry glass test tube and left undisturbed for 20 minutes — a firm clot forms within 8 minutes and stays intact on gentle tipping. A normal result on this bedside test argues against a bite that damages the clotting system, and fits instead with a bite whose principal action is on the nervous system.',
       turnaroundMinutes: 20,
       category: 'monitoring',
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 13.8 g/dL (Reference 13.0–17.0 g/dL), WBC 11,200/mcL (Reference 4,000–11,000/mcL), Platelets 230,000/mcL (Reference 150,000–450,000/mcL) — mild leukocytosis, no evidence of a bleeding or platelet disorder.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -76,7 +76,7 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 24 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.8 mg/dL (Reference 0.6–1.2 mg/dL) — normal, a useful baseline before antivenom and worth trending if the picture changes.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -97,14 +97,14 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText: 'ABG (on room air): pH 7.34 (Reference 7.35–7.45), PaCO2 48 mmHg (Reference 35–45 mmHg), PaO2 72 mmHg (Reference 80–100 mmHg), HCO3 23 mEq/L (Reference 22–26 mEq/L) — early ventilatory failure with CO2 retention from weakening respiratory muscles.',
       turnaroundMinutes: 10,
       category: 'labs',
       isIndicative: true,
     },
     ecg: {
-      aliases: ['12-lead ecg', 'ecg'],
+      aliases: ['12-lead ecg', 'ecg', '12 lead electrocardiogram', 'electrocardiogram', 'lead ecg'],
       resultText: '12-Lead ECG: Sinus tachycardia at 104 bpm. No acute ST-T changes.',
       turnaroundMinutes: 5,
       category: 'monitoring',
@@ -118,7 +118,7 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: 'Liver Function Tests: AST 22 U/L (Reference 10–40 U/L), ALT 19 U/L (Reference 7–56 U/L), Total Bilirubin 0.7 mg/dL (Reference 0.2–1.2 mg/dL) — normal; not a test this presentation specifically calls for.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -136,7 +136,7 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'Two wide-bore (16G) IV cannulae secured in a limb away from the bite for fluids, antivenom and emergency drugs.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
@@ -151,7 +151,7 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       rationale: 'Respiratory muscle weakness from progressive paralysis reduces effective ventilation; supplemental oxygen supports the patient while the underlying paralysis is treated and the airway is reassessed.',
     },
     atropine: {
-      aliases: ['atropine 0.6 mg iv', 'atropine', 'atropine iv'],
+      aliases: ['atropine 0.6 mg iv', 'atropine', 'atropine iv', 'iv atropine'],
       responseText: 'Atropine 0.6 mg given intravenously.',
       onsetMinutes: 3,
       vitalsEffect: { hr: 8 },
@@ -159,7 +159,7 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       rationale: 'Atropine is given first to block the muscarinic side effects of neostigmine — excess secretions, bradycardia and gut cramping — and should always precede it, never follow it.',
     },
     neostigmine: {
-      aliases: ['neostigmine iv', 'neostigmine', 'neostigmine 1.5 mg iv'],
+      aliases: ['neostigmine iv', 'neostigmine', 'neostigmine 1.5 mg iv', 'iv neostigmine'],
       responseText: 'Neostigmine 1.5–2 mg given intravenously after atropine, repeated according to response.',
       onsetMinutes: 20,
       vitalsEffect: { rr: -3, spo2: 3 },
@@ -174,7 +174,7 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       harmfulSequenceRationale: 'Neostigmine floods muscarinic receptors as well as the neuromuscular junction; without atropine on board first to block the muscarinic effects, it produces bradycardia, bronchorrhoea and cramping — a cholinergic crisis instead of a controlled trial of reversal.',
     },
     asv: {
-      aliases: ['polyvalent anti-snake venom (asv) infusion', 'asv', 'polyvalent antivenom', 'anti-snake venom'],
+      aliases: ['polyvalent anti-snake venom (asv) infusion', 'asv', 'polyvalent antivenom', 'anti-snake venom', 'polyvalent anti snake venom anti snake venom infusion', 'polyvalent anti snake venom asv', 'polyvalent asv asv infusion'],
       responseText: 'Polyvalent antivenom infused intravenously in normal saline over one hour, with adrenaline drawn up and ready before starting.',
       onsetMinutes: 90,
       vitalsEffect: { rr: -4, spo2: 3, hr: -6 },
@@ -208,14 +208,14 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       harmfulSequenceRationale: 'Bulbar weakness makes the airway unsafe well before ventilation is needed; delivering ventilatory support without first securing the airway with a cuffed endotracheal tube leaves him unprotected against aspiration of saliva or vomitus.',
     },
     adrenaline_im: {
-      aliases: ['adrenaline 0.5 mg im', 'adrenaline im', 'im adrenaline', 'intramuscular adrenaline'],
+      aliases: ['adrenaline 0.5 mg im', 'adrenaline im', 'im adrenaline', 'intramuscular adrenaline', 'adrenaline'],
       responseText: 'Adrenaline 0.5 mg (1:1000) given intramuscularly into the anterolateral thigh, kept drawn up and ready throughout the antivenom infusion.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
       rationale: 'Antivenom is a foreign animal protein and can trigger an anaphylactic or anaphylactoid reaction during the infusion; if urticaria, wheeze, stridor or a fall in blood pressure develop, intramuscular adrenaline is the immediate treatment, and the infusion is not restarted at full rate until the reaction is controlled.',
     },
     hydrocortisone: {
-      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid'],
+      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid', 'iv hydrocortisone', 'steroid'],
       responseText: 'Hydrocortisone 200 mg given intravenously.',
       onsetMinutes: 240,
       appropriateness: 'neutral',
@@ -226,7 +226,7 @@ export const SCAFFOLD_SNAKE_BITE: CaseScaffold = {
       harmfulSequenceRationale: 'Hydrocortisone does nothing for the airway swelling or falling pressure of an acute reaction and acts over hours, not minutes; reaching for it before adrenaline delays the one drug that can reverse the collapse.',
     },
     chlorpheniramine: {
-      aliases: ['chlorpheniramine iv', 'chlorpheniramine', 'antihistamine iv'],
+      aliases: ['chlorpheniramine iv', 'chlorpheniramine', 'antihistamine iv', 'antihistamine', 'iv antihistamine', 'iv chlorpheniramine'],
       responseText: 'Chlorpheniramine 10 mg given intravenously.',
       onsetMinutes: 30,
       appropriateness: 'neutral',

@@ -61,7 +61,7 @@ export const SCAFFOLD_TEN: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 13.1 g/dL (Reference 13.0–17.0 g/dL), WBC 2,900/mcL (Reference 4,000–11,000/mcL) — leucopenia, Platelets 138,000/mcL (Reference 150,000–450,000/mcL) — mildly low. A low white cell count here is an adverse prognostic marker and should prompt close surveillance for secondary infection.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -75,14 +75,14 @@ export const SCAFFOLD_TEN: CaseScaffold = {
       isIndicative: true,
     },
     rft_kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 46 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.3 mg/dL (Reference 0.6–1.2 mg/dL) — mildly elevated, consistent with intravascular volume depletion from ongoing fluid loss through denuded skin, exactly as would be seen in a burn of comparable extent.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: 'Liver Function Tests: AST 68 U/L (Reference 10–40 U/L), ALT 74 U/L (Reference 7–56 U/L), Total Bilirubin 1.0 mg/dL (Reference 0.2–1.2 mg/dL) — mild transaminitis, which should be trended alongside the causative drug history and any further hepatotoxic exposures.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -103,7 +103,7 @@ export const SCAFFOLD_TEN: CaseScaffold = {
       isIndicative: true,
     },
     blood_culture: {
-      aliases: ['blood culture ×2 (before antibiotics)', 'blood culture', 'blood cultures'],
+      aliases: ['blood culture ×2 (before antibiotics)', 'blood culture', 'blood cultures', 'blood culture before antibiotics'],
       resultText: 'Blood Culture ×2: No growth at this time; held on file for surveillance. Sent because secondary bloodstream infection is the leading cause of death here, so a positive result would need targeted antibiotics — this is surveillance, not a reason to start antibiotics on its own.',
       turnaroundMinutes: 240,
       category: 'labs',
@@ -152,14 +152,14 @@ export const SCAFFOLD_TEN: CaseScaffold = {
       rationale: 'Early withdrawal of the culprit drug is the single intervention most strongly linked to survival in this condition — every additional day the causative drug is continued is associated with worse outcome — so this must happen before any confirmatory test result, not after.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'Two wide-bore (16G) IV cannulae are secured, sited through unaffected skin where possible.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
       rationale: 'Reliable large-bore access is needed for the large-volume fluid resuscitation this degree of skin loss requires, calculated as for a burn, and for delivering medications without further traumatising denuded skin.',
     },
     iv_fluid_resuscitation: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus', 'normal saline 0.9% 500 ml bolus'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus', 'normal saline 0.9% 500 ml bolus', 'crystalloid', 'normal saline', 'normal saline 0 9 bolus', 'ringer lactate bolus', 'iv fluids', 'fluid bolus', 'iv fluid'],
       responseText: 'Warmed Ringer Lactate is given as an initial bolus and continued as a titrated infusion, with the rate calculated from percentage body-surface-area detachment as for a burn, and adjusted against hourly urine output.',
       onsetMinutes: 30,
       vitalsEffect: { hr: -10, bp: '108/68' },
@@ -190,7 +190,7 @@ export const SCAFFOLD_TEN: CaseScaffold = {
       harmfulSequenceRationale: 'This much denuded, exquisitely sensitive skin makes wound care significantly painful; doing it before analgesia is given causes needless suffering, a sympathetic surge that worsens haemodynamics, and risks extending the area of skin loss through inadvertent mechanical shearing during handling.',
     },
     analgesia: {
-      aliases: ['morphine iv', 'morphine', 'iv analgesia'],
+      aliases: ['morphine iv', 'morphine', 'iv analgesia', 'analgesia', 'iv morphine'],
       responseText: 'IV morphine is titrated for background pain and given pre-emptively before wound care and dressing changes.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -8 },
@@ -224,21 +224,21 @@ export const SCAFFOLD_TEN: CaseScaffold = {
       rationale: 'Ocular mucosal involvement can progress to permanent scarring, symblepharon and even loss of vision if it is not addressed from day one; same-admission ophthalmology involvement whenever the eyes are involved is standard of care, not a referral to defer.',
     },
     prophylactic_antibiotics: {
-      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone'],
+      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'ceftriaxone iv', 'iv ceftriaxone'],
       responseText: 'Intravenous ceftriaxone is started empirically despite no clinical or laboratory evidence of infection.',
       onsetMinutes: 30,
       appropriateness: 'harmful',
       rationale: 'Prophylactic systemic antibiotics given before there is any evidence of infection do not improve survival in this condition and are specifically advised against by guidelines — they select for resistant organisms and can delay recognition of a genuine secondary infection when it does occur, even though infection is the leading cause of death here. Antibiotics should be reserved for a documented infection guided by surveillance cultures.',
     },
     corticosteroids: {
-      aliases: ['dexamethasone iv', 'dexamethasone', 'systemic corticosteroids'],
+      aliases: ['dexamethasone iv', 'dexamethasone', 'systemic corticosteroids', 'iv dexamethasone'],
       responseText: 'A short course of systemic corticosteroid (IV dexamethasone) is given early in the course, per local unit protocol.',
       onsetMinutes: 90,
       appropriateness: 'neutral',
       rationale: 'Systemic corticosteroids remain genuinely contested for this condition: some observational series and unit protocols report benefit from a short early course, while others report increased infective complications with no consistent mortality benefit, and expert guidance is divided. This is a specialist/unit-protocol judgement call, not an unambiguously right or wrong step, and it must never substitute for stopping the drug and for burns-style supportive care.',
     },
     ivig: {
-      aliases: ['intravenous immunoglobulin (ivig) infusion', 'ivig', 'iv immunoglobulin'],
+      aliases: ['intravenous immunoglobulin (ivig) infusion', 'ivig', 'iv immunoglobulin', 'immunoglobulin', 'intravenous immunoglobulin', 'intravenous immunoglobulin intravenous immunoglobulin infusion', 'intravenous immunoglobulin ivig', 'ivig ivig infusion'],
       responseText: 'High-dose intravenous immunoglobulin is infused over several days, per local unit protocol.',
       onsetMinutes: 120,
       appropriateness: 'neutral',

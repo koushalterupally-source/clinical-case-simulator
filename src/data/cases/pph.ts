@@ -49,7 +49,7 @@ export const SCAFFOLD_PPH: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 6.9 g/dL (Reference 12.0–15.0 g/dL), WBC 12,400/mcL (Reference 4,000–11,000/mcL), Platelets 210,000/mcL (Reference 150,000–450,000/mcL) — significant anaemia from ongoing blood loss.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -77,14 +77,14 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 28 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.7 mg/dL (Reference 0.6–1.2 mg/dL) — normal, though should be trended if shock persists.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     usg_abdomen: {
-      aliases: ['usg abdomen & pelvis', 'usg pelvis', 'pelvic ultrasound'],
+      aliases: ['usg abdomen & pelvis', 'usg pelvis', 'pelvic ultrasound', 'pelvic usg', 'ultrasound abdomen pelvis', 'ultrasound pelvis'],
       resultText: 'USG Abdomen & Pelvis: Uterus well contracted on this scan, empty endometrial cavity, no retained products of conception, no free fluid.',
       turnaroundMinutes: 25,
       category: 'imaging',
@@ -98,7 +98,7 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: 'Liver Function Tests: AST 24 U/L (Reference 10–40 U/L), ALT 20 U/L (Reference 7–56 U/L), Total Bilirubin 0.6 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 3.8 g/dL (Reference 3.5–5.0 g/dL) — normal.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -122,7 +122,7 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       rationale: 'Fundal massage with bimanual compression is the immediate mechanical first step, done in the same moment drugs are being drawn up — it stimulates the uterine muscle to contract and directly compresses the bleeding placental bed.',
     },
     oxytocin: {
-      aliases: ['oxytocin 10 iu im', 'oxytocin 20 iu infusion', 'oxytocin', 'oxytocin infusion'],
+      aliases: ['oxytocin 10 iu im', 'oxytocin 20 iu infusion', 'oxytocin', 'oxytocin infusion', 'im oxytocin', 'oxytocin im'],
       responseText: 'Oxytocin 10 IU given intramuscularly, followed by an infusion of 20 IU in crystalloid.',
       onsetMinutes: 5,
       vitalsEffect: { hr: -16, bp: '100/64' },
@@ -130,14 +130,14 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       rationale: 'Oxytocin is the first-line uterotonic recommended by every major guideline for this presentation — it acts within minutes to restore uterine tone and should be given alongside massage, not after it.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'Two wide-bore (16G) IV cannulae secured for rapid fluid and blood product access.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable large-bore venous access is a prerequisite for rapid crystalloid and blood product delivery and should be secured at the same time as the first uterotonic.',
     },
     crystalloid: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus', 'crystalloid', 'ringer lactate bolus'],
       responseText: 'Ringer Lactate 500 mL bolus given rapidly IV.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -8, bp: '96/60' },
@@ -145,14 +145,14 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       rationale: 'Crystalloid resuscitation supports the circulation while uterotonics take effect and blood products are prepared, and should never be withheld while waiting for cross-matched blood.',
     },
     tranexamic_acid: {
-      aliases: ['tranexamic acid', 'txa'],
+      aliases: ['tranexamic acid', 'txa', 'tranexamic', 'iv tranexamic acid', 'txa 1 g iv'],
       responseText: 'Tranexamic acid 1 g given intravenously.',
       onsetMinutes: 10,
       appropriateness: 'indicated',
       rationale: 'Tranexamic acid reduces death from bleeding, but the benefit is greatest when it is given within 3 hours of the onset of bleeding — it should be given early and alongside uterotonics, not held back until later.',
     },
     carboprost: {
-      aliases: ['carboprost 250 mcg im', 'carboprost'],
+      aliases: ['carboprost 250 mcg im', 'carboprost', 'carboprost im', 'im carboprost'],
       responseText: 'Carboprost 250 mcg given intramuscularly.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -10, bp: '104/66' },
@@ -160,7 +160,7 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       rationale: 'Carboprost is an appropriate second-line uterotonic when the first-line agent has not secured adequate tone. It is contraindicated in asthma, since it can precipitate severe bronchospasm — not a concern here, as she has no history of asthma.',
     },
     methylergometrine: {
-      aliases: ['methylergometrine 0.2 mg im', 'methylergometrine', 'ergometrine'],
+      aliases: ['methylergometrine 0.2 mg im', 'methylergometrine', 'ergometrine', 'im methylergometrine', 'methylergometrine im'],
       responseText: 'Methylergometrine 0.2 mg given intramuscularly.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -10, bp: '106/68' },
@@ -168,7 +168,7 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       rationale: 'Methylergometrine is an appropriate second-line uterotonic, always given intramuscularly and never as an intravenous bolus. It is contraindicated in hypertension and pre-eclampsia because it can provoke a dangerous rise in blood pressure — not a concern here, as she has no hypertensive disorder.',
     },
     misoprostol: {
-      aliases: ['misoprostol 800 mcg pr', 'misoprostol'],
+      aliases: ['misoprostol 800 mcg pr', 'misoprostol', 'misoprostol pr'],
       responseText: 'Misoprostol 800 mcg given per rectum.',
       onsetMinutes: 20,
       vitalsEffect: { temp: '37.6°C' },
@@ -225,7 +225,7 @@ export const SCAFFOLD_PPH: CaseScaffold = {
       rationale: 'Early senior obstetric involvement ensures escalation through medical, mechanical and surgical measures happens without delay if first-line treatment fails.',
     },
     furosemide: {
-      aliases: ['furosemide iv', 'furosemide', 'lasix'],
+      aliases: ['furosemide iv', 'furosemide', 'lasix', 'iv furosemide'],
       responseText: 'Furosemide 40 mg given intravenously for the falling urine output.',
       onsetMinutes: 10,
       vitalsEffect: { hr: 18, bp: '70/40' },

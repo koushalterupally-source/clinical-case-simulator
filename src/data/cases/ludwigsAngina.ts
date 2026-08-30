@@ -55,7 +55,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 13.8 g/dL (Reference 13.0–17.0 g/dL), WBC 22,600/mcL (Reference 4,000–11,000/mcL) with 88% neutrophils and a left shift, Platelets 260,000/mcL (Reference 150,000–450,000/mcL) — marked leucocytosis with neutrophilia consistent with an acute bacterial infection.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -71,7 +71,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       appropriateness: 'indicated',
     },
     grbs: {
-      aliases: ['rbs / grbs', 'grbs', 'rbs'],
+      aliases: ['rbs / grbs', 'grbs', 'rbs', 'random blood sugar', 'rbs random blood sugar'],
       resultText: 'Random Blood Sugar: 214 mg/dL — significantly elevated. Poorly controlled or undiagnosed diabetes is a recognised risk factor for a rapidly spreading dental-space infection and needs active management alongside the acute problem.',
       turnaroundMinutes: 5,
       category: 'labs',
@@ -87,7 +87,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       appropriateness: 'indicated',
     },
     blood_culture: {
-      aliases: ['blood culture 2 (before antibiotics)', 'blood culture'],
+      aliases: ['blood culture 2 (before antibiotics)', 'blood culture', 'blood culture before antibiotics'],
       resultText: 'Blood Culture ×2 (drawn before the first antibiotic dose): sent to the laboratory, incubating; a preliminary report is expected in 24–48 hours.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -111,7 +111,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       appropriateness: 'indicated',
     },
     rft_kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'rft', 'kft'],
+      aliases: ['rft / kft (urea, creatinine)', 'rft', 'kft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 32 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.9 mg/dL (Reference 0.6–1.2 mg/dL) — normal, and useful as a baseline before doses of antibiotics that are renally cleared.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -127,7 +127,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       appropriateness: 'indicated',
     },
     chest_xray: {
-      aliases: ['chest x-ray pa', 'chest x-ray'],
+      aliases: ['chest x-ray pa', 'chest x-ray', 'cxr', 'cxr pa'],
       resultText: 'Chest X-ray PA: Lung fields clear, no mediastinal widening and no free air in the soft tissues of the neck or superior mediastinum on this film — no radiographic evidence yet of the infection tracking down into the chest, which should be re-checked if new chest signs develop.',
       turnaroundMinutes: 20,
       category: 'imaging',
@@ -178,14 +178,14 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       rationale: 'Gravity keeps the swollen floor-of-mouth tissue and posteriorly displaced tongue from falling back onto the airway; sitting upright is often the only thing keeping the airway open at this stage and must never be interrupted electively.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'access', 'iv two wide bore cannulae', 'two wide bore cannulae'],
       responseText: 'Two wide-bore IV cannulae secured for fluids, antibiotics and drugs.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable venous access is needed early to give fluids and antibiotics without delaying the airway plan.',
     },
     iv_fluids: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'iv fluids'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'iv fluids', 'fluids', 'ringer lactate bolus'],
       responseText: 'Ringer Lactate 500 mL given intravenously.',
       onsetMinutes: 20,
       vitalsEffect: { hr: -6 },
@@ -193,7 +193,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       rationale: 'Reduced oral intake from pain and trismus, combined with fever and a systemic inflammatory response, warrants intravenous fluid support alongside definitive treatment.',
     },
     iv_pip_tazo: {
-      aliases: ['piperacillin-tazobactam iv', 'piperacillin tazobactam', 'iv antibiotics'],
+      aliases: ['piperacillin-tazobactam iv', 'piperacillin tazobactam', 'iv antibiotics', 'antibiotics', 'iv piperacillin tazobactam'],
       responseText: 'Piperacillin-tazobactam given intravenously, drawn up after blood cultures were sent.',
       onsetMinutes: 90,
       vitalsEffect: { hr: -8, temp: '38.1°C' },
@@ -204,7 +204,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       rationale: 'A broad-spectrum beta-lactam/beta-lactamase-inhibitor combination covers the polymicrobial oral flora typically responsible here — oral streptococci and anaerobes together — and should be started early, ideally after blood cultures are drawn but without waiting for a surgical slot.',
     },
     iv_metronidazole: {
-      aliases: ['metronidazole iv', 'metronidazole'],
+      aliases: ['metronidazole iv', 'metronidazole', 'iv metronidazole'],
       responseText: 'Metronidazole given intravenously alongside the beta-lactam.',
       onsetMinutes: 90,
       appropriateness: 'indicated',
@@ -243,7 +243,7 @@ export const SCAFFOLD_LUDWIGS: CaseScaffold = {
       rationale: 'Surgical decompression of the involved spaces plus removal of the causative tooth is definitive source control, addressing the process that antibiotics alone cannot adequately reach — but it must follow, never precede, a secured airway.',
     },
     sedation_before_airway: {
-      aliases: ['lorazepam iv', 'lorazepam'],
+      aliases: ['lorazepam iv', 'lorazepam', 'iv lorazepam'],
       responseText: 'Lorazepam given intravenously to settle the patient, who appears anxious and agitated.',
       onsetMinutes: 10,
       vitalsEffect: { spo2: -12, rr: -8, hr: 10 },

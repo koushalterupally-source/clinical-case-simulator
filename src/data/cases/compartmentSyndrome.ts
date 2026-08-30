@@ -91,14 +91,14 @@ export const SCAFFOLD_COMPARTMENT: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 32 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.3 mg/dL (Reference 0.6–1.2 mg/dL) — mildly elevated, consistent with early kidney stress from circulating muscle pigment; should be trended alongside fluids and urine output.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 13.8 g/dL (Reference 13.0–17.0 g/dL), WBC 13,200/mcL (Reference 4,000–11,000/mcL) — mildly raised, consistent with the stress of significant soft-tissue and muscle injury, Platelets 240,000/mcL (Reference 150,000–450,000/mcL).',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -146,7 +146,7 @@ export const SCAFFOLD_COMPARTMENT: CaseScaffold = {
   },
   therapiesMap: {
     remove_cast: {
-      aliases: ['bivalve cast & release constrictive dressings', 'remove the cast', 'bivalve the cast', 'release constrictive dressings'],
+      aliases: ['bivalve cast & release constrictive dressings', 'remove the cast', 'bivalve the cast', 'release constrictive dressings', 'remove cast', 'split the cast', 'release the cast'],
       responseText: 'The below-knee cast is split down to the skin on both sides (bivalved), the padding beneath is cut through, and any constrictive bandage is released completely; the leg is kept flat, level with the heart.',
       onsetMinutes: 5,
       vitalsEffect: { hr: -4 },
@@ -154,14 +154,14 @@ export const SCAFFOLD_COMPARTMENT: CaseScaffold = {
       rationale: 'Releasing every external constricting layer — cast, padding and bandage — down to skin, and keeping the limb level with the heart rather than raised, is the immediate, zero-cost first step the moment this is suspected clinically. It takes seconds, can partially relieve pressure, and must never be deferred while waiting for a test or a theatre slot.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'access', 'iv two wide bore cannulae', 'two wide bore cannulae'],
       responseText: 'Two wide-bore (16G) IV cannulae are secured for fluids, analgesia and pre-operative access.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable large-bore venous access is needed for fluid resuscitation, analgesia and urgent pre-operative drug administration, and should be secured without delay alongside the bedside release manoeuvre.',
     },
     iv_fluids: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'iv fluids'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'iv fluids', 'fluids', 'ringer lactate bolus'],
       responseText: 'Ringer Lactate 500 mL is given rapidly IV, with ongoing crystalloid to maintain a good urine output.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -6 },

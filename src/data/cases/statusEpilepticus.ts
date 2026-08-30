@@ -60,7 +60,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
   },
   investigationsMap: {
     grbs: {
-      aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar', 'bedside glucose', 'capillary glucose', 'glucometer'],
+      aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar', 'bedside glucose', 'capillary glucose', 'glucometer', 'random blood sugar', 'rbs random blood sugar'],
       resultText:
         'RBS / GRBS: 96 mg/dL (Reference 70–140 mg/dL) — normal; checking bedside glucose immediately in every convulsing patient is mandatory to exclude hypoglycaemia as a reversible cause, even though it is normal here.',
       turnaroundMinutes: 2,
@@ -91,7 +91,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText:
         'CBC: Hb 14.0 g/dL (Reference 13.0–17.0 g/dL), WBC 13,200/mcL (Reference 4,000–11,000/mcL), Platelets 250,000/mcL (Reference 150,000–450,000/mcL) — mild stress leukocytosis expected after prolonged muscular activity.',
       turnaroundMinutes: 20,
@@ -107,7 +107,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft', 'liver function test'],
+      aliases: ['lft', 'liver function test', 'liver function tests'],
       resultText:
         'Liver Function Tests: AST 32 U/L (Reference 10–40 U/L), ALT 28 U/L (Reference 7–56 U/L), Total Bilirubin 0.7 mg/dL (Reference 0.2–1.2 mg/dL) — normal; relevant baseline given ongoing anti-seizure medication use.',
       turnaroundMinutes: 30,
@@ -149,7 +149,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
   },
   therapiesMap: {
     lorazepam: {
-      aliases: ['lorazepam iv', 'lorazepam', 'benzodiazepine', 'iv benzodiazepine'],
+      aliases: ['lorazepam iv', 'lorazepam', 'benzodiazepine', 'iv benzodiazepine', 'iv lorazepam'],
       responseText: 'IV Lorazepam given as first-line therapy.',
       onsetMinutes: 5,
       vitalsEffect: { hr: -14, rr: -2, spo2: 4 },
@@ -161,7 +161,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
         'A benzodiazepine is first-line therapy and should be given immediately; treatment within the first five minutes gives the best chance of terminating the episode before it becomes refractory.',
     },
     levetiracetam: {
-      aliases: ['levetiracetam iv', 'levetiracetam'],
+      aliases: ['levetiracetam iv', 'levetiracetam', 'iv levetiracetam'],
       responseText: 'IV Levetiracetam loading dose given.',
       onsetMinutes: 20,
       vitalsEffect: { hr: -4 },
@@ -191,7 +191,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
         'Phenytoin is an appropriate second-line agent, but must be infused no faster than about 50 mg/min because of the risk of hypotension and cardiac arrhythmia, and must never be mixed with or run through a line carrying dextrose-containing fluid, which causes it to precipitate.',
     },
     dextrose: {
-      aliases: ['25% dextrose 100 ml iv', 'dextrose', '25 dextrose'],
+      aliases: ['25% dextrose 100 ml iv', 'dextrose', '25 dextrose', '25 dextrose iv', 'iv 25 dextrose'],
       responseText: 'IV 25% Dextrose given after confirming the bedside glucose was normal.',
       onsetMinutes: 10,
       appropriateness: 'neutral',
@@ -199,7 +199,7 @@ export const SCAFFOLD_STATUS_EPILEPTICUS: CaseScaffold = {
         'Blood glucose was already normal here, so dextrose adds no benefit — but checking glucose immediately and being ready to correct it is correct practice in every convulsing patient, since hypoglycaemia is an easily reversible cause.',
     },
     thiamine: {
-      aliases: ['thiamine iv', 'thiamine'],
+      aliases: ['thiamine iv', 'thiamine', 'iv thiamine'],
       responseText: 'IV Thiamine given.',
       onsetMinutes: 10,
       appropriateness: 'neutral',

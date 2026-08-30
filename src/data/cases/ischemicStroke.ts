@@ -66,14 +66,14 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
   },
   investigationsMap: {
     capillary_glucose: {
-      aliases: ['rbs / grbs', 'grbs', 'capillary blood glucose'],
+      aliases: ['rbs / grbs', 'grbs', 'capillary blood glucose', 'random blood sugar', 'rbs random blood sugar'],
       resultText: 'Capillary (bedside) Glucose: 118 mg/dL (Reference 70–140 mg/dL) — normal, ruling out hypoglycaemia as the cause of the focal deficit.',
       turnaroundMinutes: 2,
       category: 'labs',
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 13.8 g/dL (Reference 13.0–17.0 g/dL), WBC 8,200/mcL (Reference 4,000–11,000/mcL), Platelets 245,000/mcL (Reference 150,000–450,000/mcL) — normal, no thrombocytopenia to contraindicate thrombolysis.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -101,14 +101,14 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 32 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.0 mg/dL (Reference 0.6–1.3 mg/dL) — normal, adequate for standard drug dosing.',
       turnaroundMinutes: 25,
       category: 'labs',
       isIndicative: true,
     },
     ecg: {
-      aliases: ['12-lead ecg', 'ecg'],
+      aliases: ['12-lead ecg', 'ecg', '12 lead electrocardiogram', 'electrocardiogram', 'lead ecg'],
       resultText: '12-Lead ECG: Irregularly irregular rhythm with absent P waves, rate 84–92/min, consistent with atrial fibrillation — a likely embolic source for the event. No ST elevation.',
       turnaroundMinutes: 10,
       category: 'monitoring',
@@ -140,14 +140,14 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
   },
   therapiesMap: {
     ct_head_noncontrast: {
-      aliases: ['ct head plain', 'non-contrast ct head'],
+      aliases: ['ct head plain', 'non-contrast ct head', 'ncct head', 'ct head', 'ct brain', 'plain ct head', 'ct scan head', 'urgent ct head'],
       responseText: 'Urgent non-contrast CT head performed and reported: no haemorrhage, no established large territorial infarct, no mass effect — imaging supports proceeding to reperfusion therapy if otherwise eligible.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
       rationale: 'A non-contrast CT head is the single mandatory step before any reperfusion therapy — it takes only minutes on a modern scanner and is the only way to exclude bleeding, which looks clinically identical to a clot at the bedside but is treated in the opposite way.',
     },
     bp_control_labetalol: {
-      aliases: ['labetalol iv'],
+      aliases: ['labetalol iv', 'iv labetalol', 'labetalol'],
       responseText: 'Labetalol 10–20 mg given intravenously; blood pressure eases gradually toward the safe range required before thrombolysis.',
       onsetMinutes: 10,
       vitalsEffect: { bp: '178/98', hr: -4 },
@@ -155,7 +155,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       rationale: 'Thrombolysis requires blood pressure below 185/110 mmHg beforehand, because higher pressures sharply raise the risk of bleeding into the treated territory. A titratable short-acting agent brings it under that ceiling in a controlled, predictable way without dropping it further than needed.',
     },
     thrombolysis_iv: {
-      aliases: ['tenecteplase (thrombolysis)', 'alteplase (rtpa) iv'],
+      aliases: ['tenecteplase (thrombolysis)', 'alteplase (rtpa) iv', 'alteplase rtpa', 'iv alteplase rtpa'],
       responseText: 'Intravenous thrombolysis given within the safe window, non-contrast CT already excluding bleeding and blood pressure already controlled below the required ceiling. Over the next hour the right-sided weakness and slurring begin to improve.',
       onsetMinutes: 45,
       vitalsEffect: { hr: -4 },
@@ -179,7 +179,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       rationale: 'Mechanical thrombectomy is indicated for a confirmed large-vessel occlusion within its own eligibility window (guided by vessel imaging, and by perfusion imaging for later presentations) and should be pursued as bridging therapy alongside intravenous thrombolysis, not held back to see if the drug works first.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae'],
+      aliases: ['two wide-bore iv cannulae', 'iv two wide bore cannulae', 'two wide bore cannulae'],
       responseText: 'Two wide-bore IV cannulae secured for bloods, drug administration and fluids.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
@@ -193,7 +193,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       rationale: 'Early involvement of a clinician experienced in acute deficit scoring and reperfusion eligibility keeps the time-critical pathway moving without delay and ensures contraindications are checked systematically rather than missed under pressure.',
     },
     atorvastatin: {
-      aliases: ['atorvastatin 80 mg'],
+      aliases: ['atorvastatin 80 mg', 'atorvastatin'],
       responseText: 'Atorvastatin 80 mg started as secondary prevention.',
       onsetMinutes: 90,
       appropriateness: 'indicated',
@@ -207,7 +207,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       rationale: 'Mechanical prophylaxis (intermittent pneumatic compression) is appropriate for an immobile patient in the immediate post-thrombolysis period; pharmacological anticoagulant prophylaxis is deliberately deferred while bleeding risk from the thrombolytic is still high.',
     },
     aspirin_immediate: {
-      aliases: ['aspirin 325 mg chewed'],
+      aliases: ['aspirin 325 mg chewed', 'aspirin chewed'],
       responseText: 'Aspirin 325 mg given by mouth immediately.',
       onsetMinutes: 10,
       vitalsEffect: { hr: 2 },
@@ -215,7 +215,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       rationale: 'He has just received (or is being worked up for) intravenous thrombolysis; aspirin must be withheld for 24 hours and only started once a follow-up CT confirms no haemorrhagic transformation. Adding an antiplatelet on top of a clot-dissolving drug, before that scan, raises the risk of bleeding into the treated territory at exactly the time it is highest.',
     },
     heparin_iv: {
-      aliases: ['unfractionated heparin bolus'],
+      aliases: ['unfractionated heparin bolus', 'unfractionated heparin'],
       responseText: 'An unfractionated heparin bolus is given intravenously.',
       onsetMinutes: 10,
       vitalsEffect: { hr: 4, bp: '190/108' },
@@ -223,7 +223,7 @@ export const SCAFFOLD_ISCHEMIC_STROKE: CaseScaffold = {
       rationale: 'Routine early therapeutic anticoagulation has no proven benefit in this presentation and is not given in the acute phase, even for a likely cardioembolic source — the risk of converting an infarct into a haemorrhage is real and unjustified by any demonstrated benefit, and it is especially dangerous so soon after a thrombolytic.',
     },
     nifedipine_oral: {
-      aliases: ['nifedipine oral'],
+      aliases: ['nifedipine oral', 'nifedipine'],
       responseText: 'Oral nifedipine given for the elevated blood pressure.',
       onsetMinutes: 15,
       vitalsEffect: { bp: '128/76', hr: 8 },

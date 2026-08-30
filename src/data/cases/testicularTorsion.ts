@@ -77,14 +77,14 @@ export const SCAFFOLD_TORSION: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 14.2 g/dL (Reference 13.0–17.0 g/dL), WBC 9,800/mcL (Reference 4,000–11,000/mcL), Platelets 260,000/mcL (Reference 150,000–450,000/mcL) — essentially normal; a routine pre-operative baseline.',
       turnaroundMinutes: 20,
       category: 'labs',
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 22 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.6 mg/dL (Reference 0.6–1.2 mg/dL) — normal; routine pre-operative baseline.',
       turnaroundMinutes: 25,
       category: 'labs',
@@ -105,7 +105,7 @@ export const SCAFFOLD_TORSION: CaseScaffold = {
       isIndicative: true,
     },
     ecg: {
-      aliases: ['12-lead ecg', 'ecg'],
+      aliases: ['12-lead ecg', 'ecg', '12 lead electrocardiogram', 'electrocardiogram', 'lead ecg'],
       resultText: '12-lead ECG: Sinus tachycardia at 116/min, otherwise normal axis and intervals, no ischaemic changes — satisfactory for anaesthetic fitness.',
       turnaroundMinutes: 10,
       category: 'monitoring',
@@ -139,7 +139,7 @@ export const SCAFFOLD_TORSION: CaseScaffold = {
       yieldNote: 'With no urinary symptoms and a clean urine microscopy, sending a culture only adds turnaround time without changing what needs to happen next.',
     },
     doppler_us_scrotum: {
-      aliases: ['doppler ultrasound scrotum', 'scrotal doppler ultrasound', 'colour doppler scrotum'],
+      aliases: ['doppler ultrasound scrotum', 'scrotal doppler ultrasound', 'colour doppler scrotum', 'doppler usg scrotum', 'scrotal doppler usg'],
       resultText: 'Colour Doppler Ultrasound Scrotum: Reduced-to-absent flow within the left testis compared with the right, with the cord appearing twisted along its course — in keeping with a compromised blood supply on the left.',
       turnaroundMinutes: 60,
       category: 'imaging',
@@ -150,14 +150,14 @@ export const SCAFFOLD_TORSION: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'Two wide-bore IV cannulae secured for analgesia and access ahead of theatre.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable IV access is a simple early step that lets analgesia and induction drugs be given without delay once theatre is ready.',
     },
     analgesia: {
-      aliases: ['morphine iv', 'iv morphine', 'analgesia'],
+      aliases: ['morphine iv', 'iv morphine', 'analgesia', 'morphine'],
       responseText: 'IV Morphine given, titrated to effect.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -14 },
@@ -165,7 +165,7 @@ export const SCAFFOLD_TORSION: CaseScaffold = {
       rationale: 'Adequate analgesia should be given early and does not hide the examination findings that matter here — the old habit of withholding pain relief until a surgeon has looked is outdated and leaves a patient in needless severe pain.',
     },
     antiemetic: {
-      aliases: ['ondansetron iv', 'antiemetic'],
+      aliases: ['ondansetron iv', 'antiemetic', 'iv ondansetron', 'ondansetron'],
       responseText: 'IV Ondansetron given for the vomiting.',
       onsetMinutes: 10,
       appropriateness: 'indicated',
@@ -228,7 +228,7 @@ export const SCAFFOLD_TORSION: CaseScaffold = {
       rationale: 'Removal is reserved for a testis found genuinely non-viable after the cord has been untwisted and observed directly at surgery — it is never decided in advance of that direct look.',
     },
     antibiotics_wrong_dx: {
-      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone'],
+      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'ceftriaxone iv', 'iv ceftriaxone'],
       responseText: 'IV Ceftriaxone started, treating this as an infective cause.',
       onsetMinutes: 30,
       vitalsEffect: { hr: 8 },

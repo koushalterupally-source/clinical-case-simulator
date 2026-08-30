@@ -54,7 +54,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText:
         'CBC: Hb 6.8 g/dL (Reference 13.0–17.0 g/dL), WBC 9,200/mcL (Reference 4,000–11,000/mcL), Platelets 88,000/mcL (Reference 150,000–450,000/mcL) — significant anaemia with thrombocytopenia.',
       turnaroundMinutes: 20,
@@ -62,7 +62,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft', 'liver function test'],
+      aliases: ['lft', 'liver function test', 'liver function tests'],
       resultText:
         'Liver Function Tests: Total Bilirubin 3.4 mg/dL (Reference 0.2–1.2 mg/dL), AST 98 U/L (Reference 10–40 U/L), ALT 62 U/L (Reference 7–56 U/L), Albumin 2.6 g/dL (Reference 3.5–5.0 g/dL) — hyperbilirubinaemia and hypoalbuminaemia consistent with impaired synthetic function.',
       turnaroundMinutes: 30,
@@ -78,7 +78,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'renal function test', 'kidney function test'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'renal function test', 'kidney function test', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText:
         'Renal Function: Blood Urea 68 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.1 mg/dL (Reference 0.6–1.2 mg/dL) — urea disproportionately raised relative to creatinine, consistent with a large digested blood load in the gut.',
       turnaroundMinutes: 25,
@@ -109,7 +109,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
       isIndicative: true,
     },
     usg_abdomen: {
-      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen', 'abdominal ultrasound'],
+      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen', 'abdominal ultrasound', 'abdominal usg', 'ultrasound abdomen pelvis'],
       resultText:
         'USG Abdomen & Pelvis: Liver coarse and shrunken in echotexture with an irregular surface; portal vein dilated to 14 mm; spleen enlarged at 15 cm; moderate ascites present.',
       turnaroundMinutes: 30,
@@ -151,7 +151,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'iv cannula', 'large bore cannula', 'two iv lines'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'iv cannula', 'large bore cannula', 'two iv lines', 'access', 'cannula', 'iv large bore', 'iv two lines', 'iv two wide bore cannulae', 'large bore', 'two lines', 'two wide bore cannulae'],
       responseText: 'Two large-bore IV cannulae secured for rapid volume and blood-product access.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
@@ -177,7 +177,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Octreotide is an acceptable alternative splanchnic vasoconstrictor to terlipressin where the latter is unavailable, and should likewise be started before endoscopy.',
     },
     ceftriaxone: {
-      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'iv antibiotic', 'antibiotic prophylaxis', 'iv ceftriaxone'],
+      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'iv antibiotic', 'antibiotic prophylaxis', 'iv ceftriaxone', 'antibiotic', 'ceftriaxone iv'],
       responseText: 'IV Ceftriaxone 2 g given as antibiotic prophylaxis.',
       onsetMinutes: 30,
       appropriateness: 'indicated',
@@ -212,7 +212,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Endoscopic band ligation is the definitive haemostatic procedure for bleeding oesophageal varices once the patient has been resuscitated enough to tolerate the procedure safely.',
     },
     pantoprazole: {
-      aliases: ['pantoprazole infusion', 'pantoprazole', 'ppi infusion', 'iv pantoprazole', 'iv ppi'],
+      aliases: ['pantoprazole infusion', 'pantoprazole', 'ppi infusion', 'iv pantoprazole', 'iv ppi', 'ppi'],
       responseText: 'IV Pantoprazole infusion started empirically.',
       onsetMinutes: 15,
       appropriateness: 'neutral',
@@ -257,8 +257,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'crystalloid bolus',
         'iv fluid bolus',
         'normal saline 1 l bolus',
-        'ns 1 litre',
-      ],
+        'ns 1 litre', 'aggressive fluid', 'crystalloid', 'fluid', 'fluids', 'normal saline bolus', 'normal saline kg', 'normal saline kg bolus'],
       responseText:
         'A large-volume Normal Saline bolus (30 mL/kg) given rapidly; shortly afterward fresh haematemesis recurs.',
       onsetMinutes: 10,

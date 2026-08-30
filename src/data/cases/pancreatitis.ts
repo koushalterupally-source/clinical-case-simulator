@@ -68,7 +68,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText:
         'CBC: Hb 13.6 g/dL (Reference 12.0–15.0 g/dL), WBC 15,200/mcL (Reference 4,000–11,000/mcL) with neutrophil predominance, Haematocrit 47% (Reference 36–46%) — mild haemoconcentration from vomiting and third-space fluid loss, with a reactive leucocytosis.',
       turnaroundMinutes: 20,
@@ -84,7 +84,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText:
         'Liver Function Tests: Total Bilirubin 2.6 mg/dL (Reference 0.2–1.2 mg/dL), ALP 310 U/L (Reference 40–130 U/L), AST 98 U/L (Reference 10–40 U/L), ALT 112 U/L (Reference 7–56 U/L), Albumin 3.9 g/dL (Reference 3.5–5.0 g/dL) — a cholestatic pattern supporting a biliary source for this presentation.',
       turnaroundMinutes: 30,
@@ -92,7 +92,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText:
         'Renal Function: Blood Urea 46 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.1 mg/dL (Reference 0.6–1.2 mg/dL) — mildly elevated urea from volume depletion; a useful baseline to trend as a severity marker and to guide fluid resuscitation.',
       turnaroundMinutes: 30,
@@ -108,7 +108,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       isIndicative: true,
     },
     rbs_grbs: {
-      aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar'],
+      aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar', 'random blood sugar', 'rbs random blood sugar'],
       resultText:
         'Random Blood Sugar: 138 mg/dL — mildly elevated, in keeping with the stress response to acute illness; worth trending as a severity marker over the next 48 hours.',
       turnaroundMinutes: 10,
@@ -127,7 +127,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
         'This early in the illness a single CRP does not add much: it takes roughly 48 hours to peak and is used from that point onward to gauge how severe the course is becoming, not to make the diagnosis on the day of presentation. A repeat value at 48 hours would carry far more information than this one.',
     },
     usg_abdomen: {
-      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen'],
+      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen', 'ultrasound abdomen pelvis'],
       resultText:
         'USG Abdomen & Pelvis: Multiple echogenic stones seen within a thick-walled gallbladder, with a mildly dilated common bile duct (7 mm); the pancreas is partially obscured by overlying bowel gas but the visualised portion appears bulky with peripancreatic fluid; no free intraperitoneal fluid.',
       turnaroundMinutes: 30,
@@ -162,7 +162,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       isIndicative: true,
     },
     chest_xray: {
-      aliases: ['chest x-ray pa', 'chest xray', 'cxr'],
+      aliases: ['chest x-ray pa', 'chest xray', 'cxr', 'chest x ray', 'cxr pa'],
       resultText:
         'Chest X-ray PA: Blunted left costophrenic angle in keeping with a small reactive pleural effusion; no free air under the diaphragm; heart size normal.',
       turnaroundMinutes: 20,
@@ -172,14 +172,14 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'access', 'iv two wide bore cannulae', 'two wide bore cannulae'],
       responseText: 'Two wide-bore (16G) IV cannulae secured for rapid fluid and analgesic access.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable large-bore venous access is the prerequisite for rapid balanced-crystalloid resuscitation and should be secured the moment she is assessed.',
     },
     iv_fluids_rl: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'rl bolus'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'rl bolus', 'ringer lactate bolus', 'iv fluids', 'fluid bolus', 'crystalloid', 'iv fluid'],
       responseText: 'Ringer Lactate 500 mL bolus given rapidly IV, with the rate then reassessed against urine output.',
       onsetMinutes: 20,
       vitalsEffect: { hr: -12, bp: '114/72' },
@@ -190,7 +190,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       rationale: 'A balanced crystalloid such as Ringer lactate is preferred over normal saline and is titrated against urine output rather than given as a fixed large volume — recent evidence warns that over-aggressive fluid administration can itself cause harm, so the goal is judicious, monitored resuscitation, not simply pouring in litres.',
     },
     morphine: {
-      aliases: ['morphine iv', 'morphine'],
+      aliases: ['morphine iv', 'morphine', 'iv morphine'],
       responseText: 'Morphine given intravenously in titrated doses for pain control.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -8, rr: -2 },
@@ -202,7 +202,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       harmfulSequenceRationale: 'Opioids can lower vascular tone and worsen hypotension, and she is already volume-depleted and tachycardic from vomiting and third-space losses. Securing access and starting balanced-crystalloid resuscitation first ensures an analgesic that relaxes vascular tone is not given to a patient whose circulating volume has not yet been restored.',
     },
     ondansetron: {
-      aliases: ['ondansetron iv', 'ondansetron'],
+      aliases: ['ondansetron iv', 'ondansetron', 'iv ondansetron'],
       responseText: 'Ondansetron 4 mg given intravenously for nausea and vomiting.',
       onsetMinutes: 10,
       appropriateness: 'indicated',
@@ -239,7 +239,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       rationale: 'Early enteral feeding, started within the first day or two once vomiting is controlled, maintains gut mucosal integrity and lowers infective complications compared with prolonged fasting or parenteral nutrition, and should not be delayed for its own sake.',
     },
     meropenem: {
-      aliases: ['meropenem iv', 'meropenem'],
+      aliases: ['meropenem iv', 'meropenem', 'iv meropenem'],
       responseText: 'Meropenem started empirically as a broad-spectrum "just in case" antibiotic.',
       onsetMinutes: 15,
       appropriateness: 'harmful',

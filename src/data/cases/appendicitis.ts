@@ -69,7 +69,7 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 13.6 g/dL (Reference 13.0–17.0 g/dL), WBC 18,600/mcL (Reference 4,000–11,000/mcL) with 88% neutrophils and band forms (left shift), Platelets 168,000/mcL (Reference 150,000–450,000/mcL) — marked neutrophilic leucocytosis in keeping with a significant intra-abdominal bacterial source.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -97,14 +97,14 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText: 'ABG: pH 7.31 (Reference 7.35–7.45), PaCO2 32 mmHg, PaO2 88 mmHg, HCO3 16 mEq/L (Reference 22–26 mEq/L), Base Excess -6 mEq/L — a mild metabolic acidosis with early respiratory compensation, in keeping with an evolving systemic bacterial response and hypoperfusion.',
       turnaroundMinutes: 10,
       category: 'labs',
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 48 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 1.3 mg/dL (Reference 0.6–1.2 mg/dL) — mildly elevated, reflecting dehydration and early hypoperfusion; worth trending to catch an evolving kidney injury.',
       turnaroundMinutes: 25,
       category: 'labs',
@@ -118,7 +118,7 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: 'Liver Function Tests: AST 22 U/L (Reference 10–40 U/L), ALT 26 U/L (Reference 7–56 U/L), Total Bilirubin 0.7 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 3.6 g/dL (Reference 3.5–5.0 g/dL) — normal; mainly useful here to make a biliary cause less likely rather than to confirm this diagnosis.',
       turnaroundMinutes: 30,
       category: 'labs',
@@ -143,7 +143,7 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
         'No free gas under the diaphragm. That is the expected finding and it excludes nothing: this organ rarely releases enough gas to be visible on a plain film, unlike a hollow viscus higher up. A negative film here is falsely reassuring.',
     },
     usg_abdomen: {
-      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen'],
+      aliases: ['usg abdomen & pelvis', 'usg abdomen', 'ultrasound abdomen', 'ultrasound abdomen pelvis'],
       resultText: 'USG Abdomen & Pelvis: Non-compressible, blind-ending tubular structure in the right iliac fossa measuring 11 mm with peri-appendiceal free fluid; views are limited by overlying bowel gas from an ileus, and a discrete collection or wall breach cannot be confidently excluded on this study.',
       turnaroundMinutes: 30,
       category: 'imaging',
@@ -159,14 +159,14 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'Two wide-bore (16G) IV cannulae secured for rapid fluid, antibiotic and blood product access.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable large-bore venous access is the first practical step, needed before fluid resuscitation, antibiotics and blood tests can all proceed.',
     },
     iv_fluids: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus', 'crystalloid', 'ringer lactate bolus', 'iv fluids', 'fluid bolus', 'iv fluid', 'fluids'],
       responseText: 'Ringer Lactate 500 mL bolus given rapidly IV, with ongoing crystalloid to follow.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -10, bp: '104/64' },
@@ -174,14 +174,14 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
       rationale: 'Prompt crystalloid resuscitation corrects the volume deficit from vomiting, reduced intake and third-space losses, and must be underway before the patient is taken to theatre — resuscitation is completed before induction of anaesthesia, not started after it.',
     },
     blood_cultures: {
-      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture'],
+      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood culture before antibiotics'],
       responseText: 'Two sets of blood cultures drawn from separate venepuncture sites before the first dose of antibiotic is given.',
       onsetMinutes: 2,
       appropriateness: 'indicated',
       rationale: 'Blood cultures should be drawn before the first antibiotic dose wherever this does not delay treatment beyond the first hour — drawing them after an antibiotic is already circulating can sterilise the sample and lose the only chance to identify the organism and its sensitivities.',
     },
     antibiotics: {
-      aliases: ['piperacillin-tazobactam iv', 'ceftriaxone 2 g iv', 'metronidazole iv'],
+      aliases: ['piperacillin-tazobactam iv', 'ceftriaxone 2 g iv', 'metronidazole iv', 'ceftriaxone', 'ceftriaxone iv', 'iv ceftriaxone', 'iv metronidazole', 'iv piperacillin tazobactam', 'metronidazole', 'piperacillin tazobactam'],
       responseText: 'Empirical broad-spectrum IV antibiotic cover started, targeting the Gram-negative and anaerobic organisms typical of a gut source.',
       onsetMinutes: 30,
       vitalsEffect: { hr: -8, temp: '38.6°C' },
@@ -204,7 +204,7 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
       rationale: 'Azithromycin and doxycycline are aimed at atypical and respiratory organisms and do not reliably cover the Gram-negative and anaerobic gut organisms responsible for this picture; relying on either leaves the true intra-abdominal source under-treated while the systemic bacterial response continues to progress.',
     },
     analgesia: {
-      aliases: ['morphine iv', 'iv morphine', 'analgesia'],
+      aliases: ['morphine iv', 'iv morphine', 'analgesia', 'morphine'],
       responseText: 'IV Morphine given for pain, titrated to effect.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -6 },
@@ -212,7 +212,7 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
       rationale: 'Adequate analgesia should be given early and does not mask the physical signs of this diagnosis — the old teaching to withhold pain relief until a surgeon has examined the patient is outdated and unnecessarily leaves a patient in severe pain.',
     },
     antiemetic: {
-      aliases: ['ondansetron iv', 'antiemetic'],
+      aliases: ['ondansetron iv', 'antiemetic', 'iv ondansetron', 'ondansetron'],
       responseText: 'IV Ondansetron given for the vomiting.',
       onsetMinutes: 10,
       appropriateness: 'indicated',
@@ -257,7 +257,7 @@ export const SCAFFOLD_APPENDICITIS: CaseScaffold = {
       rationale: 'Surgical removal of the source is the definitive treatment once the diagnosis is confirmed — antibiotics and fluids treat the systemic response but do not replace the operation, and delaying it while chasing a perfect work-up in a generalised picture like this one only allows the systemic response to progress.',
     },
     noradrenaline: {
-      aliases: ['noradrenaline infusion', 'norepinephrine infusion', 'vasopressor'],
+      aliases: ['noradrenaline infusion', 'norepinephrine infusion', 'vasopressor', 'noradrenaline', 'norepinephrine'],
       responseText: 'Noradrenaline infusion started for the low blood pressure.',
       onsetMinutes: 10,
       vitalsEffect: { hr: 6, bp: '110/62', spo2: -1 },
