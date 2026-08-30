@@ -23,6 +23,7 @@ export type SubjectType =
   | 'ENT'
   | 'Ophthalmology'
   | 'Orthopedics'
+  | 'Dermatology'
   | 'Basic Science'
   | 'Previous Year Papers';
 

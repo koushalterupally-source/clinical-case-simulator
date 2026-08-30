@@ -15,6 +15,14 @@ import { SCAFFOLD_BURNS } from './burns';
 import { SCAFFOLD_NEONATAL_SEPSIS } from './neonatalSepsis';
 import { SCAFFOLD_DENGUE_SHOCK } from './dengueShock';
 import { SCAFFOLD_ISCHEMIC_STROKE } from './ischemicStroke';
+import { SCAFFOLD_ANGLE_CLOSURE } from './angleClosureGlaucoma';
+import { SCAFFOLD_TEN } from './toxicEpidermalNecrolysis';
+import { SCAFFOLD_DELIRIUM_TREMENS } from './deliriumTremens';
+import { SCAFFOLD_LUDWIGS } from './ludwigsAngina';
+import { SCAFFOLD_COMPARTMENT } from './compartmentSyndrome';
+import { SCAFFOLD_PANCREATITIS } from './pancreatitis';
+import { SCAFFOLD_PEDIATRIC_DKA } from './pediatricDka';
+import { SCAFFOLD_TORSION } from './testicularTorsion';
 
 /**
  * Twelve cases, all modelled to the same standard. Four are defined inline
@@ -1046,4 +1054,15 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
   SCAFFOLD_NEONATAL_SEPSIS,
   SCAFFOLD_DENGUE_SHOCK,
   SCAFFOLD_ISCHEMIC_STROKE,
+
+  // 21-28. Chosen for subject reach as much as topic: five of these open a
+  // discipline the library did not cover at all.
+  SCAFFOLD_ANGLE_CLOSURE,
+  SCAFFOLD_TEN,
+  SCAFFOLD_DELIRIUM_TREMENS,
+  SCAFFOLD_LUDWIGS,
+  SCAFFOLD_COMPARTMENT,
+  SCAFFOLD_PANCREATITIS,
+  SCAFFOLD_PEDIATRIC_DKA,
+  SCAFFOLD_TORSION,
 ];
