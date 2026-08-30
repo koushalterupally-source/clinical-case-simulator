@@ -15,68 +15,81 @@
     3. bare :root — light, the default.
 */
 :root {
-  --bg: #f3f4f6;
+  /* Warm paper rather than the cold #f3f4f6 default. A neutral grey reads as
+     "unstyled"; a hint of warmth reads as chosen. */
+  --bg: #f7f6f3;
   --surface: #ffffff;
-  --surface-sunken: #eef2f6;
-  --border: rgba(15, 23, 42, 0.08);
-  --border-strong: rgba(15, 23, 42, 0.16);
-  --text: #1f2937;
-  --text-muted: #6b7280;
-  --text-faint: #9ca3af;
-  --accent: #2563eb;
-  --accent-soft: rgba(37, 99, 235, 0.1);
-  --ok: #16a34a;
-  --ok-soft: rgba(22, 163, 74, 0.12);
-  --warn: #d97706;
-  --warn-soft: rgba(217, 119, 6, 0.14);
-  --danger: #dc2626;
-  --danger-soft: rgba(220, 38, 38, 0.12);
+  --surface-sunken: #f0eee9;
+  --border: rgba(28, 25, 23, 0.09);
+  --border-strong: rgba(28, 25, 23, 0.18);
+  --text: #1c1917;
+  --text-muted: #6b6560;
+  --text-faint: #9a938c;
+  /* Deep teal, not stock blue. One accent, used sparingly. */
+  --accent: #0f6466;
+  --accent-soft: rgba(15, 100, 102, 0.09);
+  --ok: #15803d;
+  --ok-soft: rgba(21, 128, 61, 0.11);
+  --warn: #b45309;
+  --warn-soft: rgba(180, 83, 9, 0.12);
+  --danger: #b91c1c;
+  --danger-soft: rgba(185, 28, 28, 0.1);
 
-  --bg-gradient: radial-gradient(circle at 0% 0%, #e0f2fe, #f3f4f6);
+  /* Layered elevation. Two stacked shadows read as depth; one reads as a box. */
+  --elev-1: 0 1px 2px rgba(28, 25, 23, 0.04), 0 1px 3px rgba(28, 25, 23, 0.05);
+  --elev-2: 0 2px 4px rgba(28, 25, 23, 0.04), 0 8px 20px -6px rgba(28, 25, 23, 0.1);
+
+  --bg-gradient: radial-gradient(120% 80% at 50% -10%, #fefdfb 0%, #f7f6f3 55%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --surface-sunken: #16212f;
-    --border: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(255, 255, 255, 0.16);
-    --text: #f1f5f9;
-    --text-muted: #94a3b8;
-    --text-faint: #64748b;
-    --accent: #38bdf8;
-    --accent-soft: rgba(56, 189, 248, 0.14);
+    --bg: #12110f;
+    --surface: #1b1917;
+    --surface-sunken: #151412;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.15);
+    --text: #f5f3f0;
+    --text-muted: #a8a29b;
+    --text-faint: #6f6862;
+    --accent: #5eead4;
+    --accent-soft: rgba(94, 234, 212, 0.12);
     --ok: #4ade80;
-    --ok-soft: rgba(74, 222, 128, 0.15);
+    --ok-soft: rgba(74, 222, 128, 0.13);
     --warn: #fbbf24;
-    --warn-soft: rgba(251, 191, 36, 0.16);
+    --warn-soft: rgba(251, 191, 36, 0.14);
     --danger: #f87171;
-    --danger-soft: rgba(248, 113, 113, 0.15);
+    --danger-soft: rgba(248, 113, 113, 0.14);
 
-    --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b, #0f172a);
+    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.35);
+    --elev-2: 0 2px 6px rgba(0, 0, 0, 0.5), 0 12px 28px -8px rgba(0, 0, 0, 0.65);
+
+    --bg-gradient: radial-gradient(120% 80% at 50% -10%, #1f1d1a 0%, #12110f 55%);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-sunken: #16212f;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --text-faint: #64748b;
-  --accent: #38bdf8;
-  --accent-soft: rgba(56, 189, 248, 0.14);
+  --bg: #12110f;
+  --surface: #1b1917;
+  --surface-sunken: #151412;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --text: #f5f3f0;
+  --text-muted: #a8a29b;
+  --text-faint: #6f6862;
+  --accent: #5eead4;
+  --accent-soft: rgba(94, 234, 212, 0.12);
   --ok: #4ade80;
-  --ok-soft: rgba(74, 222, 128, 0.15);
+  --ok-soft: rgba(74, 222, 128, 0.13);
   --warn: #fbbf24;
-  --warn-soft: rgba(251, 191, 36, 0.16);
+  --warn-soft: rgba(251, 191, 36, 0.14);
   --danger: #f87171;
-  --danger-soft: rgba(248, 113, 113, 0.15);
+  --danger-soft: rgba(248, 113, 113, 0.14);
 
-  --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b, #0f172a);
+  --elev-1: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.35);
+  --elev-2: 0 2px 6px rgba(0, 0, 0, 0.5), 0 12px 28px -8px rgba(0, 0, 0, 0.65);
+
+  --bg-gradient: radial-gradient(120% 80% at 50% -10%, #1f1d1a 0%, #12110f 55%);
 }
 
 html,
@@ -88,10 +101,13 @@ body {
 body {
   background-image: var(--bg-gradient);
   background-attachment: fixed;
-  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto,
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
     sans-serif;
   font-size: 16px;
   line-height: 1.65;
+  /* Slightly tightened tracking at body size is a large part of why
+     considered interfaces read as considered. */
+  letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -121,8 +137,12 @@ body {
 /* Display/numeral face shared with the sibling app; used sparingly, only on
    headings that are already display-weight. Falls back cleanly if the
    webfont never loads (offline). */
+/* An editorial serif for display text only, paired against a neutral grotesk
+   for everything else. Falls back cleanly if the webfont never loads. */
 .font-display {
-  font-family: "Orbitron", "Poppins", system-ui, sans-serif;
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
 }
 
 @keyframes fade-rise {

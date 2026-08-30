@@ -11,28 +11,76 @@ import {
 } from '../../utils/gamification';
 
 const toneFor = (s: VitalSeverity) =>
-  s === 'critical' ? 'var(--danger)' : s === 'warning' ? 'var(--warn)' : 'var(--text-muted)';
+  s === 'critical' ? 'var(--danger)' : s === 'warning' ? 'var(--warn)' : 'var(--text)';
 
-/** Vitals as one quiet line. Only the deranged values take colour. */
+const tintFor = (s: VitalSeverity) =>
+  s === 'critical' ? 'var(--danger-soft)' : s === 'warning' ? 'var(--warn-soft)' : 'transparent';
+
+/**
+ * Vitals as a monitor strip rather than a sentence.
+ *
+ * These are the most-watched and fastest-changing numbers in the case, so they
+ * are given the weight of a reading taken off a monitor: label above value,
+ * tabular figures so a digit changing does not shift the row, and a tint only
+ * where a value has actually left its range. Deranged values are what the eye
+ * should catch first; normal ones stay quiet without becoming invisible.
+ */
 export const VitalsLine: React.FC<{ vitals: Vitals }> = ({ vitals }) => {
-  const items: { label: string; value: string; sev: VitalSeverity }[] = [
-    { label: 'HR', value: `${vitals.hr}`, sev: hrSeverity(vitals.hr) },
-    { label: 'BP', value: `${vitals.bp}`, sev: bpSeverity(vitals.bp) },
-    { label: 'RR', value: `${vitals.rr}`, sev: rrSeverity(vitals.rr) },
-    { label: 'SpO₂', value: `${vitals.spo2}%`, sev: spo2Severity(vitals.spo2) },
+  const items: { label: string; value: string; unit?: string; sev: VitalSeverity }[] = [
+    { label: 'HR', value: `${vitals.hr}`, unit: 'bpm', sev: hrSeverity(vitals.hr) },
+    { label: 'BP', value: `${vitals.bp}`, unit: 'mmHg', sev: bpSeverity(vitals.bp) },
+    { label: 'RR', value: `${vitals.rr}`, unit: '/min', sev: rrSeverity(vitals.rr) },
+    { label: 'SpO₂', value: `${vitals.spo2}`, unit: '%', sev: spo2Severity(vitals.spo2) },
+    // temp already carries its own unit in the stored value; adding one here
+    // renders "36.9°C °C".
     { label: 'Temp', value: `${vitals.temp}`, sev: tempSeverity(vitals.temp) },
-    { label: 'Glucose', value: `${vitals.grbs}`, sev: grbsSeverity(vitals.grbs) },
+    { label: 'Glucose', value: `${vitals.grbs}`, unit: 'mg/dL', sev: grbsSeverity(vitals.grbs) },
   ];
 
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1 text-[13px] tnum">
+    // Dividers come from a 1px grid gap letting the border colour show through,
+    // rather than per-cell borders keyed to an index — the column count changes
+    // at the breakpoint, and index maths would draw a top border on a cell that
+    // has moved up into the first row.
+    <div
+      className="grid grid-cols-3 sm:grid-cols-6 rounded-xl overflow-hidden"
+      style={{
+        border: '1px solid var(--border)',
+        background: 'var(--border)',
+        gap: '1px',
+      }}
+    >
       {items.map((it) => (
-        <span key={it.label}>
-          <span style={{ color: 'var(--text-faint)' }}>{it.label} </span>
-          <span style={{ color: toneFor(it.sev), fontWeight: it.sev === 'normal' ? 400 : 600 }}>
-            {it.value}
-          </span>
-        </span>
+        <div
+          key={it.label}
+          className="px-3 py-2.5"
+          style={{
+            background:
+              it.sev === 'normal'
+                ? 'var(--surface)'
+                : `linear-gradient(${tintFor(it.sev)}, ${tintFor(it.sev)}), var(--surface)`,
+          }}
+        >
+          <div
+            className="text-[10px] font-semibold uppercase"
+            style={{ color: 'var(--text-faint)', letterSpacing: '0.08em' }}
+          >
+            {it.label}
+          </div>
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span
+              className="text-[17px] tnum leading-none"
+              style={{ color: toneFor(it.sev), fontWeight: it.sev === 'normal' ? 500 : 700 }}
+            >
+              {it.value}
+            </span>
+            {it.unit && (
+              <span className="text-[10px]" style={{ color: 'var(--text-faint)' }}>
+                {it.unit}
+              </span>
+            )}
+          </div>
+        </div>
       ))}
     </div>
   );
