@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { CaseMode } from '../../types';
+import { CaseLibrary } from './CaseLibrary';
 
 interface StartScreenProps {
-  onStart: (mode: CaseMode, subject: string, blind?: boolean) => void;
+  onStart: (mode: CaseMode, subject: string, blind?: boolean, scaffoldId?: string) => void;
   onStartQuestionLed: () => void;
   onOpenQBank: () => void;
   questionCount: number;
@@ -63,76 +64,103 @@ const ThemeToggle: React.FC = () => {
 export const StartScreen: React.FC<StartScreenProps> = ({
   onStart,
   starting,
-}) => (
-  <div className="min-h-screen flex flex-col px-6" style={{ background: 'var(--bg)' }}>
-    <div className="flex-1 flex items-center justify-center">
-      <div className="w-full max-w-[28rem] py-16">
-        <div className="flex items-center justify-between mb-6 text-[13px]">
-          <a href="../" className="ring-focus rounded px-1 font-medium" style={{ color: 'var(--text-muted)' }}>
-            ← Back to PYQ Platform
-          </a>
-          <ThemeToggle />
-        </div>
+}) => {
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
-        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[12px] font-semibold mb-3" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
-          <span>🩺 Interactive Case Engine</span>
-        </div>
+  return (
+    <div className="min-h-screen flex flex-col px-6" style={{ background: 'var(--bg)' }}>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full max-w-[28rem] py-16">
+          <div className="flex items-center justify-between mb-6 text-[13px]">
+            <a href="../" className="ring-focus rounded px-1 font-medium" style={{ color: 'var(--text-muted)' }}>
+              ← Back to PYQ Platform
+            </a>
+            <ThemeToggle />
+          </div>
 
-        <h1 className="font-display text-[26px] font-bold tracking-tight leading-snug">
-          Clinical Case Simulator
-        </h1>
-        <p className="mt-2.5 text-[14px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-          You are the treating physician in emergency triage. Take targeted history, perform focused physical examinations, order STAT diagnostics, and initiate life-saving medications.
-        </p>
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[12px] font-semibold mb-3" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+            <span>🩺 Interactive Case Engine</span>
+          </div>
 
-        <div className="mt-8 space-y-3">
-          <button
-            onClick={() => onStart('standard', 'All')}
-            disabled={starting}
-            className="w-full rounded-xl py-3.5 text-[15px] font-semibold ring-focus disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.99]"
-            style={{ background: 'var(--accent)', color: '#fff' }}
-          >
-            {starting ? 'Preparing Patient…' : '🚑 Start Clinical Case (Emergency Triage)'}
-          </button>
+          <h1 className="font-display text-[26px] font-bold tracking-tight leading-snug">
+            Clinical Case Simulator
+          </h1>
+          <p className="mt-2.5 text-[14px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            You are the treating physician in emergency triage. Take targeted history, perform focused physical examinations, order STAT diagnostics, and initiate life-saving medications.
+          </p>
 
-          <div className="flex gap-2.5">
+          <div className="mt-8 space-y-3">
             <button
-              onClick={() => onStart('rapid', 'All')}
+              onClick={() => onStart('standard', 'All')}
               disabled={starting}
-              className="flex-1 rounded-xl py-3 text-[14px] font-medium ring-focus disabled:opacity-50 transition-colors"
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                color: 'var(--text)',
-              }}
+              className="w-full rounded-xl py-3.5 text-[15px] font-semibold ring-focus disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.99]"
+              style={{ background: 'var(--accent)', color: '#fff' }}
             >
-              ⚡ Rapid Resuscitation
+              {starting ? 'Preparing Patient…' : 'Start Clinical Case (Emergency Triage)'}
             </button>
+
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => onStart('rapid', 'All')}
+                disabled={starting}
+                className="flex-1 rounded-xl py-3 text-[14px] font-medium ring-focus disabled:opacity-50 transition-colors"
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text)',
+                }}
+              >
+                Rapid Resuscitation
+              </button>
+              <button
+                onClick={() => onStart('standard', 'Medicine')}
+                disabled={starting}
+                className="flex-1 rounded-xl py-3 text-[14px] font-medium ring-focus disabled:opacity-50 transition-colors"
+                style={{
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  color: 'var(--text)',
+                }}
+              >
+                Inpatient Ward
+              </button>
+            </div>
+
             <button
-              onClick={() => onStart('standard', 'Medicine')}
+              onClick={() => setLibraryOpen(true)}
               disabled={starting}
-              className="flex-1 rounded-xl py-3 text-[14px] font-medium ring-focus disabled:opacity-50 transition-colors"
+              className="w-full rounded-xl py-3 text-[14px] font-medium ring-focus disabled:opacity-50 transition-colors"
               style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                color: 'var(--text)',
+                background: 'var(--bg)',
+                border: '1px dashed var(--border-strong)',
+                color: 'var(--text-muted)',
               }}
             >
-              🏥 Inpatient Ward
+              Browse by topic
             </button>
           </div>
-        </div>
 
-        <div
-          className="mt-8 pt-5 flex items-center justify-between text-[12px]"
-          style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}
-        >
-          <span>Dynamic vitals decay & order turnaround times</span>
-          <a href="../#practice" className="ring-focus rounded px-1" style={{ color: 'var(--text-muted)' }}>
-            Open QBank &rarr;
-          </a>
+          <div
+            className="mt-8 pt-5 flex items-center justify-between text-[12px]"
+            style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}
+          >
+            <span>Dynamic vitals decay & order turnaround times</span>
+            <a href="../#practice" className="ring-focus rounded px-1" style={{ color: 'var(--text-muted)' }}>
+              Open QBank &rarr;
+            </a>
+          </div>
         </div>
       </div>
+
+      <CaseLibrary
+        open={libraryOpen}
+        onClose={() => setLibraryOpen(false)}
+        starting={starting}
+        onSelect={(scaffoldId, subject) => {
+          setLibraryOpen(false);
+          onStart('standard', subject, false, scaffoldId);
+        }}
+      />
     </div>
-  </div>
-);
+  );
+};

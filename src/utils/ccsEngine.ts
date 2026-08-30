@@ -479,7 +479,13 @@ export function processTurnOffline(
       const q = userCommand.replace(/^(?:hx|history)\:\s*/i, '').trim();
       timeSpentMins = 2;
 
-      let ans = 'No significant abnormalities reported.';
+      // An unmodelled question gets an honest gap, never a reassuring
+      // non-finding. "No significant abnormalities reported" is a clinical
+      // claim: it asserts a negative the case never authored, and a candidate
+      // is entitled to read it as one. Asking about onset in a case that turns
+      // on onset and being told there is nothing of note is worse than being
+      // told the question is outside what this case models.
+      let ans = 'Not modelled in this case — this history is not authored here, so treat it as unasked rather than as negative.';
       const qLower = q.toLowerCase();
 
       for (const [key, val] of Object.entries(scaffold.historyMap)) {
@@ -501,7 +507,11 @@ export function processTurnOffline(
       const sys = userCommand.replace(/^(?:pe|exam)\:\s*/i, '').trim().toLowerCase();
       timeSpentMins = 3;
 
-      let findings = 'Vesicular breath sounds, soft abdomen, normal S1 S2, alert.';
+      // Same rule, and it matters more here: the old default reported a normal
+      // chest, abdomen, heart sounds and conscious level for ANY system the
+      // case did not author. In an asthma or anaphylaxis case that is a
+      // fabricated normal examination of the exact system the case turns on.
+      let findings = 'Not modelled in this case — this examination is not authored here, so treat it as not performed rather than as normal.';
       for (const [key, val] of Object.entries(scaffold.examFindingsMap)) {
         if (sys.includes(key)) {
           findings = val;

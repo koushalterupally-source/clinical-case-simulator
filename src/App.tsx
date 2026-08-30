@@ -10,6 +10,7 @@ import { buildCaseSessionFromScaffold } from './utils/caseBinder';
 import { buildQuestionLedCase } from './utils/questionLedCase';
 import { parseRawQBankTextOffline } from './utils/qbankParser';
 import { saveActiveSession, loadActiveSession, saveQBankIndex, loadQBankIndex, saveCompletedCase, getMissedQIDsFromHistory } from './utils/storage';
+import { markCasePlayed } from './utils/caseProgress';
 
 export default function App() {
   const [session, setSession] = useState<CaseSession | null>(() => {
@@ -94,8 +95,15 @@ export default function App() {
     }
   }, [session]);
 
-  // Handler to start a new offline case
-  const handleStartNewCase = async (mode: CaseMode = 'standard', subject: string = 'Medicine', blindMode: boolean = false) => {
+  // Handler to start a new offline case. `scaffoldId`, when given, pins the
+  // exact case (from the case library) instead of a random pick within
+  // `subject`.
+  const handleStartNewCase = async (
+    mode: CaseMode = 'standard',
+    subject: string = 'Medicine',
+    blindMode: boolean = false,
+    scaffoldId?: string
+  ) => {
     setIsStarting(true);
     setErrorMessage(null);
     try {
@@ -103,10 +111,12 @@ export default function App() {
       const newSession = buildCaseSessionFromScaffold(pyqList, {
         mode: blindMode ? 'blind' : mode,
         subject,
+        scaffoldId,
         missedQIDs,
       });
       setSession(newSession);
       await saveActiveSession(newSession);
+      markCasePlayed(newSession.scaffoldId);
       setActiveTab('sim');
     } catch (err: any) {
       console.error('Failed to start case offline:', err);
@@ -265,7 +275,7 @@ export default function App() {
       <>
         {errorMessage && <ErrorBanner message={errorMessage} onDismiss={() => setErrorMessage(null)} />}
         <StartScreen
-          onStart={(mode, subject, blind) => handleStartNewCase(mode, subject, !!blind)}
+          onStart={(mode, subject, blind, scaffoldId) => handleStartNewCase(mode, subject, !!blind, scaffoldId)}
           onStartQuestionLed={handleStartQuestionLed}
           onOpenQBank={() => setActiveTab('qbank')}
           questionCount={pyqList.length}
