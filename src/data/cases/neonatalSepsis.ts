@@ -59,7 +59,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: "CBC: Total leucocyte count 3,200/mm³ (Reference roughly 5,000–30,000/mm³ in a well term newborn — a much wider and higher normal range than in an older child), absolute neutrophil count 900/mm³ with an immature-to-total neutrophil ratio of 0.28 (Reference <0.2), platelets 92,000/mm³ (Reference 150,000–450,000/mm³) — neutropenia with a left shift and thrombocytopenia, both supportive of a bacterial process.",
       turnaroundMinutes: 20,
       category: 'labs',
@@ -80,7 +80,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       isIndicative: true,
     },
     blood_culture: {
-      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture'],
+      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood culture before antibiotics'],
       resultText: 'Blood Culture (drawn from a peripheral vein before the first antibiotic dose): Gram stain and aerobic/anaerobic incubation underway; growth typically takes 24–48 hours and must never be waited for before starting treatment.',
       turnaroundMinutes: 60,
       category: 'labs',
@@ -94,7 +94,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       isIndicative: true,
     },
     grbs: {
-      aliases: ['rbs / grbs', 'grbs', 'blood glucose'],
+      aliases: ['rbs / grbs', 'grbs', 'blood glucose', 'random blood sugar', 'rbs random blood sugar'],
       resultText: 'GRBS: 36 mg/dL — a symptomatic newborn is treated once glucose falls below roughly 45 mg/dL, a distinctly lower treatment threshold than is used at any older age, and this value needs correction immediately.',
       turnaroundMinutes: 2,
       category: 'labs',
@@ -115,21 +115,21 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: "RFT/KFT: Blood Urea 38 mg/dL (Reference roughly 8–20 mg/dL, higher than the adult range in a well newborn), Serum Creatinine 1.0 mg/dL — a term newborn's creatinine at birth largely reflects the mother's own renal function and should fall over the first 1–2 weeks of life; a value that is static or rising instead points to this baby's own kidneys being under-perfused.",
       turnaroundMinutes: 25,
       category: 'labs',
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: "LFT: AST 32 U/L, ALT 24 U/L, Total Bilirubin 9.2 mg/dL, predominantly unconjugated — a level that needs to be plotted on an hour-specific bilirubin chart for this baby's age and risk factors before deciding on a phototherapy threshold.",
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText: 'ABG: pH 7.26 (Reference 7.35–7.45), PaCO2 28 mmHg (Reference 35–45 mmHg), PaO2 58 mmHg (Reference roughly 50–70 mmHg on room air in a term newborn, lower than the adult range), HCO3 14 mEq/L (Reference roughly 20–24 mEq/L in a newborn) — metabolic acidosis with respiratory compensation, in keeping with poor tissue perfusion.',
       turnaroundMinutes: 10,
       category: 'labs',
@@ -143,7 +143,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       isIndicative: true,
     },
     cxr: {
-      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr'],
+      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest x ray', 'cxr pa', 'cxr portable'],
       resultText: 'Chest X-ray (portable, bedside): Diffuse granular opacities with air bronchograms in both lung fields — an appearance well recognised when pneumonia is the source of a bloodstream infection acquired around the time of birth.',
       turnaroundMinutes: 20,
       category: 'imaging',
@@ -169,7 +169,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       rationale: 'A sick newborn loses heat rapidly because of a large surface-area-to-weight ratio and thin subcutaneous fat, and cannot generate heat by shivering the way an older child can; untreated hypothermia itself worsens oxygen consumption and acidosis, so warming is started alongside every other resuscitation step, not after it.',
     },
     dextrose_bolus: {
-      aliases: ['10% dextrose 5 ml/kg iv', '10% dextrose', 'dextrose 10%', 'dextrose bolus'],
+      aliases: ['10% dextrose 5 ml/kg iv', '10% dextrose', 'dextrose 10%', 'dextrose bolus', '10 dextrose kg', '10 dextrose kg iv', 'dextrose kg', 'iv 10 dextrose kg'],
       responseText: '10% Dextrose 2 mL/kg given as a slow intravenous push for the critically low blood glucose, followed by a continuous dextrose infusion titrated to maintain an adequate glucose infusion rate.',
       onsetMinutes: 5,
       vitalsEffect: { grbs: 42 },
@@ -180,14 +180,14 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       rationale: "A newborn has minimal glycogen reserve and a high glucose requirement relative to body weight, so hypoglycaemia develops quickly during illness. It is corrected with a small-volume 10% dextrose bolus (2 mL/kg) followed by an infusion — a much smaller bolus volume than would be used in an older child, since the same concentration given in a larger volume can itself provoke a swing into rebound hypoglycaemia.",
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'peripheral iv cannula', 'umbilical venous catheter'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'peripheral iv cannula', 'umbilical venous catheter', 'access', 'iv peripheral cannula', 'iv two wide bore cannulae', 'peripheral cannula', 'two wide bore cannulae'],
       responseText: 'A peripheral intravenous line is secured; when peripheral access proves difficult, as it often does in a shut-down newborn, an umbilical venous catheter is placed instead for immediate, reliable access.',
       onsetMinutes: 5,
       appropriateness: 'indicated',
       rationale: 'Reliable venous access is a prerequisite for glucose correction, fluids and antibiotics and is secured within the first few minutes; the umbilical vein remains cannulable for about the first week of life and is the fastest reliable route when peripheral veins cannot be found.',
     },
     fluid_bolus: {
-      aliases: ['normal saline 30 ml/kg bolus', 'normal saline bolus', 'crystalloid bolus', 'ns bolus'],
+      aliases: ['normal saline 30 ml/kg bolus', 'normal saline bolus', 'crystalloid bolus', 'ns bolus', 'crystalloid', 'normal saline', 'normal saline kg', 'normal saline kg bolus', 'iv fluids', 'fluid bolus', 'iv fluid'],
       responseText: "Normal saline given as a 10 mL/kg bolus over 10–15 minutes, with perfusion, heart rate and liver size reassessed after every aliquot before deciding whether to repeat it.",
       onsetMinutes: 15,
       vitalsEffect: { hr: -12, bp: '64/38' },
@@ -195,7 +195,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       rationale: "Fluid boluses in a newborn are given in small aliquots (around 10 mL/kg) with reassessment after each one, rather than the larger single bolus used in an older child, because a newborn myocardium tolerates a sudden volume load poorly; the liver edge and lung fields are checked after every aliquot for early fluid overload.",
     },
     antibiotics: {
-      aliases: ['ampicillin + gentamicin iv', 'ampicillin', 'gentamicin'],
+      aliases: ['ampicillin + gentamicin iv', 'ampicillin', 'gentamicin', 'ampicillin gentamicin', 'iv ampicillin gentamicin'],
       responseText: 'IV Ampicillin plus Gentamicin started empirically within the first hour, immediately after the blood culture sample is drawn.',
       onsetMinutes: 45,
       vitalsEffect: { hr: -10 },
@@ -218,7 +218,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       rationale: 'When poor perfusion and low blood pressure persist despite adequate fluid resuscitation, a dopamine infusion is the conventional first-line vasoactive agent in a newborn, escalating to a second agent if the response is inadequate.',
     },
     noradrenaline: {
-      aliases: ['noradrenaline infusion', 'noradrenaline', 'norepinephrine infusion'],
+      aliases: ['noradrenaline infusion', 'noradrenaline', 'norepinephrine infusion', 'norepinephrine'],
       responseText: "A noradrenaline infusion is added for perfusion that remains poor despite fluids and a first vasoactive agent.",
       onsetMinutes: 20,
       vitalsEffect: { hr: -6, bp: '78/48' },
@@ -241,14 +241,14 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       rationale: 'Prompt involvement of the paediatric/neonatal team and transfer to a unit capable of continuous monitoring ensures escalation through fluids, antibiotics and vasoactive support happens without delay.',
     },
     maintenance_fluids: {
-      aliases: ['5% dextrose infusion', 'dextrose maintenance', 'maintenance iv fluids'],
+      aliases: ['5% dextrose infusion', 'dextrose maintenance', 'maintenance iv fluids', 'iv maintenance fluids', 'maintenance fluids'],
       responseText: 'A maintenance intravenous infusion containing dextrose is continued after the initial bolus to sustain the glucose infusion rate.',
       onsetMinutes: 30,
       appropriateness: 'indicated',
       rationale: 'A single dextrose bolus corrects the glucose only transiently; an ongoing infusion is needed afterwards because a sick newborn has minimal glycogen reserve and can become hypoglycaemic again within a short time without a continued source of glucose.',
     },
     ceftriaxone: {
-      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone'],
+      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'ceftriaxone iv', 'iv ceftriaxone'],
       responseText: 'IV Ceftriaxone given empirically to the newborn.',
       onsetMinutes: 30,
       labShift: {
@@ -258,7 +258,7 @@ export const SCAFFOLD_NEONATAL_SEPSIS: CaseScaffold = {
       rationale: 'Ceftriaxone is avoided in newborns because it competitively displaces bilirubin from albumin, increasing free bilirubin available to cross into the brain and raising the risk of bilirubin encephalopathy, and because it can form an insoluble precipitate with calcium-containing intravenous fluids that are routinely used in this age group. Ampicillin plus an aminoglycoside remains the correct empirical choice, not a third-generation cephalosporin from this class.',
     },
     furosemide: {
-      aliases: ['furosemide iv', 'furosemide', 'lasix'],
+      aliases: ['furosemide iv', 'furosemide', 'lasix', 'iv furosemide'],
       responseText: 'IV Furosemide given for reduced urine output.',
       onsetMinutes: 10,
       vitalsEffect: { hr: 14, bp: '44/24' },

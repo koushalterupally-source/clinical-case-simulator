@@ -53,14 +53,14 @@ export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
       isIndicative: true,
     },
     grbs: {
-      aliases: ['rbs / grbs', 'grbs', 'blood glucose'],
+      aliases: ['rbs / grbs', 'grbs', 'blood glucose', 'random blood sugar', 'rbs random blood sugar'],
       resultText: 'GRBS: 42 mg/dL (Reference 70–140 mg/dL) — critically low.',
       turnaroundMinutes: 2,
       category: 'labs',
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 8.2 g/dL (Reference 11.0–14.0 g/dL for age), microcytic indices, WBC 9,200/mcL (Reference 6,000–17,000/mcL for age), Platelets 310,000/mcL (Reference 150,000–450,000/mcL).',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -74,21 +74,21 @@ export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
       isIndicative: true,
     },
     blood_culture: {
-      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture'],
+      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood culture before antibiotics'],
       resultText: 'Blood Cultures x2: Aerobic and anaerobic bottles incubated. Growth pending at 24–48 hours.',
       turnaroundMinutes: 60,
       category: 'labs',
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'KFT: Blood Urea 22 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.3 mg/dL (Reference 0.2–0.4 mg/dL for age) — within range, though depleted muscle mass can mask true renal impairment.',
       turnaroundMinutes: 25,
       category: 'labs',
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText: 'ABG: pH 7.31 (Reference 7.35–7.45), PaCO2 30 mmHg (Reference 35–45 mmHg), PaO2 90 mmHg (Reference 80–100 mmHg), HCO3 16 mEq/L (Reference 22–26 mEq/L) — mild metabolic acidosis from dehydration and probable sepsis.',
       turnaroundMinutes: 10,
       category: 'labs',
@@ -125,7 +125,7 @@ export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
   },
   therapiesMap: {
     dextrose_10: {
-      aliases: ['10% dextrose 5 ml/kg iv', '10% dextrose', 'dextrose 10%'],
+      aliases: ['10% dextrose 5 ml/kg iv', '10% dextrose', 'dextrose 10%', '10 dextrose kg', '10 dextrose kg iv', 'dextrose', 'dextrose kg', 'iv 10 dextrose kg'],
       responseText: '10% Dextrose 5 mL/kg given IV as a bolus for hypoglycaemia.',
       onsetMinutes: 5,
       vitalsEffect: { grbs: 54 },
@@ -144,7 +144,7 @@ export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
       rationale: 'A child this wasted cannot thermoregulate effectively because of depleted subcutaneous fat and impaired metabolic reserve; untreated hypothermia carries high mortality.',
     },
     sam_fluids: {
-      aliases: ['ringer lactate 15 ml/kg over 1 hour (severe malnutrition)', 'slow rehydration'],
+      aliases: ['ringer lactate 15 ml/kg over 1 hour (severe malnutrition)', 'slow rehydration', 'ringer lactate kg over 1 hour severe malnutrition', 'ringer lactate kg over hour severe malnutrition'],
       responseText: 'Ringer lactate 15 mL/kg given slowly over 1 hour with continuous reassessment for signs of fluid overload.',
       onsetMinutes: 60,
       vitalsEffect: { hr: -34, bp: '86/52' },
@@ -162,14 +162,14 @@ export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
       rationale: 'This low-sodium, higher-potassium rehydration solution is used for dehydration WITHOUT circulatory compromise and matches the specific electrolyte derangements of this state; standard ORS is too high in sodium to be used here.',
     },
     antibiotics: {
-      aliases: ['ampicillin + gentamicin iv', 'ampicillin', 'gentamicin'],
+      aliases: ['ampicillin + gentamicin iv', 'ampicillin', 'gentamicin', 'ampicillin gentamicin', 'iv ampicillin gentamicin'],
       responseText: 'IV Ampicillin plus Gentamicin started empirically.',
       onsetMinutes: 45,
       appropriateness: 'indicated',
       rationale: 'Infection is presumed and treated empirically even without fever or a raised CRP, because the usual clinical and inflammatory signs of sepsis are blunted in this degree of wasting.',
     },
     f75: {
-      aliases: ['f-75 starter feed', 'f75', 'starter feed'],
+      aliases: ['f-75 starter feed', 'f75', 'starter feed', 'f starter feed'],
       responseText: 'F-75 starter feed commenced — small, frequent, low-protein, low-sodium feeds.',
       onsetMinutes: 120,
       appropriateness: 'indicated',
@@ -183,7 +183,7 @@ export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
       rationale: 'Vitamin A supplementation is standard in the stabilisation phase and reduces morbidity and mortality, particularly where deficiency is common in this population.',
     },
     standard_bolus: {
-      aliases: ['normal saline 30 ml/kg bolus', 'standard bolus', 'rapid saline bolus'],
+      aliases: ['normal saline 30 ml/kg bolus', 'standard bolus', 'rapid saline bolus', 'normal saline kg', 'normal saline kg bolus', 'rapid saline', 'standard'],
       responseText: 'Normal saline 30 mL/kg given as a rapid bolus.',
       onsetMinutes: 10,
       vitalsEffect: { hr: 22, rr: 16, spo2: -8 },
@@ -191,7 +191,7 @@ export const SCAFFOLD_MALNUTRITION: CaseScaffold = {
       rationale: 'This is the standard rapid paediatric bolus used in a well-nourished child, but in a child this wasted the myocardium is atrophic and cannot handle a sudden volume load: it precipitates fluid overload and heart failure rather than improving perfusion. This is the single most important teaching point of this case — standard paediatric resuscitation volumes are wrong here.',
     },
     furosemide: {
-      aliases: ['furosemide iv', 'furosemide'],
+      aliases: ['furosemide iv', 'furosemide', 'iv furosemide'],
       responseText: 'IV Furosemide given for peripheral puffiness.',
       onsetMinutes: 15,
       vitalsEffect: { hr: 8 },

@@ -87,7 +87,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
     },
     investigationsMap: {
       ecg: {
-        aliases: ['12-lead ecg', 'ecg', 'ekg', 'electrocardiogram'],
+        aliases: ['12-lead ecg', 'ecg', 'ekg', 'electrocardiogram', '12 lead electrocardiogram', 'lead ecg'],
         resultText: '12-lead ECG: Sinus tachycardia at 110 bpm. Hyperacute T waves progressing to 4mm ST elevations in V1-V4. Reciprocal ST depressions in II, III, aVF.',
         turnaroundMinutes: 5,
         category: 'imaging',
@@ -101,7 +101,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       cbc: {
-        aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
+        aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
         resultText: 'CBC: Hb 14.2 g/dL (Reference 13.0–17.0 g/dL), WBC 11,400/mcL (Reference 4,000–11,000/mcL), Platelets 240,000/mcL (Reference 150,000–450,000/mcL).',
         turnaroundMinutes: 25,
         category: 'labs',
@@ -115,7 +115,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       cxr: {
-        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest xray', 'chest x ray'],
+        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest xray', 'chest x ray', 'cxr pa', 'cxr portable'],
         resultText: 'Portable CXR (PA view): Mild pulmonary venous congestion, heart size upper limit of normal. No pneumothorax.',
         turnaroundMinutes: 20,
         category: 'imaging',
@@ -129,7 +129,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       lft: {
-        aliases: ['lft', 'liver function test'],
+        aliases: ['lft', 'liver function test', 'liver function tests'],
         resultText: 'Liver Function Tests: AST 42 U/L (Reference 10–40 U/L), ALT 35 U/L (Reference 7–56 U/L), Total Bilirubin 0.8 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 4.1 g/dL (Reference 3.5–5.0 g/dL).',
         turnaroundMinutes: 30,
         category: 'labs',
@@ -173,7 +173,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
     },
     therapiesMap: {
       aspirin: {
-        aliases: ['aspirin 325 mg chewed', 'aspirin', 'asa', 'chewable aspirin', 'aspirin 325mg'],
+        aliases: ['aspirin 325 mg chewed', 'aspirin', 'asa', 'chewable aspirin', 'aspirin 325mg', 'aspirin chewed'],
         responseText: 'Aspirin 325 mg given chewed and swallowed for rapid antiplatelet effect.',
         onsetMinutes: 15,
         vitalsEffect: { hr: -2 },
@@ -181,7 +181,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         rationale: 'Immediate chewable, non-enteric aspirin gives rapid antiplatelet effect and reduces mortality in ACS; it should never wait for troponin confirmation.',
       },
       p2y12_inhibitor: {
-        aliases: ['clopidogrel 300 mg loading', 'ticagrelor 180 mg loading', 'clopidogrel', 'ticagrelor', 'p2y12 inhibitor', 'dual antiplatelet therapy', 'dapt', 'p2y12'],
+        aliases: ['clopidogrel 300 mg loading', 'ticagrelor 180 mg loading', 'clopidogrel', 'ticagrelor', 'p2y12 inhibitor', 'dual antiplatelet therapy', 'dapt', 'p2y12', 'clopidogrel loading', 'ticagrelor loading'],
         responseText: 'P2Y12 inhibitor loading dose given alongside aspirin.',
         onsetMinutes: 20,
         appropriateness: 'indicated',
@@ -232,7 +232,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         rationale: 'Routine supplemental oxygen has not been shown to improve outcomes in ACS patients who are not hypoxic (SpO2 ≥90%); reasonable here but not clearly beneficial at this saturation.',
       },
       nitroglycerin: {
-        aliases: ['nitroglycerin infusion', 'nitroglycerin', 'ntg', 'gtn', 'nitro drip', 'iv nitroglycerin'],
+        aliases: ['nitroglycerin infusion', 'nitroglycerin', 'ntg', 'gtn', 'nitro drip', 'iv nitroglycerin', 'nitro'],
         responseText: 'IV Nitroglycerin infusion started and titrated for pain relief.',
         onsetMinutes: 10,
         vitalsEffect: { hr: 2 },
@@ -240,7 +240,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         rationale: 'Nitrates relieve ischemic pain but have not been shown to reduce mortality in STEMI, and must be avoided in hypotension or suspected right ventricular infarction.',
       },
       metoprolol: {
-        aliases: ['metoprolol iv', 'metoprolol', 'iv beta blocker', 'beta blocker'],
+        aliases: ['metoprolol iv', 'metoprolol', 'iv beta blocker', 'beta blocker', 'iv metoprolol'],
         responseText: 'IV Metoprolol given.',
         onsetMinutes: 10,
         vitalsEffect: { hr: -20, bp: '82/54', spo2: -3 },
@@ -348,7 +348,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
     },
     investigationsMap: {
       grbs: {
-        aliases: ['rbs / grbs', 'grbs', 'rbs', 'capillary glucose', 'blood glucose', 'random blood sugar', 'bedside glucose', 'glucometer reading', 'finger stick glucose'],
+        aliases: ['rbs / grbs', 'grbs', 'rbs', 'capillary glucose', 'blood glucose', 'random blood sugar', 'bedside glucose', 'glucometer reading', 'finger stick glucose', 'rbs random blood sugar'],
         resultText: 'GRBS: 480 mg/dL (Reference 70–140 mg/dL) — Severely elevated.',
         turnaroundMinutes: 2,
         category: 'labs',
@@ -395,7 +395,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       cbc: {
-        aliases: ['cbc / hemogram', 'cbc', 'complete blood count', 'hemogram'],
+        aliases: ['cbc / hemogram', 'cbc', 'complete blood count', 'hemogram', 'complete blood count hemogram'],
         resultText: 'CBC: Hb 15.8 g/dL (hemoconcentration), WBC 16,200/mcL (Reference 4,000–11,000/mcL), Platelets 280,000/mcL.',
         turnaroundMinutes: 20,
         category: 'labs',
@@ -409,21 +409,21 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: false,
       },
       blood_cultures: {
-        aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood c/s'],
+        aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood c/s', 'blood culture before antibiotics'],
         resultText: 'Blood Cultures x2: Aerobic and anaerobic bottles incubated. No growth at 24 hours.',
         turnaroundMinutes: 60,
         category: 'labs',
         isIndicative: false,
       },
       ecg: {
-        aliases: ['12-lead ecg', 'ecg', 'ekg', 'electrocardiogram'],
+        aliases: ['12-lead ecg', 'ecg', 'ekg', 'electrocardiogram', '12 lead electrocardiogram', 'lead ecg'],
         resultText: '12-lead ECG: Sinus tachycardia at 128 bpm. Peaked T waves noted in V2-V4 (early hyperkalemia shift).',
         turnaroundMinutes: 5,
         category: 'imaging',
         isIndicative: true,
       },
       cxr: {
-        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest xray', 'chest x ray'],
+        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest xray', 'chest x ray', 'cxr pa', 'cxr portable'],
         resultText: 'Chest X-ray PA view: Normal lung fields, no infiltrates or consolidation.',
         turnaroundMinutes: 20,
         category: 'imaging',
@@ -467,8 +467,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
           'saline bolus',
           'iv ns',
           'crystalloid bolus',
-          'ns',
-        ],
+          'ns', 'fluid', 'fluids', 'normal saline 0 9 bolus', 'normal saline kg', 'normal saline kg bolus', 'ringer lactate', 'ringer lactate bolus', 'saline'],
         responseText: 'IV 0.9% Normal Saline bolus given (15–20 mL/kg over the first hour), with ongoing isotonic fluid replacement.',
         onsetMinutes: 30,
         vitalsEffect: { hr: -8, bp: '104/66' },
@@ -494,7 +493,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         harmfulSequenceRationale: 'Insulin given before volume resuscitation drives glucose — and potassium — intracellularly while the patient is still profoundly volume-depleted, worsening hypotension and risking sudden severe hypokalemia with cardiac arrhythmia. Fluids (with potassium checked and replaced as needed) must precede or accompany insulin, never follow it.',
       },
       potassium_replacement: {
-        aliases: ['potassium chloride in infusion', 'kcl', 'potassium chloride', 'potassium replacement', 'iv potassium', 'inj kcl', 'potassium chloride infusion', 'potassium'],
+        aliases: ['potassium chloride in infusion', 'kcl', 'potassium chloride', 'potassium replacement', 'iv potassium', 'inj kcl', 'potassium chloride infusion', 'potassium', 'potassium chloride in'],
         responseText: 'Potassium chloride added to IV fluids per serum potassium level.',
         onsetMinutes: 30,
         labShift: {
@@ -512,7 +511,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         rationale: 'Adding dextrose once glucose falls near 200–250 mg/dL lets the insulin infusion continue clearing ketosis without causing hypoglycemia.',
       },
       sodium_bicarbonate: {
-        aliases: ['sodium bicarbonate iv', 'sodium bicarbonate', 'bicarbonate', 'nahco3', 'iv bicarbonate', 'inj sodium bicarbonate', 'nahco3 iv'],
+        aliases: ['sodium bicarbonate iv', 'sodium bicarbonate', 'bicarbonate', 'nahco3', 'iv bicarbonate', 'inj sodium bicarbonate', 'nahco3 iv', 'iv nahco3', 'iv sodium bicarbonate'],
         responseText: 'IV Sodium Bicarbonate given.',
         onsetMinutes: 20,
         vitalsEffect: { hr: 4 },
@@ -631,21 +630,21 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       lft: {
-        aliases: ['lft', 'hellp panel', 'liver function test'],
+        aliases: ['lft', 'hellp panel', 'liver function test', 'liver function tests'],
         resultText: 'LFT / HELLP Panel: AST 142 U/L (Ref 10–40), ALT 128 U/L (Ref 7–56), Total Bilirubin 1.8 mg/dL (Ref 0.2–1.2), LDH 780 U/L (Ref 140–280 U/L) — Hemolysis & elevated liver enzymes.',
         turnaroundMinutes: 25,
         category: 'labs',
         isIndicative: true,
       },
       cbc: {
-        aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
+        aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
         resultText: 'CBC: Hb 11.0 g/dL, WBC 12,200/mcL, Platelets 88,000/mcL (Reference 150,000–450,000/mcL) — Moderate Thrombocytopenia.',
         turnaroundMinutes: 20,
         category: 'labs',
         isIndicative: true,
       },
       usg_fetal: {
-        aliases: ['usg abdomen & pelvis', 'obstetric usg', 'fetal ultrasound', 'usg fetal', 'obstetric ultrasound', 'usg pregnancy'],
+        aliases: ['usg abdomen & pelvis', 'obstetric usg', 'fetal ultrasound', 'usg fetal', 'obstetric ultrasound', 'usg pregnancy', 'fetal usg', 'ultrasound abdomen pelvis', 'ultrasound fetal', 'ultrasound pregnancy'],
         resultText: 'Obstetric USG: Single live fetus 33 weeks, EFW 1.8 kg (IUGR), Oligohydramnios (AFI 6 cm), Doppler shows umbilical artery reversed end-diastolic flow.',
         turnaroundMinutes: 20,
         category: 'imaging',
@@ -687,7 +686,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: false,
       },
       ecg: {
-        aliases: ['12-lead ecg', 'ecg', 'ekg', 'electrocardiogram'],
+        aliases: ['12-lead ecg', 'ecg', 'ekg', 'electrocardiogram', '12 lead electrocardiogram', 'lead ecg'],
         resultText: '12-lead ECG: Sinus tachycardia at 116 bpm. Left ventricular hypertrophy pattern.',
         turnaroundMinutes: 5,
         category: 'imaging',
@@ -718,7 +717,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         rationale: 'Magnesium sulfate is the anticonvulsant of choice in eclampsia, proven superior to diazepam and phenytoin at preventing recurrent seizures and reducing maternal mortality (MAGPIE trial).',
       },
       antihypertensive: {
-        aliases: ['labetalol iv', 'hydralazine iv', 'nifedipine oral', 'labetalol', 'hydralazine', 'nifedipine', 'iv labetalol', 'antihypertensive', 'iv antihypertensive'],
+        aliases: ['labetalol iv', 'hydralazine iv', 'nifedipine oral', 'labetalol', 'hydralazine', 'nifedipine', 'iv labetalol', 'antihypertensive', 'iv antihypertensive', 'iv hydralazine'],
         responseText: 'IV antihypertensive given and titrated toward a target BP below 160/110 mmHg (diastolic 90–100 mmHg).',
         onsetMinutes: 20,
         vitalsEffect: { hr: -4, bp: '148/96' },
@@ -729,7 +728,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         rationale: 'Rapid-acting antihypertensives reduce the risk of maternal hemorrhagic stroke in severe hypertension; overly aggressive lowering risking uteroplacental hypoperfusion should be avoided.',
       },
       alternative_anticonvulsant: {
-        aliases: ['phenytoin loading', 'lorazepam iv', 'levetiracetam iv', 'diazepam', 'phenytoin', 'lorazepam', 'levetiracetam'],
+        aliases: ['phenytoin loading', 'lorazepam iv', 'levetiracetam iv', 'diazepam', 'phenytoin', 'lorazepam', 'levetiracetam', 'iv levetiracetam', 'iv lorazepam'],
         responseText: 'Anticonvulsant given for seizure control.',
         onsetMinutes: 15,
         vitalsEffect: { hr: 5 },
@@ -842,7 +841,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       blood_cultures: {
-        aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood c/s'],
+        aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood c/s', 'blood culture before antibiotics'],
         resultText: 'Blood Cultures x2 STAT: Plated for aerobic/anaerobic organisms. Gram-negative diplococci growing at 24 hours.',
         turnaroundMinutes: 60,
         category: 'labs',
@@ -856,7 +855,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       cbc: {
-        aliases: ['cbc / hemogram', 'cbc', 'complete blood count', 'hemogram'],
+        aliases: ['cbc / hemogram', 'cbc', 'complete blood count', 'hemogram', 'complete blood count hemogram'],
         resultText: 'CBC: WBC 21,500/mcL with 88% Neutrophils (Left shift), Hb 12.2 g/dL, Platelets 180,000/mcL.',
         turnaroundMinutes: 20,
         category: 'labs',
@@ -887,7 +886,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: false,
       },
       lft: {
-        aliases: ['lft', 'liver function test'],
+        aliases: ['lft', 'liver function test', 'liver function tests'],
         resultText: 'LFT: AST 34 U/L, ALT 28 U/L, Total Bilirubin 0.9 mg/dL, Albumin 3.8 g/dL.',
         turnaroundMinutes: 30,
         category: 'labs',
@@ -915,14 +914,14 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
         isIndicative: true,
       },
       grbs: {
-        aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar', 'bedside glucose', 'capillary glucose'],
+        aliases: ['rbs / grbs', 'grbs', 'rbs', 'blood sugar', 'bedside glucose', 'capillary glucose', 'rbs random blood sugar'],
         resultText: 'GRBS: 104 mg/dL (Reference 70–140 mg/dL).',
         turnaroundMinutes: 2,
         category: 'labs',
         isIndicative: true,
       },
       cxr: {
-        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest xray', 'chest x ray'],
+        aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest xray', 'chest x ray', 'cxr pa', 'cxr portable'],
         resultText: 'Chest X-ray PA view: Normal lung fields, clear costophrenic angles.',
         turnaroundMinutes: 20,
         category: 'imaging',
@@ -931,7 +930,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
     },
     therapiesMap: {
       ceftriaxone: {
-        aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'iv ceftriaxone', 'inj ceftriaxone'],
+        aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'iv ceftriaxone', 'inj ceftriaxone', 'ceftriaxone iv'],
         responseText: 'IV Ceftriaxone 2 g given empirically.',
         onsetMinutes: 30,
         vitalsEffect: { hr: -6 },

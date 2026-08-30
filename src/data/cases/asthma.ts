@@ -70,7 +70,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
       isIndicative: true,
     },
     cxr: {
-      aliases: ['chest x-ray pa', 'cxr', 'chest x ray', 'chest xray'],
+      aliases: ['chest x-ray pa', 'cxr', 'chest x ray', 'chest xray', 'cxr pa'],
       resultText:
         'Chest X-ray PA: Hyperinflated lung fields with flattened diaphragms; no focal consolidation, pneumothorax, or pneumomediastinum.',
       turnaroundMinutes: 20,
@@ -78,7 +78,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText:
         'CBC: Hb 13.5 g/dL (Reference 12.0–15.5 g/dL), WBC 9,800/mcL (Reference 4,000–11,000/mcL), Platelets 260,000/mcL (Reference 150,000–450,000/mcL) — mild leukocytosis in keeping with the preceding viral illness.',
       turnaroundMinutes: 25,
@@ -150,7 +150,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
         'Adding an inhaled anticholinergic to a short-acting beta-agonist produces greater bronchodilation than either agent alone in severe exacerbations and reduces the likelihood of hospital admission.',
     },
     hydrocortisone: {
-      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid', 'systemic corticosteroid', 'iv corticosteroid', 'inj hydrocortisone', 'oral corticosteroid', 'prednisolone'],
+      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid', 'systemic corticosteroid', 'iv corticosteroid', 'inj hydrocortisone', 'oral corticosteroid', 'prednisolone', 'corticosteroid', 'iv hydrocortisone', 'steroid'],
       responseText: 'IV Hydrocortisone given.',
       onsetMinutes: 60,
       appropriateness: 'indicated',
@@ -158,7 +158,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
         'Systemic corticosteroids reduce airway inflammation and prevent relapse, but take hours to act; they must still be given early even though no immediate change in vitals is expected.',
     },
     magnesium: {
-      aliases: ['magnesium sulfate 2 g iv infusion', 'magnesium', 'magnesium sulfate', 'mgso4', 'iv magnesium sulfate', 'mgso4 infusion'],
+      aliases: ['magnesium sulfate 2 g iv infusion', 'magnesium', 'magnesium sulfate', 'mgso4', 'iv magnesium sulfate', 'mgso4 infusion', 'iv magnesium sulfate infusion', 'magnesium sulfate infusion', 'magnesium sulfate iv infusion'],
       responseText: 'Magnesium sulfate 2 g IV given as a single infusion over 20 minutes.',
       onsetMinutes: 30,
       vitalsEffect: { spo2: 2 },
@@ -200,7 +200,7 @@ export const SCAFFOLD_ASTHMA: CaseScaffold = {
         'Intubation is indicated for a silent chest, exhaustion, or a rising PaCO2 despite maximal therapy. Because of dynamic hyperinflation, positive-pressure ventilation afterwards carries a real risk of breath-stacking and hypotension; a long expiratory time and a permissive-hypercapnia strategy are needed.',
     },
     morphine: {
-      aliases: ['morphine iv', 'morphine', 'morphine sulphate', 'morphine sulfate'],
+      aliases: ['morphine iv', 'morphine', 'morphine sulphate', 'morphine sulfate', 'iv morphine'],
       responseText: 'Morphine IV given for distress.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -6, rr: -10, spo2: -8 },

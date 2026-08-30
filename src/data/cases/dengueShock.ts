@@ -56,7 +56,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Haematocrit 42% (Reference for age 33–39%), Hb 14.1 g/dL, WBC 3,200/mcL (Reference 5,000–13,000/mcL for age — leucopenia), Platelets 68,000/mcL (Reference 150,000–450,000/mcL) — haemoconcentration with thrombocytopenia, the combination expected once plasma starts leaking out of the vessels.',
       turnaroundMinutes: 15,
       category: 'labs',
@@ -77,14 +77,14 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       isIndicative: true,
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText: 'Liver Function Tests: AST 142 U/L (Reference 10–40 U/L), ALT 98 U/L (Reference 7–56 U/L), Albumin 3.0 g/dL (Reference 3.8–5.4 g/dL for age) — transaminases raised more than expected for a routine viral illness, and the low albumin is itself contributing to fluid leaking out of the vessels.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'RFT/KFT: Blood Urea 24 mg/dL (Reference 15–36 mg/dL for age), Serum Creatinine 0.4 mg/dL (Reference 0.3–0.5 mg/dL for age) — currently normal; worth trending closely if shock is not promptly reversed.',
       turnaroundMinutes: 25,
       category: 'labs',
@@ -98,14 +98,14 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       isIndicative: true,
     },
     usg_abdomen: {
-      aliases: ['usg abdomen & pelvis', 'usg pelvis', 'pelvic ultrasound'],
+      aliases: ['usg abdomen & pelvis', 'usg pelvis', 'pelvic ultrasound', 'pelvic usg', 'ultrasound abdomen pelvis', 'ultrasound pelvis'],
       resultText: 'USG Abdomen & Pelvis: Gallbladder wall oedema/thickening, free fluid in the hepatorenal pouch and pelvis, and mild hepatomegaly — all in keeping with plasma leaking out of the vascular compartment into the tissues and peritoneal cavity.',
       turnaroundMinutes: 30,
       category: 'imaging',
       isIndicative: true,
     },
     chest_xray: {
-      aliases: ['chest x-ray pa', 'chest x-ray', 'cxr'],
+      aliases: ['chest x-ray pa', 'chest x-ray', 'cxr', 'cxr pa'],
       resultText: 'Chest X-ray: Blunting of both costophrenic angles consistent with bilateral pleural effusion, right greater than left — another site the leaked plasma has collected.',
       turnaroundMinutes: 20,
       category: 'imaging',
@@ -126,7 +126,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       isIndicative: true,
     },
     blood_culture: {
-      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture'],
+      aliases: ['blood culture ×2 (before antibiotics)', 'blood cultures', 'blood culture', 'blood culture before antibiotics'],
       resultText: 'Blood Cultures x2: No growth at 48 hours. The clinical picture and NS1 result already point to a viral cause, not a bacterial one — antibiotics were never indicated here and this result does not change that.',
       turnaroundMinutes: 60,
       category: 'labs',
@@ -137,7 +137,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
   },
   therapiesMap: {
     crystalloid_bolus: {
-      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus'],
+      aliases: ['ringer lactate 500 ml bolus', 'ringer lactate', 'crystalloid bolus', 'crystalloid', 'ringer lactate bolus', 'iv fluids', 'fluid bolus', 'iv fluid'],
       responseText: 'An isotonic crystalloid (Ringer lactate) bolus is given over one hour, with vitals and the haematocrit trend reassessed closely through the infusion.',
       onsetMinutes: 45,
       vitalsEffect: { hr: -22, bp: '104/76' },
@@ -156,7 +156,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       rationale: 'Oxygen is given to every child in shock while the circulating volume is being restored, supporting tissue oxygen delivery during the period of poor perfusion.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'access', 'iv two wide bore cannulae', 'two wide bore cannulae'],
       responseText: 'Two wide-bore IV cannulae secured for fluid resuscitation and repeat sampling.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
@@ -170,7 +170,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       rationale: 'Accurate hourly urine output is one of the most useful bedside guides to whether fluid resuscitation is adequate, excessive, or still insufficient, in a condition managed entirely by careful titration.',
     },
     paracetamol: {
-      aliases: ['paracetamol iv', 'paracetamol'],
+      aliases: ['paracetamol iv', 'paracetamol', 'iv paracetamol'],
       responseText: 'Paracetamol given for fever and pain.',
       onsetMinutes: 20,
       vitalsEffect: { temp: '36.7°C' },
@@ -185,7 +185,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       rationale: 'A child in shock from plasma leakage needs continuous vital-sign and urine-output monitoring through both the leak phase and the reabsorption phase that follows, which is best delivered at ICU level of care.',
     },
     colloid_bolus: {
-      aliases: ['6% hes colloid bolus', 'colloid bolus', 'dextran 70 bolus', '6% hes'],
+      aliases: ['6% hes colloid bolus', 'colloid bolus', 'dextran 70 bolus', '6% hes', 'colloid', 'dextran', 'hes', 'hes colloid'],
       responseText: 'A colloid bolus (6% hydroxyethyl starch) is given over one hour after crystalloid boluses failed to reverse the shock.',
       onsetMinutes: 45,
       vitalsEffect: { hr: -14, bp: '106/74' },
@@ -197,7 +197,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       harmfulSequenceRationale: 'Colloid is a second-line fluid used only when shock persists despite crystalloid. Reaching for it first skips the step that resolves shock in most children, exposes the child to colloid-specific risks (anaphylactoid reaction, added coagulopathy) for no proven benefit over crystalloid as an initial agent, and muddies the picture of whether the leak is truly refractory.',
     },
     aspirin: {
-      aliases: ['aspirin 325 mg chewed', 'aspirin'],
+      aliases: ['aspirin 325 mg chewed', 'aspirin', 'aspirin chewed'],
       responseText: 'Aspirin given for fever and body ache.',
       onsetMinutes: 60,
       vitalsEffect: { hr: 6 },
@@ -205,7 +205,7 @@ export const SCAFFOLD_DENGUE_SHOCK: CaseScaffold = {
       rationale: 'Aspirin (and other NSAIDs) are contraindicated for fever or pain in this illness: their antiplatelet effect and gastric irritation worsen the bleeding tendency that already exists from thrombocytopenia and coagulopathy, and aspirin specifically carries a Reye syndrome risk in a febrile child. Paracetamol is the safe alternative.',
     },
     im_paracetamol: {
-      aliases: ['paracetamol im injection', 'intramuscular paracetamol', 'paracetamol im'],
+      aliases: ['paracetamol im injection', 'intramuscular paracetamol', 'paracetamol im', 'im paracetamol', 'im paracetamol injection', 'paracetamol injection'],
       responseText: 'Paracetamol given as an intramuscular injection for fever.',
       onsetMinutes: 20,
       vitalsEffect: { temp: '36.8°C' },

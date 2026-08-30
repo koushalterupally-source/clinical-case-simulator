@@ -63,7 +63,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
   },
   investigationsMap: {
     grbs: {
-      aliases: ['rbs / grbs', 'grbs'],
+      aliases: ['rbs / grbs', 'grbs', 'random blood sugar', 'rbs random blood sugar'],
       resultText: 'GRBS: 452 mg/dL (Reference 70–140 mg/dL) — markedly elevated.',
       turnaroundMinutes: 2,
       category: 'labs',
@@ -124,7 +124,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
       isIndicative: true,
     },
     rft: {
-      aliases: ['rft / kft (urea, creatinine)', 'rft', 'kft'],
+      aliases: ['rft / kft (urea, creatinine)', 'rft', 'kft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText:
         'Renal Function: Blood Urea 32 mg/dL (Reference 15–35 mg/dL for age), Serum Creatinine 0.6 mg/dL (Reference 0.3–0.7 mg/dL for age) — mildly high urea from volume depletion; creatinine remains within the paediatric reference range.',
       turnaroundMinutes: 25,
@@ -132,7 +132,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
       isIndicative: true,
     },
     ecg: {
-      aliases: ['12-lead ecg', 'ecg'],
+      aliases: ['12-lead ecg', 'ecg', '12 lead electrocardiogram', 'electrocardiogram', 'lead ecg'],
       resultText: '12-lead ECG: Sinus tachycardia at 138 bpm. T wave amplitude and morphology currently normal.',
       turnaroundMinutes: 5,
       category: 'imaging',
@@ -177,7 +177,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc'],
+      aliases: ['cbc / hemogram', 'cbc', 'complete blood count', 'complete blood count hemogram'],
       resultText:
         'CBC: Hb 13.6 g/dL (Reference 11.5–14.5 g/dL for age), WBC 15,800/mcL (Reference 5,000–14,500/mcL for age), Platelets 340,000/mcL.',
       turnaroundMinutes: 20,
@@ -190,7 +190,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
   },
   therapiesMap: {
     iv_fluids_initial: {
-      aliases: ['normal saline 0.9% 500 ml bolus', 'iv fluids', 'normal saline', '0.9% saline', 'ns bolus', 'isotonic saline'],
+      aliases: ['normal saline 0.9% 500 ml bolus', 'iv fluids', 'normal saline', '0.9% saline', 'ns bolus', 'isotonic saline', 'fluids', 'normal saline 0 9 bolus', 'saline'],
       responseText:
         'IV 0.9% Normal Saline given as a measured bolus of about 10 mL/kg over the first hour, moving straight into the calculated 48-hour deficit-plus-maintenance replacement rather than repeated large boluses.',
       onsetMinutes: 30,
@@ -210,7 +210,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
         'Spreading deficit correction over 24–48 hours, rather than correcting it quickly as in an adult, keeps the fall in effective osmolality gradual — the single most important modifiable factor in preventing cerebral oedema, the leading cause of death in children being treated for this illness.',
     },
     potassium_replacement: {
-      aliases: ['potassium chloride in infusion', 'kcl', 'potassium chloride', 'potassium replacement'],
+      aliases: ['potassium chloride in infusion', 'kcl', 'potassium chloride', 'potassium replacement', 'potassium chloride in'],
       responseText:
         'Potassium chloride added to the infusion once the potassium level and urine output were confirmed, running before and alongside the insulin infusion.',
       onsetMinutes: 30,
@@ -223,7 +223,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
         'Insulin drives potassium into cells. Starting replacement before or alongside insulin — once urine output is confirmed and the level is not dangerously high — prevents the severe hypokalaemia and arrhythmia that follow if insulin is started on an empty tank.',
     },
     insulin_infusion: {
-      aliases: ['insulin infusion', 'iv insulin', 'regular insulin infusion', 'insulin'],
+      aliases: ['insulin infusion', 'iv insulin', 'regular insulin infusion', 'insulin', 'regular insulin'],
       responseText:
         'IV Regular Insulin infusion started at a low dose (0.05–0.1 units/kg/hr) one to two hours after fluid replacement had begun, with no bolus given at any point.',
       onsetMinutes: 90,
@@ -254,7 +254,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
         'Adding dextrose once glucose approaches 250–300 mg/dL lets the insulin infusion keep running at a rate that clears ketosis, without letting glucose — and the osmolality change that goes with it — fall too fast or tip into hypoglycaemia.',
     },
     sodium_bicarbonate: {
-      aliases: ['sodium bicarbonate iv', 'sodium bicarbonate', 'bicarbonate', 'nahco3'],
+      aliases: ['sodium bicarbonate iv', 'sodium bicarbonate', 'bicarbonate', 'nahco3', 'iv sodium bicarbonate'],
       responseText: 'IV Sodium Bicarbonate given for the severe acidosis.',
       onsetMinutes: 20,
       vitalsEffect: { hr: 6 },
@@ -263,7 +263,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
         'Bicarbonate is not used in children outside of extreme, life-threatening acidosis with cardiac compromise unresponsive to other measures, and even then only with great caution. Routine use here paradoxically worsens intracellular and CNS acidosis, drives potassium further into cells, and is specifically associated with a higher risk of cerebral oedema, the leading cause of death in children with this illness — fluids and insulin correct the acidosis without it.',
     },
     rapid_fluid_bolus: {
-      aliases: ['normal saline 30 ml/kg bolus', 'rapid fluid bolus', 'large volume bolus'],
+      aliases: ['normal saline 30 ml/kg bolus', 'rapid fluid bolus', 'large volume bolus', 'large volume', 'normal saline kg', 'normal saline kg bolus', 'rapid fluid'],
       responseText:
         'A large 30 mL/kg normal saline bolus given rapidly, well beyond the measured initial resuscitation volume used in children.',
       onsetMinutes: 20,
@@ -273,7 +273,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
         'Aggressive rapid-bolus resuscitation, reasonable in some adult shock protocols, is one of the specific factors linked to cerebral oedema, the leading cause of death in children being treated for this illness — alongside a young age, a new diagnosis, a rapid fall in effective osmolality, and bicarbonate use. Boluses in children are kept to a measured 10 mL/kg, repeated only if shock persists, not a standard weight-based 30 mL/kg.',
     },
     mannitol: {
-      aliases: ['mannitol 20%'],
+      aliases: ['mannitol 20%', 'mannitol'],
       responseText:
         'Mannitol 20% (0.5–1 g/kg) given IV promptly for new warning signs of a swelling brain — a falling heart rate with a rising blood pressure, headache, and increasing drowsiness — with the fluid infusion rate slowed at the same time.',
       onsetMinutes: 15,
@@ -283,7 +283,7 @@ export const SCAFFOLD_PEDIATRIC_DKA: CaseScaffold = {
         'Mannitol (or hypertonic saline as an alternative) is the emergency treatment for the warning signs of cerebral oedema in a child with this illness — a falling heart rate with a rising blood pressure, headache, and reduced consciousness — and must be given as soon as these are recognised, with the fluid rate slowed at the same time.',
     },
     hypertonic_saline: {
-      aliases: ['3% hypertonic saline'],
+      aliases: ['3% hypertonic saline', 'hypertonic saline'],
       responseText:
         '3% Hypertonic saline (5–10 mL/kg) given IV as an alternative to mannitol for the same warning signs, with the fluid infusion rate slowed at the same time.',
       onsetMinutes: 15,

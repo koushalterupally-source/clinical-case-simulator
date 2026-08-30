@@ -62,7 +62,7 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
   },
   investigationsMap: {
     iop_tonometry: {
-      aliases: ['tonometry', 'applanation tonometry', 'intraocular pressure measurement', 'iop measurement'],
+      aliases: ['tonometry', 'applanation tonometry', 'intraocular pressure measurement', 'iop measurement', 'iop', 'intraocular pressure'],
       resultText: 'Applanation Tonometry: Intraocular pressure 56 mmHg in the right eye (Reference 10–21 mmHg), 18 mmHg in the left eye — markedly elevated on the symptomatic side.',
       turnaroundMinutes: 5,
       category: 'monitoring',
@@ -83,35 +83,35 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       isIndicative: true,
     },
     visual_acuity: {
-      aliases: ['visual acuity testing', 'visual acuity assessment', 'visual acuity'],
+      aliases: ['visual acuity testing', 'visual acuity assessment', 'visual acuity', 'va testing', 'visual acuity check'],
       resultText: 'Visual Acuity: Right eye 6/60, markedly reduced. Left eye 6/9 unaided, essentially preserved.',
       turnaroundMinutes: 5,
       category: 'monitoring',
       isIndicative: true,
     },
     serum_electrolytes: {
-      aliases: ['serum electrolytes (na, k, cl)', 'serum electrolytes', 'electrolytes'],
+      aliases: ['serum electrolytes (na, k, cl)', 'serum electrolytes', 'electrolytes', 'electrolyte panel', 'lytes'],
       resultText: 'Serum Electrolytes: Na+ 138 mEq/L (Reference 135–145), K+ 4.0 mEq/L (Reference 3.5–5.0), Cl- 101 mEq/L (Reference 98–107) — normal baseline, worth trending once a carbonic anhydrase inhibitor and an osmotic agent are started.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     rft_kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'rft', 'kft'],
+      aliases: ['rft / kft (urea, creatinine)', 'rft', 'kft', 'renal function test', 'kidney function test', 'urea creatinine', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText: 'Renal Function: Blood Urea 26 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.8 mg/dL (Reference 0.6–1.2 mg/dL) — normal, confirming it is safe to proceed with a sulfonamide-related carbonic anhydrase inhibitor and an intravenous osmotic agent.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
     },
     rbs_grbs: {
-      aliases: ['rbs / grbs', 'rbs', 'grbs', 'random blood sugar'],
+      aliases: ['rbs / grbs', 'rbs', 'grbs', 'random blood sugar', 'blood sugar', 'capillary blood glucose', 'rbs random blood sugar'],
       resultText: 'RBS: 132 mg/dL — mildly elevated, in keeping with the stress of severe pain and vomiting; not in the diabetic range.',
       turnaroundMinutes: 10,
       category: 'labs',
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 12.8 g/dL (Reference 12.0–15.0 g/dL), WBC 8,200/mcL (Reference 4,000–11,000/mcL), Platelets 260,000/mcL (Reference 150,000–450,000/mcL) — unremarkable.',
       turnaroundMinutes: 20,
       category: 'labs',
@@ -120,7 +120,7 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       yieldNote: 'A normal blood count is routine screening here; it does not explain the pain, the fixed pupil or the rock-hard eye, and waiting on it should never delay starting pressure-lowering treatment.',
     },
     ct_head_plain: {
-      aliases: ['ct head plain', 'ct head'],
+      aliases: ['ct head plain', 'ct head', 'ct brain', 'computed tomography head'],
       resultText: 'CT Head (plain): No haemorrhage, no midline shift, no acute infarct — brain parenchyma is normal.',
       turnaroundMinutes: 45,
       category: 'imaging',
@@ -131,21 +131,21 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
   },
   therapiesMap: {
     timolol_eye_drops: {
-      aliases: ['timolol 0.5% eye drops', 'timolol eye drops', 'timolol'],
+      aliases: ['timolol 0.5% eye drops', 'timolol eye drops', 'timolol', 'timolol drops', 'topical beta blocker'],
       responseText: 'Timolol 0.5% eye drops instilled in the right eye.',
       onsetMinutes: 30,
       appropriateness: 'indicated',
       rationale: 'A topical beta-blocker reduces aqueous humour production and is one of the first-line agents used immediately, alongside a topical alpha-agonist and a systemic carbonic anhydrase inhibitor, to bring the pressure down while a definitive procedure is arranged.',
     },
     brimonidine_eye_drops: {
-      aliases: ['brimonidine 0.2% eye drops', 'brimonidine eye drops', 'brimonidine'],
+      aliases: ['brimonidine 0.2% eye drops', 'brimonidine eye drops', 'brimonidine', 'brimonidine drops'],
       responseText: 'Brimonidine 0.2% eye drops instilled in the right eye.',
       onsetMinutes: 30,
       appropriateness: 'indicated',
       rationale: 'A topical alpha-2 agonist both reduces aqueous production and increases outflow, and is combined with a beta-blocker and a systemic carbonic anhydrase inhibitor as first-line medical therapy while a definitive procedure is arranged.',
     },
     acetazolamide_iv: {
-      aliases: ['acetazolamide iv', 'acetazolamide'],
+      aliases: ['acetazolamide iv', 'acetazolamide', 'diamox', 'acetazolamide 500 mg iv', 'iv acetazolamide'],
       responseText: 'Acetazolamide 500 mg given intravenously.',
       onsetMinutes: 30,
       vitalsEffect: { hr: -6, bp: '148/88' },
@@ -156,7 +156,7 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       rationale: 'A systemic carbonic anhydrase inhibitor gives a rapid, reliable fall in aqueous production and is a mainstay of emergency medical treatment alongside the topical agents; renal function is checked first since it is a sulfonamide-related drug excreted renally.',
     },
     mannitol: {
-      aliases: ['mannitol 20%', 'mannitol'],
+      aliases: ['mannitol 20%', 'mannitol', 'iv mannitol', 'mannitol infusion', 'osmotic diuretic'],
       responseText: 'Mannitol 20%, 1–1.5 g/kg, given as a rapid intravenous infusion.',
       onsetMinutes: 45,
       vitalsEffect: { hr: -8, bp: '140/86' },
@@ -167,7 +167,7 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       rationale: 'An intravenous osmotic agent draws fluid out of the eye and produces the fastest, largest fall in pressure among the medical options; it is used when pressure remains very high despite topical drops and the systemic carbonic anhydrase inhibitor, with renal and cardiac status checked first since it causes a rapid fluid shift.',
     },
     pilocarpine_eye_drops: {
-      aliases: ['pilocarpine 2% eye drops', 'pilocarpine eye drops', 'pilocarpine'],
+      aliases: ['pilocarpine 2% eye drops', 'pilocarpine eye drops', 'pilocarpine', 'pilocarpine drops'],
       responseText: 'Pilocarpine 2% eye drops instilled in the right eye.',
       onsetMinutes: 20,
       appropriateness: 'indicated',
@@ -178,7 +178,7 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       harmfulSequenceRationale: 'At very high pressure the pupillary sphincter is ischaemic and pilocarpine cannot produce an effective miosis. Giving it before the beta-blocker and the systemic carbonic anhydrase inhibitor have started to lower the pressure wastes time on a drug that will not work yet, while the eye remains under critically high pressure.',
     },
     laser_iridotomy: {
-      aliases: ['laser peripheral iridotomy', 'peripheral iridotomy', 'iridotomy'],
+      aliases: ['laser peripheral iridotomy', 'peripheral iridotomy', 'iridotomy', 'lpi', 'laser iridotomy'],
       responseText: 'Laser peripheral iridotomy performed on the right eye, now that the cornea has cleared enough and the pressure has come down with medical therapy.',
       onsetMinutes: 60,
       vitalsEffect: { hr: -10, bp: '128/80' },
@@ -193,14 +193,14 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       harmfulSequenceRationale: 'A hazy, oedematous cornea makes it difficult or impossible to focus a laser accurately on the iris. Medical treatment must bring the pressure down and let the cornea clear first, so the procedure can be performed safely and successfully — it is the definitive cure, but only once the eye is ready for it.',
     },
     prophylactic_iridotomy_fellow_eye: {
-      aliases: ['prophylactic laser iridotomy (fellow eye)', 'prophylactic iridotomy fellow eye', 'fellow eye iridotomy'],
+      aliases: ['prophylactic laser iridotomy (fellow eye)', 'prophylactic iridotomy fellow eye', 'fellow eye iridotomy', 'prophylactic iridotomy'],
       responseText: 'A prophylactic laser peripheral iridotomy is performed on the left, unaffected eye, once it is confirmed on gonioscopy to share the same crowded angle.',
       onsetMinutes: 90,
       appropriateness: 'indicated',
       rationale: 'The fellow eye shares the same predisposing anatomy and carries a substantial risk of the same emergency within a few years if left untreated. A prophylactic laser opening is offered to that eye electively, once the first eye is stable — standard practice for this presentation.',
     },
     atropine_iv: {
-      aliases: ['atropine 0.6 mg iv', 'atropine'],
+      aliases: ['atropine 0.6 mg iv', 'atropine', 'iv atropine', 'systemic anticholinergic', 'atropine iv'],
       responseText: 'Atropine 0.6 mg given intravenously.',
       onsetMinutes: 15,
       vitalsEffect: { hr: 22, bp: '150/92' },
@@ -208,14 +208,14 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       rationale: 'Atropine is a systemic anticholinergic and dilates the pupil further, pushing the iris more firmly into the drainage recess and worsening the block. Any mydriatic or systemic anticholinergic is dangerous here and can precipitate a further, more severe rise in pressure, with a real risk of permanent vision loss.',
     },
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'A wide-bore IV cannula is secured for the intravenous carbonic anhydrase inhibitor and osmotic agent.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
       rationale: 'Reliable IV access is needed promptly, since both the carbonic anhydrase inhibitor and the osmotic agent are given intravenously as first-line emergency treatment.',
     },
     ondansetron_iv: {
-      aliases: ['ondansetron iv', 'ondansetron'],
+      aliases: ['ondansetron iv', 'ondansetron', 'iv ondansetron'],
       responseText: 'Ondansetron 4 mg given intravenously for the vomiting.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -4 },
@@ -223,7 +223,7 @@ export const SCAFFOLD_ANGLE_CLOSURE: CaseScaffold = {
       rationale: 'Controlling vomiting is a useful supportive measure and makes the patient more comfortable while pressure-lowering treatment takes effect, though it does not itself change the pressure in the eye.',
     },
     paracetamol_iv: {
-      aliases: ['paracetamol iv', 'paracetamol'],
+      aliases: ['paracetamol iv', 'paracetamol', 'iv paracetamol'],
       responseText: 'Paracetamol 1 g given intravenously for pain.',
       onsetMinutes: 20,
       vitalsEffect: { hr: -6 },

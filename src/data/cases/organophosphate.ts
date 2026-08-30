@@ -66,7 +66,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
   },
   investigationsMap: {
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText:
         'CBC: Hb 14.6 g/dL (Reference 13.0–17.0 g/dL), WBC 14,800/mcL (Reference 4,000–11,000/mcL) — mild stress leukocytosis, Platelets 240,000/mcL (Reference 150,000–450,000/mcL).',
       turnaroundMinutes: 20,
@@ -76,7 +76,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'A blood count neither confirms nor grades what is going on here, and nothing in it changes the antidote or the endpoint you titrate it to.',
     },
     kft: {
-      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft'],
+      aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
       resultText:
         'Renal Function: Blood Urea 34 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 0.9 mg/dL (Reference 0.6–1.2 mg/dL) — normal, though should be trended if hypoperfusion or prolonged immobility develops.',
       turnaroundMinutes: 25,
@@ -86,7 +86,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'Renal function is worth knowing eventually, but it does not alter the immediate antidote decisions, which are made on clinical signs.',
     },
     lft: {
-      aliases: ['lft'],
+      aliases: ['lft', 'liver function tests'],
       resultText:
         'Liver Function Tests: AST 38 U/L (Reference 10–40 U/L), ALT 30 U/L (Reference 7–56 U/L), Total Bilirubin 0.7 mg/dL (Reference 0.2–1.2 mg/dL), Albumin 4.0 g/dL (Reference 3.5–5.0 g/dL) — normal.',
       turnaroundMinutes: 30,
@@ -104,7 +104,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText:
         'ABG (room air): pH 7.29 (Reference 7.35–7.45), PaCO2 52 mmHg (Reference 35–45 mmHg), PaO2 58 mmHg (Reference 80–100 mmHg), HCO3 21 mEq/L (Reference 22–26 mEq/L) — combined respiratory acidosis and hypoxaemia from airway flooding, bronchospasm and weak respiratory effort.',
       turnaroundMinutes: 10,
@@ -112,7 +112,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
       isIndicative: true,
     },
     ecg: {
-      aliases: ['12-lead ecg', 'ecg'],
+      aliases: ['12-lead ecg', 'ecg', '12 lead electrocardiogram', 'electrocardiogram', 'lead ecg'],
       resultText:
         '12-lead ECG: Sinus bradycardia at 52 bpm, QTc 470 ms (Reference <440 ms) — prolonged, no acute ST-T changes.',
       turnaroundMinutes: 5,
@@ -120,7 +120,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
       isIndicative: true,
     },
     cxr: {
-      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr'],
+      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest x ray', 'cxr pa', 'cxr portable'],
       resultText:
         'Chest X-ray (portable, AP): Bilateral perihilar haziness with ill-defined patchy opacities, in keeping with airway flooding from copious secretions; no focal consolidation to suggest aspiration at this stage.',
       turnaroundMinutes: 20,
@@ -128,7 +128,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
       isIndicative: true,
     },
     grbs: {
-      aliases: ['rbs / grbs', 'grbs'],
+      aliases: ['rbs / grbs', 'grbs', 'random blood sugar', 'rbs random blood sugar'],
       resultText:
         'GRBS: 172 mg/dL (Reference 70–140 mg/dL) — mild stress hyperglycaemia from the acute physiological insult; not diabetes.',
       turnaroundMinutes: 2,
@@ -173,7 +173,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
   },
   therapiesMap: {
     iv_access: {
-      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv'],
+      aliases: ['two wide-bore iv cannulae', 'iv access', 'wide bore cannula', 'large bore iv', 'access', 'iv large bore', 'iv two wide bore cannulae', 'large bore', 'two wide bore cannulae'],
       responseText: 'Two wide-bore (16G) IV cannulae secured for rapid drug and fluid delivery.',
       onsetMinutes: 3,
       appropriateness: 'indicated',
@@ -199,7 +199,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'Contaminated skin and clothing keep absorbing the chemical and can transfer it to bare-handed staff, causing secondary cholinergic symptoms in the treating team. This should be done in parallel with — never in place of, and never as a reason to delay — the antidotes and airway support the patient needs immediately.',
     },
     atropine: {
-      aliases: ['atropine 0.6 mg iv', 'atropine', 'iv atropine'],
+      aliases: ['atropine 0.6 mg iv', 'atropine', 'iv atropine', 'atropine iv'],
       responseText:
         'IV atropine given as repeated boluses, doubled roughly every 5 minutes, then continued as a titrated infusion once secretions begin to dry.',
       onsetMinutes: 10,
@@ -212,7 +212,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'Atropine is the immediate antidote for the muscarinic features of cholinergic excess — bronchorrhoea, bronchospasm, bradycardia and secretions — and the dose is doubled at short intervals until secretions genuinely dry and the chest clears. Chasing a specific heart rate or pupil size instead is a common and dangerous error: pupils can stay miotic and the heart rate can stay elevated (partly from atropine itself) even once adequate atropinisation has been reached.',
     },
     pralidoxime: {
-      aliases: ['pralidoxime (pam) iv', 'pralidoxime', 'pam'],
+      aliases: ['pralidoxime (pam) iv', 'pralidoxime', 'pam', 'iv pralidoxime pam', 'pralidoxime pam'],
       responseText:
         'IV pralidoxime (PAM) infusion started alongside continuing atropine, aimed at reactivating the inhibited enzyme before the enzyme-inhibitor bond becomes permanent.',
       onsetMinutes: 20,
@@ -234,7 +234,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'Pralidoxime does nothing for the muscarinic crisis — bronchorrhoea, bronchospasm and bradycardia — because that is atropine\'s job, not the oxime\'s. Giving it first, before atropine has begun controlling the immediately life-threatening secretions and hypoxia, leaves the patient exposed to ongoing respiratory compromise while time and the infusion both run.',
     },
     lorazepam: {
-      aliases: ['lorazepam iv', 'lorazepam', 'benzodiazepine'],
+      aliases: ['lorazepam iv', 'lorazepam', 'benzodiazepine', 'iv lorazepam'],
       responseText: 'IV lorazepam given for agitation and to terminate any seizure activity.',
       onsetMinutes: 5,
       vitalsEffect: { hr: -4 },
@@ -243,7 +243,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'Benzodiazepines are the appropriate agent for seizures or severe agitation in this setting, both directly and as adjuncts to controlling the overall crisis; they carry none of the risks that make several other sedative and antiemetic classes unsafe here.',
     },
     crystalloid: {
-      aliases: ['normal saline 0.9% 500 ml bolus', 'normal saline', 'iv fluids', 'crystalloid bolus'],
+      aliases: ['normal saline 0.9% 500 ml bolus', 'normal saline', 'iv fluids', 'crystalloid bolus', 'crystalloid', 'fluids', 'normal saline 0 9 bolus'],
       responseText: 'IV 0.9% normal saline given to replace ongoing losses from vomiting, diarrhoea and secretions.',
       onsetMinutes: 15,
       vitalsEffect: { hr: -4, bp: '100/64' },
@@ -262,7 +262,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'Ventilatory failure from copious secretions, bronchospasm and weakness can outpace what atropine and suctioning alone can manage, and mechanical ventilation is life-saving when it does. A non-depolarising agent, not succinylcholine, must be used for the intubating dose.',
     },
     succinylcholine: {
-      aliases: ['succinylcholine iv', 'succinylcholine', 'suxamethonium'],
+      aliases: ['succinylcholine iv', 'succinylcholine', 'suxamethonium', 'iv succinylcholine'],
       responseText:
         'Succinylcholine given as the muscle relaxant for intubation. Spontaneous respiratory effort fails to return afterwards, and the patient remains paralysed and apnoeic far longer than expected.',
       onsetMinutes: 5,
@@ -272,7 +272,7 @@ export const SCAFFOLD_ORGANOPHOSPHATE: CaseScaffold = {
         'Succinylcholine is broken down by the same plasma (pseudo)cholinesterase that this exposure has already inhibited. With that enzyme unavailable, a single intubating dose produces a markedly prolonged paralysis and apnoea, forcing an extended period of ventilation that a non-depolarising agent (such as rocuronium) would have avoided entirely.',
     },
     contraindicated_drugs: {
-      aliases: ['morphine iv', 'morphine', 'aminophylline', 'theophylline', 'phenothiazine', 'chlorpromazine', 'promethazine'],
+      aliases: ['morphine iv', 'morphine', 'aminophylline', 'theophylline', 'phenothiazine', 'chlorpromazine', 'promethazine', 'iv morphine'],
       responseText: 'The drug is given for sedation or nausea.',
       onsetMinutes: 10,
       vitalsEffect: { rr: -6, spo2: -8 },

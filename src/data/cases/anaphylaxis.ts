@@ -54,14 +54,14 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
       isIndicative: true,
     },
     abg: {
-      aliases: ['abg'],
+      aliases: ['abg', 'arterial blood gas'],
       resultText: 'ABG (on oxygen): pH 7.30 (Reference 7.35–7.45), PaCO2 30 mmHg (Reference 35–45 mmHg), PaO2 68 mmHg (Reference 80–100 mmHg), HCO3 19 mEq/L (Reference 22–26 mEq/L), SaO2 89% — hypoxaemia with an evolving metabolic acidosis from circulatory shock.',
       turnaroundMinutes: 10,
       category: 'labs',
       isIndicative: true,
     },
     cbc: {
-      aliases: ['cbc / hemogram', 'cbc', 'hemogram'],
+      aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood count hemogram'],
       resultText: 'CBC: Hb 12.8 g/dL (Reference 12.0–15.0 g/dL), WBC 9,200/mcL (Reference 4,000–11,000/mcL), Platelets 260,000/mcL (Reference 150,000–450,000/mcL).',
       turnaroundMinutes: 25,
       category: 'labs',
@@ -75,14 +75,14 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
       isIndicative: true,
     },
     ecg: {
-      aliases: ['12-lead ecg', 'ecg'],
+      aliases: ['12-lead ecg', 'ecg', '12 lead electrocardiogram', 'electrocardiogram', 'lead ecg'],
       resultText: '12-lead ECG: Sinus tachycardia at 130 bpm. No acute ST-T changes.',
       turnaroundMinutes: 5,
       category: 'monitoring',
       isIndicative: true,
     },
     cxr: {
-      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr'],
+      aliases: ['chest x-ray pa', 'chest x-ray portable', 'cxr', 'chest x ray', 'cxr pa', 'cxr portable'],
       resultText: 'Chest X-ray PA: Hyperinflated lung fields consistent with bronchospasm. No consolidation, no pneumothorax.',
       turnaroundMinutes: 20,
       category: 'imaging',
@@ -112,7 +112,7 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
   },
   therapiesMap: {
     adrenaline_im: {
-      aliases: ['adrenaline 0.5 mg im', 'adrenaline im', 'im adrenaline', 'intramuscular adrenaline', 'epinephrine im'],
+      aliases: ['adrenaline 0.5 mg im', 'adrenaline im', 'im adrenaline', 'intramuscular adrenaline', 'epinephrine im', 'epinephrine', 'im epinephrine'],
       responseText: 'Adrenaline 0.5 mg (1:1000) given intramuscularly into the anterolateral thigh, repeatable every 5 minutes if there is inadequate response.',
       onsetMinutes: 5,
       vitalsEffect: { hr: -18, bp: '104/68', spo2: 8, rr: -8 },
@@ -138,7 +138,7 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
       rationale: 'Keeping the patient supine with the legs elevated maintains venous return to a heart already starved of preload; sitting or standing her up during circulatory collapse can be fatal within seconds.',
     },
     fluid_bolus: {
-      aliases: ['normal saline 0.9% 500 ml bolus', 'normal saline bolus', 'iv fluids', 'crystalloid bolus', 'ns bolus'],
+      aliases: ['normal saline 0.9% 500 ml bolus', 'normal saline bolus', 'iv fluids', 'crystalloid bolus', 'ns bolus', 'crystalloid', 'fluids', 'normal saline', 'normal saline 0 9 bolus'],
       responseText: 'Normal saline 0.9% 500 mL bolus given rapidly IV, with further boluses repeated for persistent hypotension.',
       onsetMinutes: 15,
       vitalsEffect: { bp: '112/72', hr: -6 },
@@ -154,7 +154,7 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
       rationale: 'High-flow oxygen supports a patient with airway swelling, bronchospasm and shock, and should be given to every patient with this presentation regardless of the initial saturation.',
     },
     salbutamol_neb: {
-      aliases: ['salbutamol nebulisation', 'salbutamol nebuliser', 'nebulised salbutamol'],
+      aliases: ['salbutamol nebulisation', 'salbutamol nebuliser', 'nebulised salbutamol', 'salbutamol'],
       responseText: 'Salbutamol nebulisation given for the wheeze.',
       onsetMinutes: 10,
       vitalsEffect: { rr: -2 },
@@ -170,7 +170,7 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
       rationale: 'Angio-oedema of the lips, tongue and airway can progress to complete obstruction within minutes; early intubation by the most experienced available operator, before that point, is far safer than a delayed attempt at a distorted airway.',
     },
     hydrocortisone: {
-      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid'],
+      aliases: ['hydrocortisone iv', 'hydrocortisone', 'iv steroid', 'iv hydrocortisone', 'steroid'],
       responseText: 'Hydrocortisone 200 mg given intravenously.',
       onsetMinutes: 240,
       appropriateness: 'neutral',
@@ -181,7 +181,7 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
       harmfulSequenceRationale: 'Reaching for a steroid before adrenaline is a common and dangerous error: hydrocortisone does nothing for the airway swelling or the falling pressure and acts over hours, not minutes, so every moment spent giving it instead of adrenaline is a moment the mediator-driven collapse continues unchecked.',
     },
     chlorpheniramine: {
-      aliases: ['chlorpheniramine iv', 'chlorpheniramine', 'antihistamine iv'],
+      aliases: ['chlorpheniramine iv', 'chlorpheniramine', 'antihistamine iv', 'antihistamine', 'iv antihistamine', 'iv chlorpheniramine'],
       responseText: 'Chlorpheniramine 10 mg given intravenously.',
       onsetMinutes: 30,
       appropriateness: 'neutral',
@@ -192,7 +192,7 @@ export const SCAFFOLD_ANAPHYLAXIS: CaseScaffold = {
       harmfulSequenceRationale: 'Reaching for an antihistamine before adrenaline is the same dangerous error as reaching for a steroid first: it treats only the skin, not the airway or the falling blood pressure, while the one drug that can actually reverse the collapse is delayed.',
     },
     adrenaline_iv_bolus: {
-      aliases: ['adrenaline 1 mg iv', 'iv adrenaline bolus', 'adrenaline bolus iv'],
+      aliases: ['adrenaline 1 mg iv', 'iv adrenaline bolus', 'adrenaline bolus iv', 'adrenaline bolus', 'adrenaline iv', 'iv adrenaline'],
       responseText: 'Adrenaline 1 mg given as a rapid intravenous bolus.',
       onsetMinutes: 3,
       vitalsEffect: { hr: 40, bp: '210/120' },
