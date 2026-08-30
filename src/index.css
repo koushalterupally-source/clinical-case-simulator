@@ -156,5 +156,78 @@ body {
   }
 }
 .fade-rise {
-  animation: fade-rise 0.28s ease-out both;
+  animation: fade-rise 0.18s ease-out both;
+}
+
+/*
+  Shared interaction language for the in-case chrome (header actions, quick
+  chips, order-sheet controls): every clickable surface gets the same
+  restrained hover/press feel instead of each button inventing its own.
+  `.btn` supplies only the *interaction* (cursor, timing, press feedback) so
+  it can sit alongside inline, data-driven colour (e.g. a selected order
+  pill) without fighting it; `.btn-primary` / `.btn-secondary` / `.chip` add
+  a static colour treatment for controls that don't need per-instance state.
+*/
+.btn {
+  cursor: pointer;
+  transition: background-color 150ms ease-out, border-color 150ms ease-out,
+    color 150ms ease-out, box-shadow 150ms ease-out, transform 120ms ease-out;
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  border: 1px solid transparent;
+}
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 85%, var(--bg) 15%);
+}
+
+.btn-secondary {
+  background: var(--surface-sunken);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--surface-sunken) 92%, var(--text) 8%);
+}
+
+.chip {
+  background: var(--bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.chip:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--bg) 90%, var(--text) 10%);
+}
+
+/* Respect the user's motion preference: essential state changes still
+   happen, they just stop being animated. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .fade-rise {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .btn:active:not(:disabled),
+  .chip:active:not(:disabled) {
+    transform: none !important;
+  }
 }
