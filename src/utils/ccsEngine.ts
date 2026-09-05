@@ -434,6 +434,47 @@ export function recentlyDeteriorated(session: CaseSession): boolean {
 }
 
 /**
+ * Does this order plausibly relate to a specific incidental finding? Matched on
+ * the finding's own words, so credit goes to the candidate who actually looked
+ * in the right place rather than to anyone who ordered any test at all.
+ */
+export function orderRelatesToIncidental(
+  orderText: string,
+  inc: { title: string; description: string }
+): boolean {
+  const order = normalizeOrderText(orderText);
+  if (!order) return false;
+
+  // Expand the abbreviations a doctor writes into the words a finding is
+  // described in, so ordering a "USG abdomen" reaches a gallstone reported on
+  // "abdominal ultrasound".
+  const SYNONYMS: Record<string, string> = {
+    usg: 'ultrasound',
+    cxr: 'chest radiograph xray',
+    ecg: 'electrocardiogram',
+    ekg: 'electrocardiogram',
+    tdap: 'tetanus toxoid booster immunization vaccination',
+    cbc: 'haemogram hemogram blood count',
+    tft: 'thyroid',
+  };
+  const expanded = order
+    .split(' ')
+    .map((w) => (SYNONYMS[w] ? `${w} ${SYNONYMS[w]}` : w))
+    .join(' ');
+
+  const hayWords = normalizeOrderText(`${inc.title} ${inc.description}`)
+    .split(' ')
+    .filter((w) => w.length > 3);
+  const orderWords = expanded.split(' ').filter((w) => w.length > 3);
+
+  // Prefix overlap of five characters, so abdomen/abdominal and vaccine/
+  // vaccination count as the same idea without needing a stemmer.
+  return orderWords.some((a) =>
+    hayWords.some((b) => a === b || (a.length >= 5 && b.startsWith(a.slice(0, 5))) || (b.length >= 5 && a.startsWith(b.slice(0, 5))))
+  );
+}
+
+/**
  * Main Offline Simulation Turn Engine
  */
 export function processTurnOffline(
@@ -638,7 +679,13 @@ export function processTurnOffline(
 
         updatedSession.incidentalFindings.forEach((inc) => {
           if (inc.status === 'unnoticed') {
-            if (/\b(usg|ultrasound|ct|cxr|x-?ray|mri|echo|vaccine|tdap|hemogram|cbc|tft|ferritin)\b/i.test(orderLower)) {
+            // Credit the finding only if THIS order plausibly relates to it.
+            // A single generic regex used to mark EVERY unnoticed incidental as
+            // handled the moment any imaging or blood test was ordered, so one
+            // unrelated CBC credited a pulmonary nodule that needed a chest film
+            // and an overdue vaccination that needed a history question — worth
+            // ten points each, before the order had even returned a result.
+            if (orderRelatesToIncidental(orderLower, inc)) {
               inc.status = 'noticed_addressed';
             }
           }
@@ -913,7 +960,38 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
   // Calculate Overall Score for scaffold simulation
   const overOrderingPenalty = overOrders.length * 5;
   const harmfulTherapyPenalty = therapiesGiven.filter((t) => t.appropriateness === 'harmful').length * 8;
-  const gateContribution = totalGates > 0 ? (correctGates / totalGates) * 80 : 80;
+  // With no decision gates — which is every case now that the question bank is
+  // gone — this used to hand over the whole 80 unconditionally. Starting a case
+  // and immediately ending it scored 80 and a Grade A, in cases where doing
+  // nothing means the patient dies. A score that rewards inaction teaches the
+  // opposite of the thing being taught.
+  //
+  // Without gates the honest measure is what the candidate actually did: how
+  // many time-critical interventions were achieved inside their own windows.
+  // Every case carries at least one, enforced by Test Suite 14.
+  const totalCritical = scaffold.criticalInterventions.length;
+
+  // Credit each time-critical intervention by whether it was done AT ALL and
+  // whether it was done in time. Counting "not yet overdue" as achieved meant
+  // starting a case and ending it immediately scored full marks, because
+  // nothing has had time to become late. Being an hour late used to score the
+  // same as being instant, because the delay check only asked whether the
+  // therapy was EVER ordered.
+  const startMinutes = simTimeToMinutes({ day: 1, hour: 9, minute: 0 });
+  const criticalScore = scaffold.criticalInterventions.reduce((acc, crit) => {
+    const match = allOrders.find((o) => crit.orderOrActionPattern.test(o.orderName));
+    if (!match) return acc; // never done — no credit
+    const turn = session.turns[(match as any).orderedTurnIndex];
+    const atMinutes = turn ? simTimeToMinutes(turn.simTime) - startMinutes : 0;
+    return acc + (atMinutes <= crit.targetMilestoneMinutes ? 1 : 0.4);
+  }, 0);
+
+  const gateContribution =
+    totalGates > 0
+      ? (correctGates / totalGates) * 80
+      : totalCritical > 0
+        ? (criticalScore / totalCritical) * 80
+        : 0;
   const rawScore = Math.round(
     gateContribution + addressedIncCount * 10 - overOrderingPenalty - harmfulTherapyPenalty
   );
