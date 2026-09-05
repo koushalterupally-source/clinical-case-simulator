@@ -80,7 +80,7 @@ export const GateCard: React.FC<GateCardProps> = ({
                 onClick={() => freeText.trim() && onCommit(freeText.trim())}
                 disabled={!freeText.trim()}
                 className="w-full rounded-xl py-2.5 text-[14px] font-medium ring-focus disabled:opacity-40"
-                style={{ background: 'var(--accent)', color: '#fff' }}
+                style={{ background: 'var(--accent)', color: 'var(--bg)' }}
               >
                 Commit
               </button>
@@ -113,7 +113,7 @@ export const GateCard: React.FC<GateCardProps> = ({
                 onClick={() => selected && onCommit(selected)}
                 disabled={!selected}
                 className="w-full rounded-xl py-2.5 mt-3 text-[14px] font-medium ring-focus disabled:opacity-40"
-                style={{ background: 'var(--accent)', color: '#fff' }}
+                style={{ background: 'var(--accent)', color: 'var(--bg)' }}
               >
                 Commit answer
               </button>

@@ -10,7 +10,7 @@ interface ScorecardProps {
 
 const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="py-4" style={{ borderTop: '1px solid var(--border)' }}>
-    <div className="text-[13px] mb-1.5" style={{ color: 'var(--text-faint)' }}>
+    <div className="text-[13px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
       {label}
     </div>
     <div className="text-[15px] leading-relaxed">{children}</div>
@@ -50,7 +50,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
           ].map((s) => (
             <div key={s.l}>
               <div className="font-display text-[26px] font-semibold tnum leading-none">{s.v}</div>
-              <div className="text-[13px] mt-1" style={{ color: 'var(--text-faint)' }}>
+              <div className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>
                 {s.l}
               </div>
             </div>
@@ -65,7 +65,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
             <div>
               {card.clinchingClue}
               {card.clinchingTime && (
-                <span style={{ color: 'var(--text-faint)' }}> — available from {card.clinchingTime}</span>
+                <span style={{ color: 'var(--text-muted)' }}> — available from {card.clinchingTime}</span>
               )}
             </div>
           </Row>
@@ -116,7 +116,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
                           {t.appropriateness}
                         </span>
                       </div>
-                      <div className="text-[13px]" style={{ color: 'var(--text-faint)' }}>
+                      <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
                         {t.rationale}
                       </div>
                     </div>
@@ -176,12 +176,12 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
                       className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full"
                       style={{
                         background:
-                          inc.status === 'noticed_addressed' ? 'var(--ok)' : 'var(--text-faint)',
+                          inc.status === 'noticed_addressed' ? 'var(--ok)' : 'var(--text-muted)',
                       }}
                     />
                     <div>
                       <div>{inc.title}</div>
-                      <div className="text-[13px]" style={{ color: 'var(--text-faint)' }}>
+                      <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
                         {inc.outcome}
                       </div>
                     </div>
@@ -228,7 +228,7 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
         <button
           onClick={onNewCase}
           className="mt-8 w-full rounded-xl py-3 text-[15px] font-medium ring-focus"
-          style={{ background: 'var(--accent)', color: '#fff' }}
+          style={{ background: 'var(--accent)', color: 'var(--bg)' }}
         >
           Start another case
         </button>

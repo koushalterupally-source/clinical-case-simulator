@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ORDER_GROUPS, HISTORY_PROMPTS, EXAM_SYSTEMS } from '../../data/orderSets';
 import { CASE_SCAFFOLDS } from '../../data/cases/scaffolds';
 import { getOrderableGroupsForScaffold } from '../../utils/ccsEngine';
@@ -20,6 +20,21 @@ type Tab = 'orders' | 'history' | 'exam';
  * composer, but nothing should require it.
  */
 export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit, scaffoldId }) => {
+  // Escape closes the sheet. Every modal on the web does this and people press
+  // it by reflex; without it a keyboard user has no way out at all, since Tab
+  // walks straight past the modal into the page behind it.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
   const [tab, setTab] = React.useState<Tab>('orders');
   const [selected, setSelected] = React.useState<string[]>([]);
   const [query, setQuery] = React.useState('');
@@ -88,7 +103,12 @@ export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit,
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col justify-end sm:items-center sm:justify-center">
+    <div
+      className="fixed inset-0 z-40 flex flex-col justify-end sm:items-center sm:justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Order sheet"
+    >
       <div className="absolute inset-0 fade-rise" style={{ background: 'rgba(0,0,0,0.35)' }} onClick={onClose} />
 
       <div

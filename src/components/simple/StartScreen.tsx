@@ -94,7 +94,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
               onClick={() => onStart('standard', 'All')}
               disabled={starting}
               className="w-full rounded-xl py-3.5 text-[15px] font-semibold ring-focus disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-[0.99]"
-              style={{ background: 'var(--accent)', color: '#fff' }}
+              style={{ background: 'var(--accent)', color: 'var(--bg)' }}
             >
               {starting ? 'Preparing Patient…' : 'Start Clinical Case (Emergency Triage)'}
             </button>

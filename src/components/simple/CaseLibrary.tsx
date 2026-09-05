@@ -57,6 +57,22 @@ export const CaseLibrary: React.FC<CaseLibraryProps> = ({ open, onClose, onSelec
     }
   }, [open]);
 
+  // Escape closes the sheet. Every modal on the web does this and people press
+  // it by reflex; without it a keyboard user has no way out at all, since Tab
+  // walks straight past the modal into the page behind it.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+
   const q = query.trim().toLowerCase();
 
   const filteredGroups = useMemo(() => {
@@ -76,7 +92,12 @@ export const CaseLibrary: React.FC<CaseLibraryProps> = ({ open, onClose, onSelec
     setExpanded((prev) => ({ ...prev, [subject]: !prev[subject] }));
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col justify-end sm:items-center sm:justify-center px-0 sm:px-4">
+    <div
+      className="fixed inset-0 z-40 flex flex-col justify-end sm:items-center sm:justify-center px-0 sm:px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Case library"
+    >
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.35)' }} onClick={onClose} />
 
       <div
