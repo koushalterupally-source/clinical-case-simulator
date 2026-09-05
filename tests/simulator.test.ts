@@ -11,6 +11,7 @@ import {
   findByAlias,
   getOrderableGroupsForScaffold,
   investigationGrade,
+  nudgeFor,
 } from '../src/utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from '../src/utils/caseBinder';
 import { exportQBankToJSON, importQBankFromJSON } from '../src/utils/qbankParser';
@@ -300,7 +301,16 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
   const delayedSession = processTurnOffline(stemiSession, 'advance 45 minutes');
   assert(delayedSession.patient.currentVitals.hr > initialHr, 'Heart rate deteriorates (climbs) when critical intervention is overdue');
   assert(delayedSession.patient.currentVitals.spo2 < initialSpo2, 'Oxygen saturation deteriorates (falls) when critical intervention is overdue');
-  assert(delayedSession.turns[delayedSession.turns.length - 1].whatHappened.includes('deteriorating'), 'Deterioration warning added to turn narrative');
+  // The nudge escalates by how overdue the step is, so this asserts that SOME
+  // tier of nudge appears rather than one specific wording. At 25 minutes past
+  // a 20-minute window this is the middle tier, which deliberately does not yet
+  // name the step.
+  assert(
+    /deteriorating|time-critical|has that been done/i.test(
+      delayedSession.turns[delayedSession.turns.length - 1].whatHappened
+    ),
+    'Deterioration nudge added to turn narrative'
+  );
 
   // Ordering critical intervention improves vitals
   const treatedSession = processTurnOffline(delayedSession, 'order: Aspirin 325 mg chewed, Clopidogrel 300 mg loading');
@@ -765,6 +775,52 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
     };
     for (const [key] of therapyEntries) {
       assert(visit(key, []), `${where}: therapy "${key}" has no circular requiresFirst chain`);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Test Suite 16: Nudges help without giving the game away.
+  //
+  // A candidate who is stuck used to get one warning and then silence while the
+  // patient deteriorated every turn. The nudge now repeats and escalates. The
+  // line it must not cross: it may name a MANAGEMENT STEP, never the DIAGNOSIS.
+  // ---------------------------------------------------------------------------
+  console.log('\n--- Test Suite 16: Nudges ---');
+
+  for (const sc of CASE_SCAFFOLDS) {
+    const where = sc.id;
+    const condTerms = sc.conditionName
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .filter((w) => w.length > 3 && !STOPWORDS.has(w));
+
+    for (const crit of sc.criticalInterventions) {
+      // The strongest tier names the intervention outright. If an intervention
+      // is named after the condition, that tier would hand over the diagnosis.
+      const strongest = nudgeFor(crit.name, 999, 1).toLowerCase();
+      for (const term of condTerms) {
+        assert(
+          !new RegExp(`\\b${term}\\b`).test(strongest),
+          `${where}: the strongest nudge for "${crit.name}" does not name the diagnosis ("${term}")`
+        );
+      }
+
+      // Every tier must actually say something.
+      for (const overdueBy of [1, 20, 60]) {
+        const text = nudgeFor(crit.name, overdueBy, 1);
+        assert(
+          text.trim().length > 20,
+          `${where}: nudge for "${crit.name}" at ${overdueBy} min overdue is substantive`
+        );
+      }
+
+      // The gentle tiers must not name the step either — that is what makes
+      // them gentle.
+      const gentle = nudgeFor(crit.name, 1, 1).toLowerCase();
+      assert(
+        !gentle.includes(crit.name.toLowerCase()),
+        `${where}: the first-tier nudge for "${crit.name}" does not name the step yet`
+      );
     }
   }
 

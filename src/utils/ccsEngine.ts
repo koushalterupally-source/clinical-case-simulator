@@ -375,6 +375,65 @@ export function getOrderableGroupsForScaffold(scaffold: CaseScaffold | undefined
 }
 
 /**
+ * Verb prefixes a candidate may put in front of an order. Deliberately broad,
+ * and it includes the Indian prescribing shorthand (inj / tab / cap / syp / T.)
+ * that is how these are actually written on a chart. A trailing space or colon
+ * is required so that "ordering" or "starting" a sentence is not mistaken for
+ * a prefix, and "iv" is NOT a verb here — stripping it would turn "iv fluids"
+ * into "fluids" and change which therapy is meant.
+ */
+export const ORDER_VERB_PREFIX =
+  /^(?:order\s*:|order|give|start|administer|send|do|check|call|secure|get|request|prescribe|inj\.?|tab\.?|cap\.?|syp\.?|t\.)\s+/i;
+
+/**
+ * Does this text name something the case actually models? Used so that a bare
+ * order with no verb at all — which is exactly how every label on the order
+ * sheet reads — still places the order instead of vanishing into notes.
+ */
+export function resolvesAsOrder(scaffold: CaseScaffold, text: string): boolean {
+  const stripped = text.replace(ORDER_VERB_PREFIX, '').trim();
+  return splitOrders(stripped).some(
+    (name) =>
+      !!findByAlias(scaffold.therapiesMap, name) ||
+      !!findByAlias(scaffold.investigationsMap, name)
+  );
+}
+
+/**
+ * The escalating nudge shown while a time-critical step is overdue.
+ *
+ * Three tiers, because a hint that is too strong too early hands over the
+ * exercise and one that is too weak forever is the silence we are fixing:
+ *   - an observation, naming nothing;
+ *   - a prompt that something time-critical is outstanding, still naming nothing;
+ *   - the step itself, once the candidate is well past the window and plainly
+ *     stuck, since by then withholding it teaches nothing.
+ * Never the diagnosis, at any tier.
+ */
+export function nudgeFor(name: string, overdueBy: number, outstanding: number): string {
+  const others =
+    outstanding > 1 ? ` There ${outstanding === 2 ? 'is 1 other' : `are ${outstanding - 1} other`} outstanding.` : '';
+
+  if (overdueBy < 10) {
+    return 'The patient is deteriorating — the heart rate is climbing and the saturations are drifting down. The nurse looks up at you.';
+  }
+  if (overdueBy < 30) {
+    return `The nurse asks whether there is anything you want started now. Something time-critical has not been done yet, and the patient has been going off for ${overdueBy} minutes.`;
+  }
+  return `The registrar puts their head round the door: "${name} — has that been done? It is ${overdueBy} minutes past when it should have been."${others}`;
+}
+
+/** Were the vitals worse a couple of turns ago than they are now? */
+export function recentlyDeteriorated(session: CaseSession): boolean {
+  const turns = session.turns;
+  if (turns.length < 2) return false;
+  const prev = turns[turns.length - 1]?.vitals;
+  if (!prev) return false;
+  const now = session.patient.currentVitals;
+  return prev.hr > now.hr || prev.spo2 < now.spo2;
+}
+
+/**
  * Main Offline Simulation Turn Engine
  */
 export function processTurnOffline(
@@ -526,9 +585,17 @@ export function processTurnOffline(
       });
       narrative = `Physical Examination (${sys.toUpperCase()}): ${findings}`;
     }
-    // Command: order: <investigation/drug>
-    else if (cmdLower.startsWith('order:') || cmdLower.startsWith('give') || cmdLower.startsWith('start') || cmdLower.startsWith('administer') || cmdLower.startsWith('order')) {
-      const orderBlock = userCommand.replace(/^(?:order\:|give|start|administer|order)\s*/i, '').trim();
+    // Command: an order, however the candidate happens to phrase it.
+    //
+    // This used to accept only "order:", "give", "start" and "administer".
+    // Everything else fell through to a catch-all that replied "Command
+    // executed. Clinical notes recorded." — which reads as though it worked
+    // while nothing whatsoever was ordered. Typing "inj adrenaline", the most
+    // standard way an Indian doctor writes it, silently did nothing and was
+    // then scored as never having given adrenaline. So was a bare order name
+    // with no verb at all, which is how the order sheet's own labels read.
+    else if (ORDER_VERB_PREFIX.test(userCommand) || resolvesAsOrder(scaffold, userCommand)) {
+      const orderBlock = userCommand.replace(ORDER_VERB_PREFIX, '').trim();
 
       // One command can carry several orders — the order sheet sends them
       // comma-separated, and a doctor writing them out does the same. Each gets
@@ -584,7 +651,9 @@ export function processTurnOffline(
           : `${orderNames.length} orders placed:\n${placedLines.map((l) => `• ${l}`).join('\n')}`;
     }
     else {
-      narrative = `Command executed: "${userCommand}". Clinical notes recorded.`;
+      // Say plainly that nothing was ordered. "Command executed" invited the
+      // candidate to believe a treatment had been given.
+      narrative = `Noted: "${userCommand}". This was recorded as a note — no order was placed and nothing was administered. If you meant to order something, check the spelling or use the order sheet.`;
     }
   }
 
@@ -644,29 +713,49 @@ export function processTurnOffline(
       .map((g) => `${g.consequenceMessage || ''} ${g.patientContext || ''}`)
       .join(' ');
 
+    // Overdue interventions drive both the deterioration and the nudge below.
+    const overdue: { name: string; overdueBy: number }[] = [];
+    let anyExecuted = false;
+
     scaffold.criticalInterventions.forEach((critical) => {
       const executed =
         allPlaced.some((o) => critical.orderOrActionPattern.test(o.orderName)) ||
         critical.orderOrActionPattern.test(gateDelivered);
 
-      // Warn once, when it first goes overdue — not on every turn forever.
-      const alreadyWarned = updatedSession.turns.some((t) =>
-        (t.whatHappened || '').includes(critical.name.toLowerCase())
-      );
-
       if (!executed && totalElapsedMinutes > critical.targetMilestoneMinutes) {
         // Deteriorate vitals!
         updatedSession.patient.currentVitals.hr = Math.min(180, updatedSession.patient.currentVitals.hr + 4);
         updatedSession.patient.currentVitals.spo2 = Math.max(70, updatedSession.patient.currentVitals.spo2 - 2);
-        if (!alreadyWarned) {
-          narrative += `\n\nThe patient is deteriorating: ${critical.name.toLowerCase()} is now overdue against a ${critical.targetMilestoneMinutes}-minute window. Heart rate is climbing and oxygenation is falling.`;
-        }
+        overdue.push({
+          name: critical.name,
+          overdueBy: totalElapsedMinutes - critical.targetMilestoneMinutes,
+        });
       } else if (executed) {
+        anyExecuted = true;
         // Improve vitals
         updatedSession.patient.currentVitals.hr = Math.max(72, updatedSession.patient.currentVitals.hr - 2);
         updatedSession.patient.currentVitals.spo2 = Math.min(99, updatedSession.patient.currentVitals.spo2 + 1);
       }
     });
+
+    // A candidate who is stuck used to get exactly one warning and then silence,
+    // while the patient went on deteriorating every turn with nothing said. That
+    // is not a test, it is a punishment with the reason withheld — and the
+    // scorecard then told them afterwards what would have been worth knowing at
+    // the time. The nudge now repeats and escalates, the way a nurse and then a
+    // registrar in the room would escalate.
+    //
+    // It may name a MANAGEMENT STEP. It must never name the diagnosis: working
+    // that out is the exercise, and Test Suite 16 enforces the rule.
+    if (overdue.length > 0) {
+      const worst = overdue.reduce((a, b) => (b.overdueBy > a.overdueBy ? b : a));
+      narrative += '\n\n' + nudgeFor(worst.name, worst.overdueBy, overdue.length);
+    } else if (anyExecuted && recentlyDeteriorated(updatedSession)) {
+      // Say so when the patient turns the corner. Silent recovery teaches as
+      // little as silent decline.
+      narrative +=
+        '\n\nThe patient is settling: the heart rate is coming down and the saturations are recovering. What you have just given is working — keep going.';
+    }
   }
 
   // 6. Record Turn
