@@ -168,7 +168,7 @@ export const OrderSheet: React.FC<OrderSheetProps> = ({ open, onClose, onSubmit,
             </div>
 
             {!q && (
-              <div className="flex gap-1.5 overflow-x-auto px-4 pt-3 pb-1">
+              <div className="flex flex-wrap gap-1.5 px-4 pt-3 pb-1">
                 {orderGroups.map((g) => (
                   <button
                     key={g.id}
