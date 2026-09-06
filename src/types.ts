@@ -95,6 +95,10 @@ export interface OrderResultItem {
   resultText: string;
   turnaroundMinutes: number;
   orderedTurnIndex?: number;
+  /** Set for investigations the scaffold models, so the result can be
+   *  recomputed against the patient's state when it actually comes back
+   *  rather than frozen at the moment it was requested. */
+  investigationKey?: string;
 }
 
 export interface SimTurn {

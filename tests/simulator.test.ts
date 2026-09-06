@@ -824,6 +824,104 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
     }
   }
 
+  // ---------------------------------------------------------------------
+  // Test Suite 17: Order-time bookkeeping. Each of these was a real defect —
+  // a result frozen before the treatment it was meant to reflect, a first
+  // result labelled a repeat, a duplicate dose stacking silently, and a typo
+  // charged five minutes of the patient's time.
+  // ---------------------------------------------------------------------
+  console.log('\n--- Test Suite 17: Order-time bookkeeping ---');
+  {
+    const dka = () =>
+      buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_dka', mode: 'standard' });
+
+    // A result is computed when it comes back, not when it is asked for.
+    let s = dka();
+    s = processTurnOffline(s, 'order: Normal saline 0.9% 500 mL bolus');
+    s = processTurnOffline(s, 'order: Insulin infusion');
+    const insulin = s.therapyLog.find((t) => t.key === 'insulin')!;
+    s = processTurnOffline(s, `advance ${insulin.atMinutes + 55 - simTimeToMinutes(s.simTime)} minutes`);
+    s = processTurnOffline(s, 'order: ABG');
+    s = processTurnOffline(s, 'advance 15 minutes');
+    const lateAbg = s.completedOrders.find((o) => /abg/i.test(o.orderName));
+    assert(
+      !!lateAbg && /improv/i.test(lateAbg.resultText),
+      'A gas delivered after insulin has taken effect reads post-treatment, not pre-treatment'
+    );
+
+    // ...but a result that genuinely lands before the treatment works must not
+    // borrow the improvement.
+    let c = dka();
+    c = processTurnOffline(c, 'order: Normal saline 0.9% 500 mL bolus');
+    c = processTurnOffline(c, 'order: Insulin infusion');
+    c = processTurnOffline(c, 'order: ABG');
+    c = processTurnOffline(c, 'advance 15 minutes');
+    const earlyAbg = c.completedOrders.find((o) => /abg/i.test(o.orderName));
+    assert(
+      !!earlyAbg && !/improv/i.test(earlyAbg.resultText),
+      'A gas delivered before insulin has taken effect still reads pre-treatment'
+    );
+
+    // The first time a test is run is never a "repeat".
+    assert(
+      !!lateAbg && !/\(repeat\)/i.test(lateAbg.resultText),
+      'A first-ever result is not labelled "(repeat)"'
+    );
+
+    // A genuine second run of the same test keeps the label.
+    let r = dka();
+    r = processTurnOffline(r, 'order: ABG');
+    r = processTurnOffline(r, 'advance 15 minutes');
+    r = processTurnOffline(r, 'order: Normal saline 0.9% 500 mL bolus');
+    r = processTurnOffline(r, 'order: Insulin infusion');
+    const ins2 = r.therapyLog.find((t) => t.key === 'insulin')!;
+    r = processTurnOffline(r, `advance ${ins2.atMinutes + 70 - simTimeToMinutes(r.simTime)} minutes`);
+    r = processTurnOffline(r, 'order: ABG');
+    r = processTurnOffline(r, 'advance 15 minutes');
+    const repeats = r.completedOrders.filter((o) => /abg/i.test(o.orderName));
+    assert(
+      repeats.length === 2 && /\(repeat\)/i.test(repeats[1].resultText),
+      'A genuine second run of the same test is still labelled "(repeat)"'
+    );
+
+    // Ordering the same drug three times does not treat the patient three times.
+    let d = dka();
+    d = processTurnOffline(d, 'order: Normal saline 0.9% 500 mL bolus');
+    d = processTurnOffline(d, 'order: Insulin infusion');
+    d = processTurnOffline(d, 'order: Insulin infusion');
+    d = processTurnOffline(d, 'order: Insulin infusion');
+    d = processTurnOffline(d, 'advance 65 minutes');
+    let one = dka();
+    one = processTurnOffline(one, 'order: Normal saline 0.9% 500 mL bolus');
+    one = processTurnOffline(one, 'order: Insulin infusion');
+    one = processTurnOffline(one, 'advance 65 minutes');
+    assert(
+      d.therapyLog.filter((t) => t.key === 'insulin').length === 1,
+      'A drug re-ordered before it has taken effect is logged once, not once per attempt'
+    );
+    assert(
+      d.patient.currentVitals.grbs === one.patient.currentVitals.grbs,
+      'Three insulin orders in a row do not stack into three doses of glucose-lowering'
+    );
+    assert(
+      d.completedOrders.some((o) => /already running/i.test(o.resultText)),
+      'The duplicate order is acknowledged rather than silently swallowed'
+    );
+
+    // A command that ordered nothing costs the patient nothing.
+    let n = dka();
+    const before = simTimeToMinutes(n.simTime);
+    n = processTurnOffline(n, 'zzzz not a real order at all');
+    assert(
+      simTimeToMinutes(n.simTime) === before,
+      'A command that placed no order does not advance the clock'
+    );
+    assert(
+      n.turns.some((t) => /no order was placed/i.test(t.whatHappened || '')),
+      'A command that placed no order says so'
+    );
+  }
+
   console.log(`\n🎉 Verification Suite Complete: ${passed} Passed, ${failed} Failed.`);
   if (failed > 0) {
     process.exit(1);

@@ -274,6 +274,31 @@ export function yieldSuffix(entry: {
 }
 
 /**
+ * The result text for an investigation at the moment it comes back. Falls back
+ * to whatever was computed at order time for anything the scaffold does not
+ * model as an investigation (therapies, unmodelled orders).
+ */
+function deliveredResultText(
+  scaffold: CaseScaffold,
+  ord: OrderResultItem,
+  therapyLog: TherapyLogEntry[],
+  atMinutes: number,
+  seenBefore: boolean
+): string {
+  const key = ord.investigationKey;
+  if (!key) return ord.resultText;
+  const entry = scaffold.investigationsMap[key];
+  if (!entry) return ord.resultText;
+  const body = shiftedInvestigationResult(therapyLog, key, entry.resultText, atMinutes);
+  // Cases label their post-treatment text "(repeat)" because that is the usual
+  // way to reach it. It can also be the first time this test has ever been run
+  // — someone who treats before investigating — and calling that a repeat is
+  // simply untrue, so the label is dropped rather than written into 23 cases.
+  const labelled = seenBefore ? body : body.replace(/\s*\(repeat\)/i, '');
+  return labelled + yieldSuffix(entry);
+}
+
+/**
  * Resolves one order against a scaffold's therapiesMap and investigationsMap,
  * enforcing sequence-dependent safety (e.g. insulin before fluids in DKA) and
  * never inventing a result for anything the scaffold does not model.
@@ -288,10 +313,32 @@ function resolveOrder(
   turnaround: number;
   category: OrderResultItem['category'];
   newTherapyLogEntry?: TherapyLogEntry;
+  investigationKey?: string;
 } {
   const therapyMatch = findByAlias(scaffold.therapiesMap, orderName);
   if (therapyMatch) {
     const { key, entry } = therapyMatch;
+
+    // The same drug ordered again before the first dose has even taken effect
+    // is a duplicate, not a titration. Logging it a second time used to stack
+    // the whole vitals effect again — three insulin infusions in a row drove
+    // the glucose to the engine's floor of 20 mg/dL, silently, with nothing
+    // said and nothing scored. It is now acknowledged and not repeated.
+    const stillWorking = therapyLog.find(
+      (t) => t.key === key && currentMinutes - t.atMinutes < t.onsetMinutes
+    );
+    if (stillWorking) {
+      const ago = currentMinutes - stillWorking.atMinutes;
+      return {
+        resultText:
+          `${orderName} is already running — it was given ${ago === 0 ? 'moments' : `${ago} minutes`} ago ` +
+          'and has not yet had time to take effect. The order was not duplicated; giving it twice would ' +
+          'not double the response, and the nurse checks with you before repeating a dose.',
+        turnaround: 1,
+        category: inferOrderCategory(orderName),
+      };
+    }
+
     const givenKeys = new Set(therapyLog.map((t) => t.key));
     const sequenceOk = !entry.requiresFirst || entry.requiresFirst.every((k) => givenKeys.has(k));
 
@@ -332,6 +379,7 @@ function resolveOrder(
       resultText: body + yieldSuffix(entry),
       turnaround: entry.turnaroundMinutes,
       category: entry.category,
+      investigationKey: key,
     };
   }
 
@@ -673,6 +721,7 @@ export function processTurnOffline(
           resultText,
           turnaroundMinutes: turnaround,
           orderedTurnIndex: updatedSession.turns.length,
+          investigationKey: resolved.investigationKey,
         });
 
         placedLines.push(`${orderName} — ready ${readySimTimeStr}`);
@@ -701,6 +750,10 @@ export function processTurnOffline(
       // Say plainly that nothing was ordered. "Command executed" invited the
       // candidate to believe a treatment had been given.
       narrative = `Noted: "${userCommand}". This was recorded as a note — no order was placed and nothing was administered. If you meant to order something, check the spelling or use the order sheet.`;
+      // Nothing happened, so nothing should cost the patient time. Charging the
+      // default five minutes for a typo made the message a lie and, on a case
+      // with tight milestones, turned a spelling mistake into a worse outcome.
+      timeSpentMins = 0;
     }
   }
 
@@ -718,7 +771,19 @@ export function processTurnOffline(
     if (m) {
       const readyMins = (parseInt(m[1]) - 1) * 24 * 60 + parseInt(m[2]) * 60 + parseInt(m[3]);
       if (currentTotalMinutes >= readyMins) {
-        const completedItem = { ...ord, isReady: true };
+        // Recompute against the patient as they are when the result lands, not
+        // as they were when it was requested. A test ordered shortly before a
+        // therapy's onset used to come back permanently pre-treatment, telling
+        // the candidate the treatment had failed while the vitals in front of
+        // them were already recovering.
+        const seenBefore = updatedSession.completedOrders.some(
+          (c) => !!ord.investigationKey && c.investigationKey === ord.investigationKey
+        );
+        const completedItem = {
+          ...ord,
+          isReady: true,
+          resultText: deliveredResultText(scaffold, ord, updatedSession.therapyLog, readyMins, seenBefore),
+        };
         updatedSession.completedOrders.push(completedItem);
         newDeliveredResults.push(completedItem);
       } else {
