@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { CaseMode } from '../../types';
+import { CaseMode, LocationType } from '../../types';
 import { CaseLibrary } from './CaseLibrary';
 
 interface StartScreenProps {
-  onStart: (mode: CaseMode, subject: string, blind?: boolean, scaffoldId?: string) => void;
+  onStart: (
+    mode: CaseMode,
+    subject: string,
+    blind?: boolean,
+    scaffoldId?: string,
+    setting?: LocationType
+  ) => void;
   starting?: boolean;
   /** Set when a case was left in progress, so it can be picked back up
    *  instead of being stranded behind a "start a new one" button. */
@@ -118,7 +124,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
 
             <div className="flex gap-2.5">
               <button
-                onClick={() => onStart('rapid', 'All')}
+                onClick={() => onStart('rapid', 'All', false, undefined, 'Emergency')}
                 disabled={starting}
                 className="flex-1 rounded-xl py-3 text-[14px] font-medium ring-focus disabled:opacity-50 transition-colors"
                 style={{
@@ -130,7 +136,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
                 Rapid Resuscitation
               </button>
               <button
-                onClick={() => onStart('standard', 'Medicine')}
+                onClick={() => onStart('standard', 'All', false, undefined, 'Ward')}
                 disabled={starting}
                 className="flex-1 rounded-xl py-3 text-[14px] font-medium ring-focus disabled:opacity-50 transition-colors"
                 style={{

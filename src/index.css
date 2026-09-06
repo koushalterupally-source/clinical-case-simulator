@@ -231,3 +231,20 @@ body {
     transform: none !important;
   }
 }
+
+/* Busy indicator on the send button. Under reduced-motion the global rule
+   above collapses the animation, so it degrades to a static ring rather than
+   disappearing — the button still reads as "working". */
+.spinner {
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: spinner-rotate 0.7s linear infinite;
+}
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

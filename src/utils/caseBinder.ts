@@ -5,6 +5,7 @@ import {
   DecisionGate,
   IncidentalFinding,
   CaseScaffold,
+  LocationType,
 } from '../types';
 import { CASE_SCAFFOLDS } from '../data/cases/scaffolds';
 import { createPRNG, shufflePYQOptions } from './rng';
@@ -97,6 +98,11 @@ export function buildCaseSessionFromScaffold(
     scaffoldId?: string;
     subject?: string;
     mode?: CaseMode;
+    /** Restrict to cases that actually start in this setting. The menu's
+     *  "Inpatient Ward" entry used to filter on the Medicine subject and then
+     *  hand out an Emergency case; a label that names a setting now selects
+     *  on the setting. */
+    setting?: LocationType;
     seed?: string;
     missedQIDs?: string[];
     bindGates?: boolean;
@@ -113,6 +119,15 @@ export function buildCaseSessionFromScaffold(
       (s) => s.subject.toLowerCase() === options.subject!.toLowerCase()
     );
     if (subjectScaffolds.length > 0) availableScaffolds = subjectScaffolds;
+  }
+  if (options.setting) {
+    const settingScaffolds = availableScaffolds.filter(
+      (s) => s.demographics.setting === options.setting
+    );
+    // Narrow only when the filter can actually be honoured. Silently widening
+    // back to every case is what made the label a lie in the first place, so
+    // this is asserted in the tests rather than left to chance.
+    if (settingScaffolds.length > 0) availableScaffolds = settingScaffolds;
   }
 
   let selectedScaffold: CaseScaffold;

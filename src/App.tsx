@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CaseView } from './components/simple/CaseView';
 import { StartScreen } from './components/simple/StartScreen';
 import { Scorecard } from './components/simple/Scorecard';
-import { CaseSession, CaseMode } from './types';
+import { CaseSession, CaseMode, LocationType } from './types';
 import { DEFAULT_PYQ_INDEX } from './data/defaultQBank';
 import { processTurnOffline, generateScorecard } from './utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from './utils/caseBinder';
@@ -47,7 +47,8 @@ export default function App() {
     mode: CaseMode = 'standard',
     subject: string = 'Medicine',
     blindMode: boolean = false,
-    scaffoldId?: string
+    scaffoldId?: string,
+    setting?: LocationType
   ) => {
     setIsStarting(true);
     setErrorMessage(null);
@@ -59,6 +60,7 @@ export default function App() {
       const newSession = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, {
         mode: blindMode ? 'blind' : mode,
         subject,
+        setting,
         scaffoldId,
         missedQIDs,
       });
@@ -172,7 +174,9 @@ export default function App() {
         <StartScreen
           resumeLabel={parked ? (parked.isQuestionLed ? parked.title : parked.patient.name) : null}
           onResume={parked ? handleResumeCase : undefined}
-          onStart={(mode, subject, blind, scaffoldId) => handleStartNewCase(mode, subject, !!blind, scaffoldId)}
+          onStart={(mode, subject, blind, scaffoldId, setting) =>
+            handleStartNewCase(mode, subject, !!blind, scaffoldId, setting)
+          }
           starting={isStarting}
         />
       </>

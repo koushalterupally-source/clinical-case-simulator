@@ -694,11 +694,14 @@ export function processTurnOffline(
 
       timeSpentMins = Math.min(15, 2 + orderNames.length);
       const placedLines: string[] = [];
-      // Orders resolve against the scaffold's therapy/investigation maps using
-      // the sim time as it stands right now — before this turn's own clock
-      // advance — so a therapy given earlier this session has already had its
-      // onset window measured against real elapsed minutes.
-      const orderMinutesNow = simTimeToMinutes(updatedSession.simTime);
+      // Writing the orders is what costs this turn its minutes, so the orders
+      // are placed at the clock as it will read when the turn ends — not as it
+      // read when the turn began. Stamping them before the advance put a two
+      // minute turnaround BEHIND the timestamp of the very turn that placed it:
+      // an order written at 09:38 came back ready at 09:36. Nothing may ever be
+      // ready before it was ordered.
+      const orderSimTime = addMinutesToSimTime(updatedSession.simTime, timeSpentMins);
+      const orderMinutesNow = simTimeToMinutes(orderSimTime);
 
       for (const orderName of orderNames) {
         const orderLower = orderName.toLowerCase();
@@ -709,13 +712,13 @@ export function processTurnOffline(
           updatedSession.therapyLog.push(resolved.newTherapyLogEntry);
         }
 
-        const readySimTimeStr = formatSimTime(addMinutesToSimTime(updatedSession.simTime, turnaround));
+        const readySimTimeStr = formatSimTime(addMinutesToSimTime(orderSimTime, turnaround));
 
         updatedSession.pendingOrders.push({
           id: `ord_${Date.now()}_${Math.random()}`,
           orderName,
           category,
-          placedSimTime: formatSimTime(updatedSession.simTime),
+          placedSimTime: formatSimTime(orderSimTime),
           readySimTime: readySimTimeStr,
           isReady: false,
           resultText,

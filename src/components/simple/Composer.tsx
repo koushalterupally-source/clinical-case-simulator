@@ -20,11 +20,21 @@ export const Composer: React.FC<ComposerProps> = ({ onSend, onOpenOrders, disabl
   const [showHelp, setShowHelp] = React.useState(false);
   const ref = React.useRef<HTMLTextAreaElement>(null);
 
+  // `busy` arrives as a prop, so it only reflects a render that has already
+  // happened. Two Enter presses inside the same frame would both see the old
+  // value and send twice. The ref closes that window synchronously and is
+  // released once the parent reports it is no longer processing.
+  const inFlight = React.useRef(false);
+  React.useEffect(() => {
+    if (!busy) inFlight.current = false;
+  }, [busy]);
+
   const submit = () => {
     const v = text.trim();
-    if (!v || disabled || busy) return;
-    onSend(v);
+    if (!v || disabled || busy || inFlight.current) return;
+    inFlight.current = true;
     setText('');
+    onSend(v);
   };
 
   // Grow with content, up to a few lines.
@@ -65,7 +75,11 @@ export const Composer: React.FC<ComposerProps> = ({ onSend, onOpenOrders, disabl
           {SUGGESTIONS.map((s) => (
             <button
               key={s.label}
-              onClick={() => !disabled && onSend(s.cmd)}
+              onClick={() => {
+              if (disabled || busy || inFlight.current) return;
+              inFlight.current = true;
+              onSend(s.cmd);
+            }}
               disabled={disabled || busy}
               className="btn chip rounded-full px-3 py-1.5 text-[13px] ring-focus disabled:opacity-40"
             >
@@ -116,12 +130,17 @@ export const Composer: React.FC<ComposerProps> = ({ onSend, onOpenOrders, disabl
         <button
           onClick={submit}
           disabled={!text.trim() || disabled || busy}
-          aria-label="Send"
+          aria-label={busy ? 'Working' : 'Send'}
+          aria-busy={busy || undefined}
           className="btn btn-primary shrink-0 w-8 h-8 rounded-full flex items-center justify-center ring-focus disabled:opacity-25"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 19V5M5 12l7-7 7 7" />
-          </svg>
+          {busy ? (
+            <span className="spinner" aria-hidden />
+          ) : (
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          )}
         </button>
       </div>
     </div>

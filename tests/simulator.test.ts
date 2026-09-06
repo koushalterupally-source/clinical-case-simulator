@@ -327,19 +327,45 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
   console.log('\n--- Test Suite 7: Order Result Turnaround & Delivery Pipeline ---');
   const freshSession = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { scaffoldId: 'scaffold_stemi', mode: 'standard' });
   const withOrders = processTurnOffline(freshSession, 'order: 12-lead ECG, STAT Troponin I, Chest X-ray PA');
-  // Order entry for 3 items takes 5 minutes (09:00 -> 09:05), so 5-minute ECG delivers at end of turn 1
-  assert(withOrders.completedOrders.some((o) => /ecg/i.test(o.orderName)), '5-minute ECG delivers once sim clock reaches 09:05');
-  assert(withOrders.pendingOrders.length === 2, 'Remaining 2 slower orders (Troponin 30m, CXR 20m) remain queued in pendingOrders');
+  // Writing three orders costs the turn 5 minutes, and the orders are placed at
+  // the clock the turn ENDS on — nothing may be ready before it was written.
+  // So the assertions here are relative to each order's own placement time
+  // rather than to a wall-clock constant, which is what the arithmetic
+  // actually guarantees and what a reader can check.
+  const orderClock = simTimeToMinutes(withOrders.simTime);
+  const allPlaced = [...withOrders.completedOrders, ...withOrders.pendingOrders];
+  assert(allPlaced.length === 3, 'All 3 orders are placed');
+  assert(
+    allPlaced.every((o) => o.placedSimTime === formatSimTime(withOrders.simTime)),
+    'Every order is stamped at the clock the placing turn ended on'
+  );
+  assert(
+    withOrders.completedOrders.length === 0,
+    'Nothing has come back yet: the fastest turnaround is 5 minutes and no time has passed since the orders were written'
+  );
+  assert(withOrders.pendingOrders.length === 3, 'All 3 orders are queued');
 
-  // Advance time by 15 mins (09:05 -> 09:20): CXR (20m turnaround, ready 09:20) delivers
-  const after15Mins = processTurnOffline(withOrders, 'advance 15 minutes');
+  // 5 minutes on: the ECG (5m turnaround) is due, the other two are not.
+  const after5Mins = processTurnOffline(withOrders, 'advance 5 minutes');
+  assert(
+    after5Mins.completedOrders.some((o) => /ecg/i.test(o.orderName)),
+    'The 5-minute ECG delivers exactly 5 minutes after it was placed'
+  );
+  assert(after5Mins.pendingOrders.length === 2, 'Remaining 2 slower orders (Troponin 30m, CXR 20m) remain queued in pendingOrders');
+
+  // 20 minutes from placement: the CXR is due, the troponin is not.
+  const after15Mins = processTurnOffline(after5Mins, 'advance 15 minutes');
   const cxrDone = after15Mins.completedOrders.some((o) => /cxr|chest x-ray/i.test(o.orderName));
-  assert(cxrDone, 'Medium turnaround order (CXR PA, 20m) moves to completedOrders at 09:20');
-  assert(after15Mins.pendingOrders.some((o) => /troponin/i.test(o.orderName)), '30-minute Troponin remains pending at 09:20');
+  assert(cxrDone, 'Medium turnaround order (CXR PA, 20m) delivers 20 minutes after placement');
+  assert(after15Mins.pendingOrders.some((o) => /troponin/i.test(o.orderName)), '30-minute Troponin is still pending at 20 minutes');
+  assert(
+    simTimeToMinutes(after15Mins.simTime) - orderClock === 20,
+    'The clock has advanced exactly 20 minutes since the orders were placed'
+  );
 
-  // Advancing time past 09:30 delivers Troponin
+  // Past 30 minutes from placement the troponin is due too.
   const after30Mins = processTurnOffline(after15Mins, 'advance 15 minutes');
-  assert(after30Mins.pendingOrders.length === 0, 'All pending orders delivered after sufficient turnaround (09:35 >= 09:30)');
+  assert(after30Mins.pendingOrders.length === 0, 'All pending orders delivered once their turnaround has elapsed');
   assert(after30Mins.completedOrders.length === 3, 'All 3 orders now in completedOrders');
   assert(after30Mins.turns[after30Mins.turns.length - 1].newResults.length > 0, 'Turn recorded delivered results');
 
