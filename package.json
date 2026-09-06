@@ -8,11 +8,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "test": "npx tsx tests/simulator.test.ts && npx tsx tests/invariants.test.ts",
+    "test": "npx tsx scripts/validate-cases.ts && npx tsx tests/simulator.test.ts && npx tsx tests/invariants.test.ts",
     "build:index": "npx tsx scripts/build-index.ts",
     "verify:index": "npx tsx scripts/verify-index.ts",
     "import:index": "npx tsx scripts/import-master-index.ts",
-    "test:invariants": "npx tsx tests/invariants.test.ts"
+    "test:invariants": "npx tsx tests/invariants.test.ts",
+    "validate:cases": "npx tsx scripts/validate-cases.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
