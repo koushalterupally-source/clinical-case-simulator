@@ -4,10 +4,6 @@ import { CaseLibrary } from './CaseLibrary';
 
 interface StartScreenProps {
   onStart: (mode: CaseMode, subject: string, blind?: boolean, scaffoldId?: string) => void;
-  onStartQuestionLed: () => void;
-  onOpenQBank: () => void;
-  questionCount: number;
-  loading?: boolean;
   starting?: boolean;
   /** Set when a case was left in progress, so it can be picked back up
    *  instead of being stranded behind a "start a new one" button. */

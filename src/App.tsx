@@ -1,27 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { QBankIndexBuilder } from './components/QBankIndexBuilder';
 import { CaseView } from './components/simple/CaseView';
 import { StartScreen } from './components/simple/StartScreen';
 import { Scorecard } from './components/simple/Scorecard';
-import { CaseSession, CaseMode, PYQItem } from './types';
+import { CaseSession, CaseMode } from './types';
 import { DEFAULT_PYQ_INDEX } from './data/defaultQBank';
 import { processTurnOffline, generateScorecard } from './utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from './utils/caseBinder';
-import { buildQuestionLedCase } from './utils/questionLedCase';
-import { parseRawQBankTextOffline } from './utils/qbankParser';
-import { saveActiveSession, loadActiveSession, clearActiveSession, readActiveSessionSync, saveQBankIndex, loadQBankIndex, saveCompletedCase, getMissedQIDsFromHistory } from './utils/storage';
+import { saveActiveSession, loadActiveSession, clearActiveSession, readActiveSessionSync, saveCompletedCase, getMissedQIDsFromHistory } from './utils/storage';
 import { markCasePlayed } from './utils/caseProgress';
 
 export default function App() {
   const [session, setSession] = useState<CaseSession | null>(() => readActiveSessionSync());
 
-  const [pyqList, setPyqList] = useState<PYQItem[]>(DEFAULT_PYQ_INDEX);
-  const [isLoadingQBank, setIsLoadingQBank] = useState(true);
-
-  const [activeTab, setActiveTab] = useState<'sim' | 'qbank' | 'scorecard' | 'instructions' | 'menu'>('sim');
+  const [activeTab, setActiveTab] = useState<'sim' | 'scorecard' | 'instructions' | 'menu'>('sim');
   const [isStarting, setIsStarting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isParsingIndex, setIsParsingIndex] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Load active session on mount
@@ -33,47 +26,6 @@ export default function App() {
     initSession();
   }, []);
 
-  // Initialize QBank from IndexedDB or static offline index bundle
-  useEffect(() => {
-    async function initQBank() {
-      setIsLoadingQBank(true);
-      try {
-        const storedIndex = await loadQBankIndex();
-        if (storedIndex && storedIndex.length > 50) {
-          setPyqList(storedIndex);
-          setIsLoadingQBank(false);
-          return;
-        }
-
-        // Try loading pre-built offline bundle from public/pyq-index/.
-        // Must go through BASE_URL: on GitHub Pages the app is served from
-        // /<repo>/, so a root-absolute path 404s.
-        const base = import.meta.env.BASE_URL;
-        const manifestRes = await fetch(`${base}pyq-index/manifest.json`);
-        if (manifestRes.ok) {
-          const manifest = await manifestRes.json();
-          let allItems: PYQItem[] = [];
-          for (const sub of manifest.subjects || []) {
-            const safeName = sub.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            const subRes = await fetch(`${base}pyq-index/subject_${safeName}.json`);
-            if (subRes.ok) {
-              const subItems: PYQItem[] = await subRes.json();
-              allItems = allItems.concat(subItems);
-            }
-          }
-          if (allItems.length > 0) {
-            setPyqList(allItems);
-            await saveQBankIndex(allItems);
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load pre-built offline QBank bundle:', err);
-      } finally {
-        setIsLoadingQBank(false);
-      }
-    }
-    initQBank();
-  }, []);
 
   // Save active session to localStorage when updated
   useEffect(() => {
@@ -104,7 +56,7 @@ export default function App() {
       // leaving an orphan record behind.
       if (session) await clearActiveSession(session.id);
       const missedQIDs = await getMissedQIDsFromHistory();
-      const newSession = buildCaseSessionFromScaffold(pyqList, {
+      const newSession = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, {
         mode: blindMode ? 'blind' : mode,
         subject,
         scaffoldId,
@@ -117,27 +69,6 @@ export default function App() {
     } catch (err: any) {
       console.error('Failed to start case offline:', err);
       setErrorMessage('Failed to generate offline case simulation.');
-    } finally {
-      setIsStarting(false);
-    }
-  };
-
-  // Build a case from the whole bank rather than the 4 authored conditions.
-  const handleStartQuestionLed = async () => {
-    setIsStarting(true);
-    setErrorMessage(null);
-    try {
-      // Replacing a case that was left parked: drop the old one rather than
-      // leaving an orphan record behind.
-      if (session) await clearActiveSession(session.id);
-      const missedQIDs = await getMissedQIDsFromHistory();
-      const newSession = buildQuestionLedCase(pyqList, { missedQIDs });
-      setSession(newSession);
-      await saveActiveSession(newSession);
-      setActiveTab('sim');
-    } catch (err: any) {
-      console.error('Failed to build a question-led case:', err);
-      setErrorMessage(err?.message || 'Could not build a case from your question bank.');
     } finally {
       setIsStarting(false);
     }
@@ -204,26 +135,6 @@ export default function App() {
     }
   };
 
-  // Handler for Client-Side Offline Index Parsing
-  const handleParseRawText = async (rawText: string) => {
-    setIsParsingIndex(true);
-    setErrorMessage(null);
-    try {
-      const result = parseRawQBankTextOffline(rawText, pyqList);
-      if (result && result.parsedItems.length > 0) {
-        setPyqList((prev) => [...result.parsedItems, ...prev]);
-        await saveQBankIndex([...result.parsedItems, ...pyqList]);
-      } else {
-        setErrorMessage('No valid question patterns found in raw text snippet.');
-      }
-    } catch (err: any) {
-      console.error('Failed to parse index offline:', err);
-      setErrorMessage('Failed to parse raw text into question index.');
-    } finally {
-      setIsParsingIndex(false);
-    }
-  };
-
   const handlePauseResume = () => {
     if (!session) return;
     setSession({
@@ -238,29 +149,6 @@ export default function App() {
   const handleResumeCase = () => setActiveTab('sim');
 
   const showScorecard = activeTab === 'scorecard' && session?.scorecard;
-
-  if (activeTab === 'qbank') {
-    return (
-      <div className="min-h-screen px-4" style={{ background: 'var(--bg)' }}>
-        <div className="max-w-[46rem] mx-auto py-8">
-          <button
-            onClick={() => setActiveTab('sim')}
-            className="text-[13px] mb-6 ring-focus rounded px-1"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            ← Back
-          </button>
-          <QBankIndexBuilder
-            pyqList={pyqList}
-            onUpdatePyqList={setPyqList}
-            onParseRawText={handleParseRawText}
-            isParsing={isParsingIndex}
-            isCaseActive={!!session && session.status === 'active'}
-          />
-        </div>
-      </div>
-    );
-  }
 
   if (showScorecard && session) {
     return (
@@ -285,10 +173,6 @@ export default function App() {
           resumeLabel={parked ? (parked.isQuestionLed ? parked.title : parked.patient.name) : null}
           onResume={parked ? handleResumeCase : undefined}
           onStart={(mode, subject, blind, scaffoldId) => handleStartNewCase(mode, subject, !!blind, scaffoldId)}
-          onStartQuestionLed={handleStartQuestionLed}
-          onOpenQBank={() => setActiveTab('qbank')}
-          questionCount={pyqList.length}
-          loading={isLoadingQBank}
           starting={isStarting}
         />
       </>
