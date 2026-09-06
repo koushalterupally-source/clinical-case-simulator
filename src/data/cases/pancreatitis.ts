@@ -19,7 +19,9 @@ import { CaseScaffold } from '../../types';
  * beats prolonged fasting or parenteral nutrition; prophylactic antibiotics
  * have no role without evidence of infection; and an urgent scope procedure
  * to clear the bile duct is reserved for concurrent duct infection or a
- * persistently blocked duct, not for this picture alone.
+ * persistently blocked duct, not for this picture alone; and definitive
+ * gallbladder surgery belongs in the same admission for mild disease,
+ * deferred only when there is necrosis or an organised collection.
  *
  * The opening vignette and every gate's patientContext avoid the words
  * "gallstone" and "pancreatitis" — the two content words Test Suite 14
@@ -29,7 +31,7 @@ import { CaseScaffold } from '../../types';
 export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
   id: 'scaffold_gallstone_pancreatitis',
   title: 'Severe Epigastric Pain Radiating to the Back',
-  conditionName: 'Severe Acute Gallstone Pancreatitis',
+  conditionName: 'Acute Gallstone Pancreatitis',
   subject: 'Medicine',
   system: 'Gastroenterology',
   demographics: {
@@ -250,7 +252,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
       responseText: 'Gastroenterology consult requested to plan definitive management of the underlying biliary source once she has stabilised.',
       onsetMinutes: 20,
       appropriateness: 'indicated',
-      rationale: 'Early specialist involvement ensures the biliary source is addressed with definitive same-admission gallbladder surgery once the acute episode settles, and that an urgent scope procedure is reserved only for evidence of a duct infection or a persistently blocked duct rather than used routinely.',
+      rationale: 'Early specialist involvement ensures the biliary source is addressed. In mild disease like hers — no necrosis and no organised collection — definitive gallbladder surgery belongs in this same admission once the acute episode settles, since discharging her with the stones in place invites a repeat attack. Had there been necrosis or an organised peripancreatic collection, that surgery would instead be deferred until the inflammation resolved. An urgent scope procedure is reserved for evidence of a duct infection or a persistently blocked duct rather than used routinely.',
     },
   },
   criticalInterventions: [
@@ -327,7 +329,7 @@ export const SCAFFOLD_PANCREATITIS: CaseScaffold = {
     {
       roleTag: 'COMPLICATION',
       patientContext: 'Before discharge, the team discusses how to address the stones felt to be the trigger, and whether an urgent scope procedure to clear the bile duct is needed — she has no fever, no worsening jaundice and no signs of a blocked, infected duct.',
-      consequenceOnRight: 'Definitive keyhole removal of the gallbladder is planned during this same admission once she has stabilised, and the urgent scope procedure is reserved only for evidence of an infected or persistently blocked duct, which she does not have.',
+      consequenceOnRight: 'Definitive keyhole removal of the gallbladder is planned during this same admission once she has stabilised — the rule for mild gallstone pancreatitis, which is what she has had; with necrosis or an organised collection it would be deferred instead. The urgent scope procedure is reserved only for evidence of an infected or persistently blocked duct, which she does not have.',
       consequenceOnWrong: 'An urgent scope procedure is performed anyway without evidence of a blocked or infected duct, exposing her to a risk she did not need, or definitive gallbladder surgery is deferred indefinitely, leaving her at risk of a repeat episode.',
     },
   ],

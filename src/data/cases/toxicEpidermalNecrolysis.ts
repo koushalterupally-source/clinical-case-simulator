@@ -40,7 +40,7 @@ export const SCAFFOLD_TEN: CaseScaffold = {
     grbs: 132,
   },
   clinchingClue:
-    'On examination, gentle lateral shear pressure on skin that still looks intact makes the outer layer slide off immediately (a positive shearing sign), with confluent erosions now covering roughly 18% of the total body surface area, alongside ulceration of the oral, ocular and genital mucosae — three mucosal surfaces involved — all appearing in the ten days since he was started on the new anti-seizure drug.',
+    'On examination, gentle lateral shear pressure on skin that still looks intact makes the outer layer slide off immediately (a positive shearing sign), with confluent erosions now covering roughly 42% of the total body surface area, alongside ulceration of the oral, ocular and genital mucosae — three mucosal surfaces involved — all appearing in the ten days since he was started on the new anti-seizure drug.',
   clinchingClueTimeMinutes: 20,
   examFindingsMap: {
     general: 'Acutely unwell-looking, febrile, restless with pain, marked tenderness whenever the skin or mucosa is touched or moved.',
@@ -118,7 +118,7 @@ export const SCAFFOLD_TEN: CaseScaffold = {
     },
     bsa_mapping: {
       aliases: ['total body surface area mapping', 'tbsa mapping', 'body surface area assessment', 'lund-browder chart'],
-      resultText: 'Body Surface Area Mapping (Lund-Browder chart): Approximately 18% of total body surface area shows detachment or a positive shearing sign on currently intact-looking skin. This figure, plus age and the laboratory values above, feeds directly into the bedside severity/prognostic score used for this condition and into the fluid resuscitation calculation.',
+      resultText: 'Body Surface Area Mapping (Lund-Browder chart): Approximately 42% of total body surface area shows detachment or a positive shearing sign on currently intact-looking skin. This figure, plus age and the laboratory values above, feeds directly into the bedside severity/prognostic score used for this condition and into the fluid resuscitation calculation.',
       turnaroundMinutes: 10,
       category: 'monitoring',
       isIndicative: true,
