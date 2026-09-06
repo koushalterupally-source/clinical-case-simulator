@@ -163,14 +163,19 @@ export const StartScreen: React.FC<StartScreenProps> = ({
             </button>
           </div>
 
+          {/* The QBank link that used to sit here pointed at a section that no
+              longer exists — a dead control on the first screen. The space is
+              better spent saying plainly what this is and is not. */}
           <div
-            className="mt-8 pt-5 flex items-center justify-between text-[12px]"
+            className="mt-8 pt-5 text-[12px] leading-relaxed"
             style={{ borderTop: '1px solid var(--border)', color: 'var(--text-faint)' }}
           >
-            <span>Dynamic vitals decay & order turnaround times</span>
-            <a href="../#practice" className="ring-focus rounded px-1" style={{ color: 'var(--text-muted)' }}>
-              Open QBank &rarr;
-            </a>
+            <p>Dynamic vitals decay and realistic order turnaround times.</p>
+            <p className="mt-1.5">
+              For exam preparation and teaching only. Not a substitute for supervised clinical
+              training, and never a guide to treating a real patient — follow your own hospital's
+              protocols.
+            </p>
           </div>
         </div>
       </div>
