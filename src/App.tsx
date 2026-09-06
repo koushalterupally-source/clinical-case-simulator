@@ -9,18 +9,11 @@ import { processTurnOffline, generateScorecard } from './utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from './utils/caseBinder';
 import { buildQuestionLedCase } from './utils/questionLedCase';
 import { parseRawQBankTextOffline } from './utils/qbankParser';
-import { saveActiveSession, loadActiveSession, saveQBankIndex, loadQBankIndex, saveCompletedCase, getMissedQIDsFromHistory } from './utils/storage';
+import { saveActiveSession, loadActiveSession, clearActiveSession, readActiveSessionSync, saveQBankIndex, loadQBankIndex, saveCompletedCase, getMissedQIDsFromHistory } from './utils/storage';
 import { markCasePlayed } from './utils/caseProgress';
 
 export default function App() {
-  const [session, setSession] = useState<CaseSession | null>(() => {
-    try {
-      const saved = localStorage.getItem('medtrix_active_session');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [session, setSession] = useState<CaseSession | null>(() => readActiveSessionSync());
 
   const [pyqList, setPyqList] = useState<PYQItem[]>(DEFAULT_PYQ_INDEX);
   const [isLoadingQBank, setIsLoadingQBank] = useState(true);
@@ -195,6 +188,7 @@ export default function App() {
       };
       setSession(scoredSession);
       await saveCompletedCase(scoredSession);
+      await clearActiveSession(scoredSession.id);
       setActiveTab('scorecard');
     } catch (err: any) {
       console.error('Failed to generate scorecard offline:', err);
@@ -263,6 +257,7 @@ export default function App() {
         session={session}
         onBack={() => setActiveTab('sim')}
         onNewCase={() => {
+          void clearActiveSession(session.id);
           setSession(null);
           setActiveTab('sim');
         }}

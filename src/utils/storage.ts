@@ -4,6 +4,32 @@ import { DEFAULT_PYQ_INDEX } from '../data/defaultQBank';
 const DB_NAME = 'PYQ_CCS_Simulator_DB';
 const DB_VERSION = 1;
 
+/** Per-tab record of which case this tab is playing. Two tabs playing two
+ *  different cases used to share one storage slot and overwrite each other;
+ *  each tab now reads back its own case. */
+const TAB_OWNER_KEY = 'medtrix_tab_session_id';
+/** Abandoned sessions are pruned after this long so the store cannot grow
+ *  without bound. */
+const ACTIVE_SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
+
+function tabOwnedSessionId(): string | null {
+  try {
+    return typeof sessionStorage === 'undefined' ? null : sessionStorage.getItem(TAB_OWNER_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function setTabOwnedSessionId(id: string | null): void {
+  try {
+    if (typeof sessionStorage === 'undefined') return;
+    if (id) sessionStorage.setItem(TAB_OWNER_KEY, id);
+    else sessionStorage.removeItem(TAB_OWNER_KEY);
+  } catch {
+    /* private browsing — the IndexedDB path still works */
+  }
+}
+
 /**
  * IndexedDB Connection helper
  */
@@ -35,15 +61,28 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
+/** Resolve once the write has actually landed. `store.put` alone resolves
+ *  before the transaction commits, so a tab closed straight after a turn
+ *  could lose it. */
+function txDone(tx: IDBTransaction): Promise<void> {
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
+
 /**
- * Save active case session to storage
+ * Save active case session to storage, keyed by its own id so that a second
+ * tab playing a different case cannot clobber this one.
  */
 export async function saveActiveSession(session: CaseSession): Promise<void> {
+  setTabOwnedSessionId(session.id);
   try {
     const db = await openDatabase();
     const tx = db.transaction('active_session', 'readwrite');
-    const store = tx.objectStore('active_session');
-    store.put({ id: 'CURRENT_ACTIVE', session });
+    tx.objectStore('active_session').put({ id: session.id, session, savedAt: Date.now() });
+    await txDone(tx);
   } catch (err) {
     // Fallback to localStorage
     if (typeof localStorage !== 'undefined') {
@@ -57,28 +96,83 @@ export async function saveActiveSession(session: CaseSession): Promise<void> {
 }
 
 /**
- * Load active case session
+ * Forget the active session. Called when a case is finished or abandoned —
+ * without this the finished case comes back to life on the next page load.
+ */
+export async function clearActiveSession(sessionId?: string): Promise<void> {
+  const id = sessionId || tabOwnedSessionId();
+  setTabOwnedSessionId(null);
+  try {
+    const db = await openDatabase();
+    const tx = db.transaction('active_session', 'readwrite');
+    const store = tx.objectStore('active_session');
+    // Legacy single-slot record from before sessions were keyed by id.
+    store.delete('CURRENT_ACTIVE');
+    if (id) store.delete(id);
+    await txDone(tx);
+  } catch (err) {
+    console.warn('Could not clear the active session from IndexedDB', err);
+  }
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.removeItem('medtrix_active_session');
+    } catch {
+      /* nothing more we can do */
+    }
+  }
+}
+
+/**
+ * Load the active case session belonging to this tab. Completed sessions are
+ * not resumable — they live in the history instead.
  */
 export async function loadActiveSession(): Promise<CaseSession | null> {
+  const owned = tabOwnedSessionId();
   try {
     const db = await openDatabase();
     const tx = db.transaction('active_session', 'readonly');
-    const store = tx.objectStore('active_session');
-    const req = store.get('CURRENT_ACTIVE');
+    const req = tx.objectStore('active_session').getAll();
 
-    return new Promise((resolve) => {
+    const record = await new Promise<any>((resolve) => {
       req.onsuccess = () => {
-        if (req.result && req.result.session) {
-          resolve(req.result.session as CaseSession);
-        } else {
-          resolve(loadActiveSessionFromLocalStorage());
+        const rows: any[] = (req.result || []).filter((r) => r && r.session);
+        if (owned) {
+          const mine = rows.find((r) => r.session.id === owned);
+          if (mine) return resolve(mine);
+          // This tab owned a case that has since been finished or cleared.
+          return resolve(null);
         }
+        const fresh = rows
+          .filter((r) => Date.now() - (r.savedAt || 0) < ACTIVE_SESSION_TTL_MS || !r.savedAt)
+          .sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+        resolve(fresh[0] || null);
       };
-      req.onerror = () => resolve(loadActiveSessionFromLocalStorage());
+      req.onerror = () => resolve(null);
     });
+
+    const session = record?.session as CaseSession | undefined;
+    if (session && session.status !== 'completed') {
+      setTabOwnedSessionId(session.id);
+      return session;
+    }
+    if (session) return null; // finished case — do not resurrect it
+    return owned ? null : loadActiveSessionFromLocalStorage();
   } catch (err) {
     return loadActiveSessionFromLocalStorage();
   }
+}
+
+/**
+ * Synchronous first paint of a resumable case, before IndexedDB has answered.
+ * Tab-aware: a tab that is already playing its own case must not adopt the one
+ * another tab happens to have written to the shared localStorage slot.
+ */
+export function readActiveSessionSync(): CaseSession | null {
+  const owned = tabOwnedSessionId();
+  const session = loadActiveSessionFromLocalStorage();
+  if (!session) return null;
+  if (owned && session.id !== owned) return null;
+  return session;
 }
 
 function loadActiveSessionFromLocalStorage(): CaseSession | null {
@@ -87,7 +181,7 @@ function loadActiveSessionFromLocalStorage(): CaseSession | null {
     const raw = localStorage.getItem('medtrix_active_session');
     if (!raw) return null;
     const session = JSON.parse(raw);
-    if (session && session.id && session.turns) return session;
+    if (session && session.id && session.turns && session.status !== 'completed') return session;
   } catch (e) {
     console.warn('Failed to parse active session from localStorage');
   }
