@@ -11,6 +11,9 @@ interface CaseViewProps {
   onCommitGateAnswer?: (answer: string, gateIndex?: number) => void;
   isProcessing: boolean;
   onEndCase: () => void;
+  /** Step out of the case without scoring it. The case stays where it is and
+   *  can be picked back up from the menu. */
+  onLeave?: () => void;
 }
 
 /** Reading measure shared by the header, transcript and composer so their
@@ -22,6 +25,7 @@ export const CaseView: React.FC<CaseViewProps> = ({
   onSendCommand,
   isProcessing,
   onEndCase,
+  onLeave,
 }) => {
   const done = session.status === 'completed';
   const [ordersOpen, setOrdersOpen] = React.useState(false);
@@ -51,7 +55,18 @@ export const CaseView: React.FC<CaseViewProps> = ({
         style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', boxShadow: 'var(--elev-1)' }}
       >
         <div className={`${MEASURE} mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3`}>
-          <div className="min-w-0">
+          {onLeave && !done && (
+            <button
+              onClick={onLeave}
+              aria-label="Leave this case and go back to the menu — the case is kept and can be resumed"
+              title="Back to menu (the case is kept)"
+              className="btn btn-secondary ring-focus rounded-xl h-9 w-9 shrink-0 flex items-center justify-center text-[15px] leading-none"
+            >
+              <span aria-hidden>←</span>
+            </button>
+          )}
+
+          <div className="min-w-0 flex-1">
             <h1
               className="font-display text-[17px] sm:text-[19px] font-semibold leading-tight truncate"
               style={{ color: 'var(--text)' }}
@@ -69,8 +84,11 @@ export const CaseView: React.FC<CaseViewProps> = ({
               </span>
               {!session.isQuestionLed && (
                 <>
-                  <span aria-hidden style={{ color: 'var(--text-faint)' }}>·</span>
-                  <span className="truncate" style={{ color: 'var(--text-muted)' }}>{session.currentLocation}</span>
+                  {/* On a narrow screen the header is already carrying three
+                      controls; the location repeats on every transcript entry,
+                      so it steps aside rather than truncating to one letter. */}
+                  <span aria-hidden className="hidden sm:inline" style={{ color: 'var(--text-faint)' }}>·</span>
+                  <span className="hidden sm:inline truncate" style={{ color: 'var(--text-muted)' }}>{session.currentLocation}</span>
                 </>
               )}
             </div>

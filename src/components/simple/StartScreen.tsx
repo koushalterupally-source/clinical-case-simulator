@@ -9,6 +9,10 @@ interface StartScreenProps {
   questionCount: number;
   loading?: boolean;
   starting?: boolean;
+  /** Set when a case was left in progress, so it can be picked back up
+   *  instead of being stranded behind a "start a new one" button. */
+  resumeLabel?: string | null;
+  onResume?: () => void;
 }
 
 // Same localStorage key the sibling PYQ app writes, so a theme choice made in
@@ -64,6 +68,8 @@ const ThemeToggle: React.FC = () => {
 export const StartScreen: React.FC<StartScreenProps> = ({
   onStart,
   starting,
+  resumeLabel,
+  onResume,
 }) => {
   const [libraryOpen, setLibraryOpen] = useState(false);
 
@@ -90,6 +96,21 @@ export const StartScreen: React.FC<StartScreenProps> = ({
           </p>
 
           <div className="mt-8 space-y-3">
+            {resumeLabel && onResume && (
+              <button
+                onClick={onResume}
+                className="w-full rounded-xl py-3 px-4 text-left ring-focus transition-transform active:scale-[0.99]"
+                style={{ background: 'var(--accent-soft)', border: '1px solid var(--accent)' }}
+              >
+                <span className="block text-[12px] font-semibold" style={{ color: 'var(--accent)' }}>
+                  Case in progress
+                </span>
+                <span className="block mt-0.5 text-[14px] font-medium truncate" style={{ color: 'var(--text)' }}>
+                  Resume {resumeLabel}
+                </span>
+              </button>
+            )}
+
             <button
               onClick={() => onStart('standard', 'All')}
               disabled={starting}

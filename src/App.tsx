@@ -18,7 +18,7 @@ export default function App() {
   const [pyqList, setPyqList] = useState<PYQItem[]>(DEFAULT_PYQ_INDEX);
   const [isLoadingQBank, setIsLoadingQBank] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<'sim' | 'qbank' | 'scorecard' | 'instructions'>('sim');
+  const [activeTab, setActiveTab] = useState<'sim' | 'qbank' | 'scorecard' | 'instructions' | 'menu'>('sim');
   const [isStarting, setIsStarting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isParsingIndex, setIsParsingIndex] = useState(false);
@@ -100,6 +100,9 @@ export default function App() {
     setIsStarting(true);
     setErrorMessage(null);
     try {
+      // Replacing a case that was left parked: drop the old one rather than
+      // leaving an orphan record behind.
+      if (session) await clearActiveSession(session.id);
       const missedQIDs = await getMissedQIDsFromHistory();
       const newSession = buildCaseSessionFromScaffold(pyqList, {
         mode: blindMode ? 'blind' : mode,
@@ -124,6 +127,9 @@ export default function App() {
     setIsStarting(true);
     setErrorMessage(null);
     try {
+      // Replacing a case that was left parked: drop the old one rather than
+      // leaving an orphan record behind.
+      if (session) await clearActiveSession(session.id);
       const missedQIDs = await getMissedQIDsFromHistory();
       const newSession = buildQuestionLedCase(pyqList, { missedQIDs });
       setSession(newSession);
@@ -226,6 +232,11 @@ export default function App() {
     });
   };
 
+  // Stepping out of a case: the session is kept exactly as it is (it stays in
+  // storage and this tab still owns it) and the menu offers it back.
+  const handleLeaveCase = () => setActiveTab('menu');
+  const handleResumeCase = () => setActiveTab('sim');
+
   const showScorecard = activeTab === 'scorecard' && session?.scorecard;
 
   if (activeTab === 'qbank') {
@@ -265,11 +276,14 @@ export default function App() {
     );
   }
 
-  if (!session) {
+  if (!session || activeTab === 'menu') {
+    const parked = session && session.status !== 'completed' ? session : null;
     return (
       <>
         {errorMessage && <ErrorBanner message={errorMessage} onDismiss={() => setErrorMessage(null)} />}
         <StartScreen
+          resumeLabel={parked ? (parked.isQuestionLed ? parked.title : parked.patient.name) : null}
+          onResume={parked ? handleResumeCase : undefined}
           onStart={(mode, subject, blind, scaffoldId) => handleStartNewCase(mode, subject, !!blind, scaffoldId)}
           onStartQuestionLed={handleStartQuestionLed}
           onOpenQBank={() => setActiveTab('qbank')}
@@ -290,6 +304,7 @@ export default function App() {
         onCommitGateAnswer={handleCommitGateAnswer}
         isProcessing={isProcessing}
         onEndCase={() => (session.scorecard ? setActiveTab('scorecard') : handleEndCase())}
+        onLeave={handleLeaveCase}
       />
     </>
   );

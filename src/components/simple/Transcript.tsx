@@ -67,7 +67,9 @@ export const VitalsLine: React.FC<{ vitals: Vitals }> = ({ vitals }) => {
           >
             {it.label}
           </div>
-          <div className="flex items-baseline gap-1 mt-0.5">
+          {/* Wraps rather than clips: a wide reading like "198/112 mmHg" used
+              to lose the end of its unit inside a fixed-width cell. */}
+          <div className="flex flex-wrap items-baseline gap-x-1 mt-0.5">
             <span
               className="text-[17px] tnum leading-none"
               style={{ color: toneFor(it.sev), fontWeight: it.sev === 'normal' ? 500 : 700 }}
