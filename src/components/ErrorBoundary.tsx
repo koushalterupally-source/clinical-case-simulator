@@ -31,12 +31,40 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleResetSession = () => {
+    // Clearing localStorage alone left the same bad record in IndexedDB, so
+    // the reload crashed again and the learner was stuck in a loop with no way
+    // out. Reset clears every place an active session can live.
     try {
       localStorage.removeItem('medtrix_active_session');
+      sessionStorage.removeItem('medtrix_tab_session_id');
     } catch (e) {
       console.warn('Failed to clear active session', e);
     }
-    window.location.reload();
+
+    const done = () => window.location.reload();
+    try {
+      const req = indexedDB.open('PYQ_CCS_Simulator_DB');
+      req.onsuccess = () => {
+        try {
+          const db = req.result;
+          if (!db.objectStoreNames.contains('active_session')) return done();
+          const tx = db.transaction('active_session', 'readwrite');
+          tx.objectStore('active_session').clear();
+          tx.oncomplete = done;
+          tx.onerror = done;
+          tx.onabort = done;
+        } catch {
+          done();
+        }
+      };
+      req.onerror = done;
+      req.onblocked = done;
+      // Never leave the learner staring at the error screen if the database
+      // refuses to open at all.
+      setTimeout(done, 2000);
+    } catch {
+      done();
+    }
   };
 
   render() {

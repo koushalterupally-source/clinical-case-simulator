@@ -8,6 +8,10 @@ const DB_VERSION = 1;
  *  different cases used to share one storage slot and overwrite each other;
  *  each tab now reads back its own case. */
 const TAB_OWNER_KEY = 'medtrix_tab_session_id';
+/** Bumped whenever a stored session's shape changes incompatibly. A record
+ *  written by an older version is migrated if we know how, and discarded if we
+ *  do not — never handed to React half-understood. */
+export const SESSION_SCHEMA_VERSION = 1;
 /** Abandoned sessions are pruned after this long so the store cannot grow
  *  without bound. */
 const ACTIVE_SESSION_TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -81,7 +85,12 @@ export async function saveActiveSession(session: CaseSession): Promise<void> {
   try {
     const db = await openDatabase();
     const tx = db.transaction('active_session', 'readwrite');
-    tx.objectStore('active_session').put({ id: session.id, session, savedAt: Date.now() });
+    tx.objectStore('active_session').put({
+      id: session.id,
+      session,
+      savedAt: Date.now(),
+      schemaVersion: SESSION_SCHEMA_VERSION,
+    });
     await txDone(tx);
   } catch (err) {
     // Fallback to localStorage
@@ -150,7 +159,14 @@ export async function loadActiveSession(): Promise<CaseSession | null> {
       req.onerror = () => resolve(null);
     });
 
-    const session = record?.session as CaseSession | undefined;
+    const raw = record?.session;
+    if (raw && !isRestorableSession(raw)) {
+      // Corrupt or foreign. Clear it so the next load is clean rather than
+      // hitting the same bad record forever.
+      await clearActiveSession(record?.id);
+      return null;
+    }
+    const session = raw as CaseSession | undefined;
     if (session && session.status !== 'completed') {
       setTabOwnedSessionId(session.id);
       return session;
@@ -160,6 +176,46 @@ export async function loadActiveSession(): Promise<CaseSession | null> {
   } catch (err) {
     return loadActiveSessionFromLocalStorage();
   }
+}
+
+/**
+ * Is this thing actually a case session we can render?
+ *
+ * Storage is not a trusted input: a record can be truncated by a browser
+ * eviction mid-write, left behind by an older build, or belong to a different
+ * app on the same origin. Handing such an object to React throws during render
+ * and the page goes blank — and because the boundary only cleared localStorage,
+ * a reload found the same bad record in IndexedDB and blanked again. Anything
+ * that fails this check is discarded rather than restored.
+ */
+export function isRestorableSession(value: unknown): value is CaseSession {
+  if (!value || typeof value !== 'object') return false;
+  const s = value as Record<string, any>;
+  if (typeof s.id !== 'string' || !s.id) return false;
+  if (typeof s.scaffoldId !== 'string' || !s.scaffoldId) return false;
+  if (!Array.isArray(s.turns)) return false;
+  if (!Array.isArray(s.completedOrders) || !Array.isArray(s.pendingOrders)) return false;
+  if (!Array.isArray(s.therapyLog)) return false;
+  const t = s.simTime;
+  if (!t || typeof t !== 'object') return false;
+  if (
+    !Number.isFinite(t.day) ||
+    !Number.isFinite(t.hour) ||
+    !Number.isFinite(t.minute) ||
+    t.day < 1 ||
+    t.hour < 0 ||
+    t.hour > 23 ||
+    t.minute < 0 ||
+    t.minute > 59
+  ) {
+    return false;
+  }
+  const v = s.patient?.currentVitals;
+  if (!v || typeof v !== 'object') return false;
+  if (!Number.isFinite(v.hr) || !Number.isFinite(v.spo2)) return false;
+  // A schema newer than this build understands is not ours to interpret.
+  if (s.schemaVersion !== undefined && s.schemaVersion > SESSION_SCHEMA_VERSION) return false;
+  return true;
 }
 
 /**
@@ -181,7 +237,9 @@ function loadActiveSessionFromLocalStorage(): CaseSession | null {
     const raw = localStorage.getItem('medtrix_active_session');
     if (!raw) return null;
     const session = JSON.parse(raw);
-    if (session && session.id && session.turns && session.status !== 'completed') return session;
+    if (isRestorableSession(session) && session.status !== 'completed') return session;
+    // Unusable — drop it rather than leaving it to fail again next load.
+    localStorage.removeItem('medtrix_active_session');
   } catch (e) {
     console.warn('Failed to parse active session from localStorage');
   }

@@ -19,6 +19,7 @@ import { buildCaseSessionFromScaffold } from '../src/utils/caseBinder';
 import { DEFAULT_PYQ_INDEX } from '../src/data/defaultQBank';
 import { CASE_SCAFFOLDS } from '../src/data/cases/scaffolds';
 import { CaseSession, LocationType } from '../src/types';
+import { isRestorableSession, SESSION_SCHEMA_VERSION } from '../src/utils/storage';
 
 let passed = 0;
 let failed = 0;
@@ -334,6 +335,47 @@ function run() {
       'the same seed and commands give the same vitals'
     );
     assert(typeof c.scaffoldId === 'string', 'a different seed still produces a valid case');
+  }
+
+  // -------------------------------------------------------------------------
+  // Storage is not a trusted input. Anything that fails validation must be
+  // rejected, because handing it to React blanks the page — and the reload
+  // then finds the same record and blanks again.
+  // -------------------------------------------------------------------------
+  console.log('\n--- Corrupt stored state is rejected ---');
+  {
+    const good = buildCaseSessionFromScaffold(DEFAULT_PYQ_INDEX, { seed: 'STORAGE-OK' });
+    assert(isRestorableSession(good), 'a real session is restorable');
+    assert(
+      isRestorableSession({ ...good, schemaVersion: SESSION_SCHEMA_VERSION }),
+      'a session stamped with the current schema version is restorable'
+    );
+
+    const bad: Record<string, unknown> = {
+      null: null,
+      undefined: undefined,
+      'a string': 'nope',
+      'a number': 42,
+      'an empty object': {},
+      'a foreign object': { hello: 'world' },
+      'missing id': { ...good, id: '' },
+      'missing scaffoldId': { ...good, scaffoldId: undefined },
+      'turns not an array': { ...good, turns: 'nope' },
+      'orders not an array': { ...good, completedOrders: null },
+      'therapy log not an array': { ...good, therapyLog: {} },
+      'no clock': { ...good, simTime: undefined },
+      'clock hour out of range': { ...good, simTime: { day: 1, hour: 99, minute: 0 } },
+      'clock minute out of range': { ...good, simTime: { day: 1, hour: 9, minute: 61 } },
+      'clock day below one': { ...good, simTime: { day: 0, hour: 9, minute: 0 } },
+      'clock is NaN': { ...good, simTime: { day: 1, hour: NaN, minute: 0 } },
+      'no patient': { ...good, patient: null },
+      'no vitals': { ...good, patient: {} },
+      'vitals are NaN': { ...good, patient: { currentVitals: { hr: NaN, spo2: 98 } } },
+      'a schema from the future': { ...good, schemaVersion: SESSION_SCHEMA_VERSION + 1 },
+    };
+    for (const [name, value] of Object.entries(bad)) {
+      assert(!isRestorableSession(value), `stored state is rejected: ${name}`);
+    }
   }
 
   console.log(`\n${failed === 0 ? '🎉' : '💥'} Invariants: ${passed} passed, ${failed} failed.`);
