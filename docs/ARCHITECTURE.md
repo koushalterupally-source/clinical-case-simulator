@@ -110,9 +110,27 @@ npm run lint    # tsc --noEmit
 npm test        # both suites below
 npm run build   # production build
 
+npx tsx scripts/validate-cases.ts        # case-data schema validation
 npx tsx tests/simulator.test.ts          # behavioural suite, ~10,000 assertions
 npx tsx tests/invariants.test.ts [seed]  # invariant/property suite, seeded and replayable
 ```
+
+The browser suite needs a built app being served, so it is not part of `npm test`:
+
+```bash
+npm run build
+npx serve -s dist -l 8310   # in its own shell
+npm run test:e2e            # 56 checks, ~90s
+```
+
+It covers boot, starting a case, free-text submission, the order sheet, history
+and examination, leave/resume, end-case and reload, mid-case reload, four
+viewport widths, keyboard navigation, theme persistence and the case library.
+
+One known weakness: a regression that strands the app on the wrong screen is
+currently detected by a locator timing out rather than by a fast assertion, so
+the suite slows down before it goes red. If you are hardening it, bound those
+waits.
 
 The invariant suite prints its seed. A failure is reproduced by re-running with that seed as
 `argv[2]`.

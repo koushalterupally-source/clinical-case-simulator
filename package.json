@@ -13,7 +13,8 @@
     "verify:index": "npx tsx scripts/verify-index.ts",
     "import:index": "npx tsx scripts/import-master-index.ts",
     "test:invariants": "npx tsx tests/invariants.test.ts",
-    "validate:cases": "npx tsx scripts/validate-cases.ts"
+    "validate:cases": "npx tsx scripts/validate-cases.ts",
+    "test:e2e": "node tests/e2e/run.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
