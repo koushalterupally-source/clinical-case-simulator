@@ -23,6 +23,9 @@ import { SCAFFOLD_COMPARTMENT } from './compartmentSyndrome';
 import { SCAFFOLD_PANCREATITIS } from './pancreatitis';
 import { SCAFFOLD_PEDIATRIC_DKA } from './pediatricDka';
 import { SCAFFOLD_TORSION } from './testicularTorsion';
+import { SCAFFOLD_PULMONARY_TB } from './pulmonaryTuberculosis';
+import { SCAFFOLD_PLEURAL_EFFUSION } from './pleuralEffusion';
+import { SCAFFOLD_HAEMORRHAGIC_STROKE } from './haemorrhagicStroke';
 
 /**
  * Twelve cases, all modelled to the same standard. Four are defined inline
@@ -1076,4 +1079,7 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
   SCAFFOLD_PANCREATITIS,
   SCAFFOLD_PEDIATRIC_DKA,
   SCAFFOLD_TORSION,
+  SCAFFOLD_PULMONARY_TB,
+  SCAFFOLD_PLEURAL_EFFUSION,
+  SCAFFOLD_HAEMORRHAGIC_STROKE,
 ];
