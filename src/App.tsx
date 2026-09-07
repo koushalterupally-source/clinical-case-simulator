@@ -4,7 +4,7 @@ import { StartScreen } from './components/simple/StartScreen';
 import { Scorecard } from './components/simple/Scorecard';
 import { CaseSession, CaseMode, LocationType } from './types';
 import { DEFAULT_PYQ_INDEX } from './data/defaultQBank';
-import { processTurnOffline, generateScorecard } from './utils/ccsEngine';
+import { processTurnOffline, generateScorecard, recordCheckpoint } from './utils/ccsEngine';
 import { buildCaseSessionFromScaffold } from './utils/caseBinder';
 import { saveActiveSession, loadActiveSession, clearActiveSession, readActiveSessionSync, saveCompletedCase, getMissedQIDsFromHistory } from './utils/storage';
 import { markCasePlayed } from './utils/caseProgress';
@@ -112,6 +112,15 @@ export default function App() {
     }
   };
 
+  // The mid-case reasoning checkpoint. Answering it is a state change, not a
+  // turn: no clock advance, no orders, nothing the patient experiences.
+  const handleCheckpoint = async (worry: string, differentials: string, skipped: boolean) => {
+    if (!session) return;
+    const updated = recordCheckpoint(session, worry, differentials, skipped);
+    setSession(updated);
+    await saveActiveSession(updated);
+  };
+
   // Handler to End and Score Case offline
   const handleEndCase = async (currentSess?: CaseSession) => {
     const targetSession = currentSess || session;
@@ -193,6 +202,7 @@ export default function App() {
         isProcessing={isProcessing}
         onEndCase={() => (session.scorecard ? setActiveTab('scorecard') : handleEndCase())}
         onLeave={handleLeaveCase}
+        onCheckpoint={handleCheckpoint}
       />
     </>
   );

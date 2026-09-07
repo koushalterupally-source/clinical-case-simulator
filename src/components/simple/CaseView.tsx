@@ -3,6 +3,7 @@ import { CaseSession } from '../../types';
 import { Transcript } from './Transcript';
 import { Composer } from './Composer';
 import { OrderSheet } from './OrderSheet';
+import { ReasoningCheckpoint } from './ReasoningCheckpoint';
 import { formatSimTime } from '../../utils/ccsEngine';
 
 interface CaseViewProps {
@@ -11,6 +12,8 @@ interface CaseViewProps {
   onCommitGateAnswer?: (answer: string, gateIndex?: number) => void;
   isProcessing: boolean;
   onEndCase: () => void;
+  /** Answer or skip the mid-case reasoning checkpoint. */
+  onCheckpoint?: (worry: string, differentials: string, skipped: boolean) => void;
   /** Step out of the case without scoring it. The case stays where it is and
    *  can be picked back up from the menu. */
   onLeave?: () => void;
@@ -26,6 +29,7 @@ export const CaseView: React.FC<CaseViewProps> = ({
   isProcessing,
   onEndCase,
   onLeave,
+  onCheckpoint,
 }) => {
   const done = session.status === 'completed';
   const [ordersOpen, setOrdersOpen] = React.useState(false);
@@ -124,6 +128,12 @@ export const CaseView: React.FC<CaseViewProps> = ({
       <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6">
         <div className={`${MEASURE} mx-auto pt-6 pb-8`}>
           <Transcript session={session}>
+            {session.checkpointDue && onCheckpoint && !done && (
+              <ReasoningCheckpoint
+                onSubmit={(w, d) => onCheckpoint(w, d, false)}
+                onSkip={() => onCheckpoint('', '', true)}
+              />
+            )}
             {isProcessing && (
               <div className="text-[14px] py-2 flex items-center gap-2.5" style={{ color: 'var(--text-muted)' }}>
                 <span

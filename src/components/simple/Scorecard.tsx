@@ -9,6 +9,7 @@ import {
   computeTreatmentAppropriateness,
   TimelineEvent,
 } from '../../utils/ccsEngine';
+import { checkpointCaughtIt } from '../../utils/ccsEngine';
 
 interface ScorecardProps {
   session: CaseSession;
@@ -118,6 +119,37 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
         </div>
 
         <div className="mt-8">
+          {(() => {
+            // What the learner said they were worried about, mid-case, against
+            // what it turned out to be. Shown BEFORE the diagnosis below, so it
+            // reads in the order it happened rather than as hindsight.
+            const cp = checkpointCaughtIt(session, card.finalDiagnosis);
+            if (!cp.asked) return null;
+            const worry = session.reasoningCheckpoints?.find((c) => !c.skipped);
+            return (
+              <Row label="What you were thinking at the time">
+                {worry?.worry && (
+                  <p className="mb-2" style={{ color: 'var(--text)' }}>
+                    “{worry.worry}”
+                    <span className="text-[12.5px]" style={{ color: 'var(--text-faint)' }}>
+                      {' '}— {worry.simTime}
+                    </span>
+                  </p>
+                )}
+                {cp.listed.length > 0 && (
+                  <p className="mb-2" style={{ color: 'var(--text-muted)' }}>
+                    Your differentials: {cp.listed.join(' · ')}
+                  </p>
+                )}
+                <p style={{ color: cp.caught ? 'var(--ok)' : 'var(--warn)' }}>
+                  {cp.caught
+                    ? 'It was on your list. Whatever else went right or wrong here, you were thinking about the correct thing while the patient was still in front of you.'
+                    : 'It does not look like it was on your list. That is worth sitting with more than any score on this page — work back through what you had at that point and ask what would have put it there.'}
+                </p>
+              </Row>
+            );
+          })()}
+
           <Row label="Final Diagnosis & Clinching Clue">
             <div className="font-medium text-[16px] mb-1" style={{ color: 'var(--text)' }}>
               {card.finalDiagnosis}

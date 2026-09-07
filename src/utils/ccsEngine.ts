@@ -886,7 +886,78 @@ export function processTurnOffline(
 
   updatedSession.turns.push(newTurn);
 
+  // 7. Reasoning checkpoint. Once the learner has gathered a little — enough to
+  //    have formed an impression, before the case resolves itself — ask what
+  //    they are worried about. Asked once, never blocking: the flag only tells
+  //    the UI to offer the card, and the composer stays live underneath it.
+  if (shouldOfferCheckpoint(updatedSession)) {
+    updatedSession.checkpointDue = true;
+  }
+
   return updatedSession;
+}
+
+/** Turns of play before the reasoning checkpoint is offered. Early enough that
+ *  the differential is still a live question, late enough to have something to
+ *  reason from. */
+export const CHECKPOINT_AFTER_TURNS = 4;
+
+export function shouldOfferCheckpoint(session: CaseSession): boolean {
+  if (session.status === 'completed') return false;
+  if (session.isQuestionLed) return false; // no patient behind these
+  if (session.checkpointDue) return true;
+  if ((session.reasoningCheckpoints?.length || 0) > 0) return false;
+  return session.turns.length >= CHECKPOINT_AFTER_TURNS;
+}
+
+/** Record the learner's answer (or their decision to skip) and clear the flag. */
+export function recordCheckpoint(
+  session: CaseSession,
+  worry: string,
+  differentialsRaw: string,
+  skipped = false
+): CaseSession {
+  const next: CaseSession = { ...session, checkpointDue: false };
+  const differentials = differentialsRaw
+    .split(/[,\n;]+/)
+    .map((d) => d.trim())
+    .filter(Boolean);
+  next.reasoningCheckpoints = [
+    ...(session.reasoningCheckpoints || []),
+    {
+      atMinutes: simTimeToMinutes(session.simTime),
+      simTime: formatSimTime(session.simTime),
+      worry: worry.trim(),
+      differentials,
+      skipped,
+    },
+  ];
+  return next;
+}
+
+/**
+ * Did the learner's own differential list contain what this turned out to be?
+ *
+ * Compares against the condition's content words the same way Test Suite 14
+ * and the case validator do, so "diabetic ketoacidosis" is matched by someone
+ * who wrote "DKA?" only if they wrote a content word — this deliberately does
+ * not try to be clever about abbreviations, because a false "you had it" is
+ * worse feedback than an honest "it does not look like you did".
+ */
+export function checkpointCaughtIt(
+  session: CaseSession,
+  conditionName: string
+): { asked: boolean; caught: boolean; listed: string[] } {
+  const cp = (session.reasoningCheckpoints || []).find((c) => !c.skipped);
+  if (!cp) return { asked: false, caught: false, listed: [] };
+  const STOP = new Set(['acute', 'severe', 'chronic', 'with', 'from', 'this', 'that', 'shock']);
+  const words = conditionName
+    .toLowerCase()
+    .split(/[^a-z]+/)
+    .filter((w) => w.length > 3 && !STOP.has(w));
+  const hay = normalizeOrderText([cp.worry, ...cp.differentials].join(' '));
+  const caught = words.length > 0 && words.some((w) => hay.includes(w));
+  return { asked: true, caught, listed: cp.differentials };
 }
 
 /**

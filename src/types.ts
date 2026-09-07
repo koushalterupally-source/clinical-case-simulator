@@ -101,6 +101,25 @@ export interface OrderResultItem {
   investigationKey?: string;
 }
 
+/**
+ * A mid-case reasoning checkpoint: what the learner said they were worried
+ * about, in their own words, while the patient was still in front of them.
+ *
+ * Deliberately free text rather than a multiple choice. Offering options would
+ * hand over the differential — the one thing the learner is here to generate —
+ * and the whole product depends on not doing that.
+ */
+export interface ReasoningCheckpoint {
+  atMinutes: number;
+  simTime: string;
+  /** "What are you worried about?" — the problem representation. */
+  worry: string;
+  /** The differentials they listed, as typed, split on commas or newlines. */
+  differentials: string[];
+  /** True when the learner chose to skip rather than answer. */
+  skipped: boolean;
+}
+
 export interface SimTurn {
   turnIndex: number;
   simTime: { day: number; hour: number; minute: number };
@@ -257,6 +276,11 @@ export interface CaseSession {
   status: 'active' | 'paused' | 'completed';
   scorecard?: EndOfCaseScorecard;
   blindMode?: boolean;
+  /** Mid-case reasoning checkpoints, in the order they were answered. */
+  reasoningCheckpoints?: ReasoningCheckpoint[];
+  /** Set by the engine when a checkpoint is due and not yet answered. The UI
+   *  offers it; play is never blocked on it. */
+  checkpointDue?: boolean;
 }
 
 export interface CaseScaffold {
