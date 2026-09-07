@@ -958,10 +958,10 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
       },
       ampicillin: {
         aliases: ['ampicillin', 'ampicillin iv', 'iv ampicillin'],
-        responseText: 'IV Ampicillin added for additional coverage.',
+        responseText: 'IV Ampicillin added. She is 35, immunocompetent, not pregnant, with no history of alcohol excess — she is outside the group for whom Listeria cover is recommended, so this adds spectrum without adding benefit here.',
         onsetMinutes: 30,
-        appropriateness: 'indicated',
-        rationale: 'Ampicillin is added empirically to cover Listeria monocytogenes in patients at risk (neonates, pregnancy, older age, or immunocompromise).',
+        appropriateness: 'neutral',
+        rationale: 'Empiric ampicillin is added to cover Listeria monocytogenes only in patients at risk: neonates, age over 50, pregnancy, alcohol excess, or impaired cell-mediated immunity. This patient meets none of those, so vancomycin plus ceftriaxone is the complete empiric regimen for her. Giving ampicillin anyway is not dangerous, which is why it is graded neutral rather than harmful — but reflexively broadening cover in a patient outside the risk group is exactly the habit the age and risk criteria exist to prevent.',
       },
       dexamethasone: {
         aliases: ['dexamethasone iv', 'dexamethasone', 'steroid', 'iv dexamethasone', 'inj dexamethasone'],

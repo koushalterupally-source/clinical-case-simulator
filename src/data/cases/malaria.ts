@@ -59,14 +59,14 @@ export const SCAFFOLD_MALARIA: CaseScaffold = {
     },
     grbs: {
       aliases: ['rbs / grbs', 'grbs', 'random blood sugar', 'blood glucose', 'rbs', 'capillary blood glucose', 'cbg', 'blood sugar', 'rbs random blood sugar'],
-      resultText: 'GRBS: 54 mg/dL (Reference 70–140 mg/dL) — Critically low.',
+      resultText: 'GRBS: 54 mg/dL (Reference 70–140 mg/dL) — low, and part of why she is drowsy. Note it does NOT meet the WHO severe-disease threshold, which is under 40 mg/dL (2.2 mmol/L); it still needs correcting, but it is not itself one of the severity criteria.',
       turnaroundMinutes: 2,
       category: 'labs',
       isIndicative: true,
     },
     cbc: {
       aliases: ['cbc / hemogram', 'cbc', 'hemogram', 'complete blood count', 'complete blood picture', 'cbp', 'complete blood count hemogram'],
-      resultText: 'CBC: Hb 7.4 g/dL (Reference 13.0–17.0 g/dL), WBC 6,200/mcL (Reference 4,000–11,000/mcL), Platelets 48,000/mcL (Reference 150,000–450,000/mcL) — severe anaemia with marked thrombocytopenia.',
+      resultText: 'CBC: Hb 7.4 g/dL (Reference 13.0–17.0 g/dL), WBC 6,200/mcL (Reference 4,000–11,000/mcL), Platelets 48,000/mcL (Reference 150,000–450,000/mcL) — anaemia with marked thrombocytopenia. At 7.4 g/dL this sits just above the WHO severe-anaemia threshold for an adult, which is under 7 g/dL alongside a parasite count over 10,000/mcL.',
       turnaroundMinutes: 20,
       category: 'labs',
       isIndicative: true,
@@ -80,7 +80,7 @@ export const SCAFFOLD_MALARIA: CaseScaffold = {
     },
     kft: {
       aliases: ['rft / kft (urea, creatinine)', 'kft', 'rft', 'renal function test', 'kidney function test', 'urea and creatinine', 'kidney function tests', 'renal function tests', 'renal function tests kft urea creatinine', 'rft kidney function tests urea creatinine'],
-      resultText: 'KFT: Blood Urea 68 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 2.1 mg/dL (Reference 0.6–1.2 mg/dL) — acute kidney injury.',
+      resultText: 'KFT: Blood Urea 68 mg/dL (Reference 15–40 mg/dL), Serum Creatinine 2.1 mg/dL (Reference 0.6–1.2 mg/dL) — acute kidney injury by general criteria, though below the WHO severe-disease renal threshold of creatinine over 3 mg/dL or urea over 120 mg/dL.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
@@ -149,7 +149,7 @@ export const SCAFFOLD_MALARIA: CaseScaffold = {
         grbs: 'GRBS (repeat): 108 mg/dL (Reference 70–140 mg/dL) — corrected.',
       },
       appropriateness: 'indicated',
-      rationale: 'Hypoglycaemia is both a severity criterion here and a cause of the altered sensorium, and is easily missed if the clinician anchors on the fever alone; it must be corrected immediately.',
+      rationale: 'A low sugar is a cause of the altered sensorium and is easily missed if the clinician anchors on the fever alone, so it must be corrected immediately. Be precise about the number, though: the WHO severity criterion is under 40 mg/dL, and 54 mg/dL does not meet it — it is a treatable contributor here, not one of the findings that classifies this illness as severe.',
     },
     cautious_fluids: {
       aliases: ['normal saline 0.9% 500 ml bolus', 'normal saline', 'cautious fluids', 'iv fluids', 'ns bolus', 'crystalloid bolus', 'fluid bolus', 'normal saline 1 l bolus', 'ns 500 ml bolus', 'crystalloid', 'fluid', 'fluids', 'normal saline 0 9 bolus', 'normal saline bolus'],
@@ -199,7 +199,7 @@ export const SCAFFOLD_MALARIA: CaseScaffold = {
         cbc: 'CBC (repeat): Hb 9.6 g/dL (Reference 13.0–17.0 g/dL), Platelets 52,000/mcL (Reference 150,000–450,000/mcL) — improved after transfusion.',
       },
       appropriateness: 'indicated',
-      rationale: 'Transfusion is appropriate for severe anaemia, one of the recognised severity criteria, and supports oxygen-carrying capacity while definitive antiparasitic therapy takes effect.',
+      rationale: 'Transfusion supports oxygen-carrying capacity in a patient who is acidotic and poorly perfused while definitive antiparasitic therapy takes effect. Note that a haemoglobin of 7.4 g/dL is above the WHO severe-anaemia threshold of 7 g/dL, so it is the acidosis, lactate, jaundice and parasite load that make this illness severe, not the haemoglobin.',
     },
     ceftriaxone: {
       aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'ceftriaxone iv', 'iv ceftriaxone'],
@@ -259,7 +259,7 @@ export const SCAFFOLD_MALARIA: CaseScaffold = {
     },
     {
       roleTag: 'MANAGEMENT',
-      patientContext: 'Severity criteria are met — impaired consciousness, parasitaemia above 5%, hypoglycaemia, haemoglobinuria and severe anaemia — mandating the correct choice of first-line parenteral agent over an inferior, less effective alternative.',
+      patientContext: 'Severity criteria are met — a parasite load above 5%, a metabolic acidosis with a bicarbonate of 14, a lactate of 5.4, jaundice alongside that parasite load, and haemoglobinuria — mandating the correct choice of first-line parenteral agent over an inferior, less effective alternative. She is also drowsy with a low sugar and a low haemoglobin, none of which individually crosses its published threshold; the criteria above are what classify this as severe.',
       consequenceOnRight: 'First-line parenteral therapy chosen; parasitaemia and clinical status begin to improve within hours.',
       consequenceOnWrong: 'An inferior agent is chosen. Clearance is slower and the risk of further deterioration rises.',
     },

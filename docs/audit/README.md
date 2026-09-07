@@ -5,7 +5,8 @@ These files are the raw output of a full audit pass over the case library —
 usage limit after 17 of 28; this pass finished the remaining 3 named cases,
 confirming the 4 inline scaffolds had already been covered).
 
-**Nothing in here has been applied to the case data.** Three findings are
+**Status: the three MAJOR findings below HAVE now been applied to the case data.**
+Everything else in these files is recorded but not acted on. Three findings are
 rated MAJOR and need a doctor's eye before anything changes:
 
 - `scaffolds-meningitis.md` — ampicillin graded universally `indicated` for a

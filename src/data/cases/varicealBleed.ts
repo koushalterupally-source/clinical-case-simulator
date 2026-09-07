@@ -64,7 +64,7 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
     lft: {
       aliases: ['lft', 'liver function test', 'liver function tests'],
       resultText:
-        'Liver Function Tests: Total Bilirubin 3.4 mg/dL (Reference 0.2–1.2 mg/dL), AST 98 U/L (Reference 10–40 U/L), ALT 62 U/L (Reference 7–56 U/L), Albumin 2.6 g/dL (Reference 3.5–5.0 g/dL) — hyperbilirubinaemia and hypoalbuminaemia consistent with impaired synthetic function.',
+        'Liver Function Tests: Total Bilirubin 3.4 mg/dL (Reference 0.2–1.2 mg/dL), AST 98 U/L (Reference 10–40 U/L), ALT 62 U/L (Reference 7–56 U/L), Albumin 2.6 g/dL (Reference 3.5–5.0 g/dL) — hypoalbuminaemia reflects impaired synthetic function, while the raised bilirubin reflects impaired excretory function — albumin and INR are the synthetic markers, bilirubin is not.',
       turnaroundMinutes: 30,
       category: 'labs',
       isIndicative: true,
@@ -177,12 +177,12 @@ export const SCAFFOLD_VARICEAL_BLEED: CaseScaffold = {
         'Octreotide is an acceptable alternative splanchnic vasoconstrictor to terlipressin where the latter is unavailable, and should likewise be started before endoscopy.',
     },
     ceftriaxone: {
-      aliases: ['ceftriaxone 2 g iv', 'ceftriaxone', 'iv antibiotic', 'antibiotic prophylaxis', 'iv ceftriaxone', 'antibiotic', 'ceftriaxone iv'],
-      responseText: 'IV Ceftriaxone 2 g given as antibiotic prophylaxis.',
+      aliases: ['ceftriaxone 1 g iv', 'ceftriaxone 2 g iv', 'ceftriaxone', 'iv antibiotic', 'antibiotic prophylaxis', 'iv ceftriaxone', 'antibiotic', 'ceftriaxone iv'],
+      responseText: 'IV Ceftriaxone 1 g given as antibiotic prophylaxis.',
       onsetMinutes: 30,
       appropriateness: 'indicated',
       rationale:
-        'Short-course antibiotic prophylaxis reduces mortality, rebleeding, and the risk of spontaneous bacterial peritonitis in a variceal bleed with underlying chronic liver disease — a high-yield point often missed in favour of purely haemostatic measures.',
+        'Short-course antibiotic prophylaxis reduces mortality, rebleeding, and the risk of spontaneous bacterial peritonitis in a variceal bleed with underlying chronic liver disease — a high-yield point often missed in favour of purely haemostatic measures. The prophylactic dose is 1 g IV every 24 hours for up to seven days; 2 g daily is a treatment dose for established infection, not prophylaxis.',
     },
     prbc_restrictive: {
       aliases: ['packed red cells', 'prbc', 'packed red blood cells', 'blood transfusion', 'prbc transfusion', 'transfuse blood'],
