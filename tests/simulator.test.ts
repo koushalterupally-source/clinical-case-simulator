@@ -663,10 +663,17 @@ Q2. A 30y/o female has hyperthyroidism. Which drug is preferred in 1st trimester
     // candidate is marked down for missing something they were never able to order.
     assert(sc.criticalInterventions.length > 0, `${where}: has at least one timed critical intervention`);
     for (const ci of sc.criticalInterventions) {
-      const reachable = Object.values(sc.therapiesMap).some((t) =>
+      // The engine tests this pattern against every placed order (ccsEngine.ts,
+      // step 4.5 and the scoring pass), and investigations are placed orders too
+      // — "get a CT before you anticoagulate" is a critical action satisfied by
+      // an investigation, not a drug. Checking therapiesMap alone was narrower
+      // than the engine and failed interventions that are genuinely reachable,
+      // so this now checks what the engine actually matches against.
+      const orderable = [...Object.values(sc.therapiesMap), ...Object.values(sc.investigationsMap)];
+      const reachable = orderable.some((t) =>
         t.aliases.some((a) => ci.orderOrActionPattern.test(a))
       );
-      assert(reachable, `${where}: critical intervention "${ci.name}" is achievable with a therapy this case models`);
+      assert(reachable, `${where}: critical intervention "${ci.name}" is achievable with something this case models`);
       assert(ci.targetMilestoneMinutes > 0, `${where}: "${ci.name}" has a positive time target`);
     }
 

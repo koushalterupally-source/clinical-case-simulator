@@ -127,7 +127,7 @@ export const SCAFFOLD_AORTIC_STENOSIS: CaseScaffold = {
       isIndicative: true,
     },
     coag_profile: {
-      aliases: ['pt / inr', 'coagulation profile', 'pt inr', 'coagulation profile pt inr'],
+      aliases: ['pt / inr', 'coagulation profile', 'coagulation profile pt inr'],
       resultText:
         'Coagulation Profile: PT 12.8 sec (Reference 11–13.5 sec), INR 1.0 (Reference 0.8–1.1), aPTT 30 sec (Reference 25–35 sec) — normal; a routine baseline ahead of any planned valve intervention.',
       turnaroundMinutes: 30,

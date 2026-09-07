@@ -88,7 +88,7 @@ export const SCAFFOLD_GBS: CaseScaffold = {
       isIndicative: true,
     },
     esr_crp: {
-      aliases: ['esr & crp', 'esr', 'crp', 'esr crp', 'erythrocyte sedimentation rate', 'c-reactive protein'],
+      aliases: ['esr & crp', 'esr', 'crp', 'erythrocyte sedimentation rate', 'c-reactive protein'],
       resultText:
         'ESR 10 mm/hr (Reference <15 mm/hr), CRP 4 mg/L (Reference <10 mg/L) — both normal.',
       turnaroundMinutes: 45,
@@ -155,7 +155,7 @@ export const SCAFFOLD_GBS: CaseScaffold = {
       isIndicative: true,
     },
     stool_culture: {
-      aliases: ['stool culture', 'stool routine & culture', 'stool routine culture', 'stool examination'],
+      aliases: ['stool culture', 'stool routine & culture', 'stool examination'],
       resultText:
         'Stool Culture: Campylobacter jejuni isolated, consistent with the diarrhoeal illness two weeks before this weakness began. This confirms a likely antecedent trigger but does not change today\'s management — treating an already-resolved diarrhoeal illness now offers no benefit, and antibiotic therapy for it does not alter the course of the neurological illness that has followed.',
       turnaroundMinutes: 180,
@@ -325,6 +325,15 @@ export const SCAFFOLD_GBS: CaseScaffold = {
       title: 'Incidental Calcified Granuloma on Chest X-ray',
       description: 'The chest X-ray obtained as a pre-anaesthetic and respiratory baseline incidentally shows a small calcified granuloma in the right upper lobe, consistent with old healed tuberculosis.',
       correctAction: 'No action needed; document the finding — a small calcified granuloma from prior healed disease requires no further workup or treatment.',
+      status: 'unnoticed',
+    },
+    {
+      id: 'inc_gbs_2',
+      title: 'Incidental Mild Hyponatraemia',
+      description:
+        'Baseline electrolytes show a sodium of 129 mmol/L in a patient who is not clinically dehydrated and is on no diuretic.',
+      correctAction:
+        'Recognise and recheck it, keeping SIADH in mind as a recognised accompaniment of this illness, rather than treating the number in isolation or letting it distract from the respiratory monitoring.',
       status: 'unnoticed',
     },
   ],

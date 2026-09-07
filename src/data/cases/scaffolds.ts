@@ -26,6 +26,13 @@ import { SCAFFOLD_TORSION } from './testicularTorsion';
 import { SCAFFOLD_PULMONARY_TB } from './pulmonaryTuberculosis';
 import { SCAFFOLD_PLEURAL_EFFUSION } from './pleuralEffusion';
 import { SCAFFOLD_HAEMORRHAGIC_STROKE } from './haemorrhagicStroke';
+import { SCAFFOLD_AORTIC_STENOSIS } from './aorticStenosis';
+import { SCAFFOLD_AORTIC_REGURGITATION } from './aorticRegurgitation';
+import { SCAFFOLD_MITRAL_STENOSIS } from './mitralStenosis';
+import { SCAFFOLD_MITRAL_REGURGITATION } from './mitralRegurgitation';
+import { SCAFFOLD_GBS } from './guillainBarre';
+import { SCAFFOLD_ALCOHOLIC_CLD } from './alcoholicLiverDisease';
+import { SCAFFOLD_NONALCOHOLIC_CLD } from './nonAlcoholicCirrhosis';
 
 /**
  * Twelve cases, all modelled to the same standard. Four are defined inline
@@ -1082,4 +1089,11 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
   SCAFFOLD_PULMONARY_TB,
   SCAFFOLD_PLEURAL_EFFUSION,
   SCAFFOLD_HAEMORRHAGIC_STROKE,
+  SCAFFOLD_AORTIC_STENOSIS,
+  SCAFFOLD_AORTIC_REGURGITATION,
+  SCAFFOLD_MITRAL_STENOSIS,
+  SCAFFOLD_MITRAL_REGURGITATION,
+  SCAFFOLD_GBS,
+  SCAFFOLD_ALCOHOLIC_CLD,
+  SCAFFOLD_NONALCOHOLIC_CLD,
 ];
