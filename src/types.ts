@@ -191,6 +191,45 @@ export interface EndOfCaseScorecard {
   overallGrade: 'S' | 'A' | 'B' | 'C' | 'F';
   overallScore: number;
   summaryFeedback: string;
+  /**
+   * Teaching sub-scores for the debrief, computed strictly from data recorded
+   * during the case (therapyLog appropriateness, criticalInterventions timing,
+   * investigation/therapy grading already authored on the scaffold). All are
+   * optional: `generateScorecard` does not populate them, so every existing
+   * persisted scorecard keeps satisfying this type unchanged. The Scorecard
+   * UI computes them fresh from the session via the ccsEngine helpers of the
+   * same name (computeSafetySummary, computeCriticalInterventionStatus,
+   * computeInvestigationQuality, computeTreatmentAppropriateness).
+   */
+  safety?: {
+    isSafe: boolean;
+    harmfulEvents: { orderName: string; time: string; rationale: string }[];
+    explanation: string;
+  };
+  timeToCriticalIntervention?: {
+    name: string;
+    status: 'done' | 'delayed' | 'omitted';
+    targetMinutes: number;
+    actualMinutes?: number;
+    delayMinutes?: number;
+    explanation: string;
+  }[];
+  investigationQuality?: {
+    indicatedCount: number;
+    neutralCount: number;
+    harmfulCount: number;
+    gradedTotal: number;
+    percentage: number;
+    explanation: string;
+  };
+  treatmentAppropriateness?: {
+    indicatedCount: number;
+    neutralCount: number;
+    harmfulCount: number;
+    gradedTotal: number;
+    percentage: number;
+    explanation: string;
+  };
 }
 
 export interface CaseSession {

@@ -1096,3 +1096,290 @@ export function generateScorecard(session: CaseSession): EndOfCaseScorecard {
     summaryFeedback: `Completed clinical case for ${session.patient.diagnosis}. Solved ${correctGates}/${totalGates} decision gates correctly. Score: ${overallScore}/100 (Grade: ${grade}).`,
   };
 }
+
+/** Parses a "Day D, HH:MM" sim-time string back to absolute sim-minutes.
+ *  Private mirror of the inline parsing already used when pending orders are
+ *  released, kept separate so nothing already working is touched. */
+function parseSimTimeString(s: string): number | null {
+  const m = s.match(/Day\s+(\d+),\s+(\d+):(\d+)/);
+  if (!m) return null;
+  return (parseInt(m[1], 10) - 1) * 24 * 60 + parseInt(m[2], 10) * 60 + parseInt(m[3], 10);
+}
+
+/**
+ * One entry in the end-of-case debrief timeline: a single thing that
+ * happened, when it happened (in minutes from case start), and — for a
+ * therapy or a decision gate — how it was graded. Built strictly from
+ * `session.turns`, `session.completedOrders`/`pendingOrders`, `therapyLog`
+ * and `decisionGates`: nothing here is invented.
+ */
+export interface TimelineEvent {
+  atMinutes: number;
+  time: string;
+  kind: 'order' | 'therapy' | 'gate' | 'note';
+  label: string;
+  detail?: string;
+  appropriateness?: 'indicated' | 'neutral' | 'harmful';
+}
+
+/**
+ * Builds a compact, chronologically sorted timeline of the case for the
+ * debrief: every order placed, every therapy given (with its appropriateness
+ * and rationale), every decision gate answered (with its consequence), and
+ * every other free-text action the learner typed. Pure "advance"/"wait"/
+ * "pause" turns are skipped — they are clock ticks, not decisions — and an
+ * order that resolved to a therapy is surfaced once, via the therapy entry,
+ * not twice.
+ */
+export function buildCaseTimeline(session: CaseSession): TimelineEvent[] {
+  const scaffold = CASE_SCAFFOLDS.find((s) => s.id === session.scaffoldId) || CASE_SCAFFOLDS[0];
+  const startMinutes = simTimeToMinutes({ day: 1, hour: 9, minute: 0 });
+  const events: TimelineEvent[] = [];
+
+  const allOrders = [...session.completedOrders, ...session.pendingOrders];
+  allOrders.forEach((o) => {
+    if (findByAlias(scaffold.therapiesMap, o.orderName)) return; // shown via therapyLog instead
+    const turn = o.orderedTurnIndex !== undefined ? session.turns[o.orderedTurnIndex] : undefined;
+    const atMinutes = turn
+      ? simTimeToMinutes(turn.simTime) - startMinutes
+      : (parseSimTimeString(o.placedSimTime) ?? startMinutes) - startMinutes;
+    const invMatch = findByAlias(scaffold.investigationsMap, o.orderName);
+    events.push({
+      atMinutes,
+      time: o.placedSimTime,
+      kind: 'order',
+      label: o.orderName,
+      detail: invMatch ? undefined : 'Not modelled in this case — not graded.',
+      appropriateness: invMatch ? investigationGrade(invMatch.entry) : undefined,
+    });
+  });
+
+  session.therapyLog.forEach((t) => {
+    events.push({
+      atMinutes: t.atMinutes - startMinutes,
+      time: formatSimTime(addMinutesToSimTime({ day: 1, hour: 0, minute: 0 }, t.atMinutes)),
+      kind: 'therapy',
+      label: t.orderName,
+      detail: t.rationale,
+      appropriateness: t.appropriateness,
+    });
+  });
+
+  session.decisionGates
+    .filter((g) => g.userAnswer !== undefined)
+    .forEach((g) => {
+      const turn = session.turns[g.triggerTurnIndex];
+      const atMinutes = turn ? simTimeToMinutes(turn.simTime) - startMinutes : 0;
+      events.push({
+        atMinutes,
+        time: turn ? formatSimTime(turn.simTime) : '',
+        kind: 'gate',
+        label: g.pyq.conceptTested || g.pyq.topic,
+        detail: g.consequenceMessage,
+        appropriateness: g.isCorrect ? 'indicated' : 'harmful',
+      });
+    });
+
+  session.turns.forEach((turn) => {
+    if (!turn.userCommand) return;
+    const cmd = turn.userCommand.trim().toLowerCase();
+    if (cmd.startsWith('advance') || cmd.startsWith('wait') || cmd === 'pause' || cmd === 'end case' || cmd === 'exit')
+      return;
+    if (ORDER_VERB_PREFIX.test(turn.userCommand) || resolvesAsOrder(scaffold, turn.userCommand)) return; // already an order/therapy event above
+    const atMinutes = simTimeToMinutes(turn.simTime) - startMinutes;
+    events.push({
+      atMinutes,
+      time: formatSimTime(turn.simTime),
+      kind: 'note',
+      label: turn.userCommand,
+      detail: turn.whatHappened,
+    });
+  });
+
+  return events.sort((a, b) => a.atMinutes - b.atMinutes);
+}
+
+/**
+ * Per-criticalIntervention completion status for the debrief: was it done at
+ * all, and — if so — was it inside the scaffold's own target window? A
+ * critical step can also be delivered by answering its linked decision gate
+ * correctly rather than by placing a matching order, mirroring the check
+ * `processTurnOffline` already makes when it decides whether to deteriorate
+ * the patient.
+ */
+export function computeCriticalInterventionStatus(session: CaseSession): {
+  name: string;
+  status: 'done' | 'delayed' | 'omitted';
+  targetMinutes: number;
+  actualMinutes?: number;
+  delayMinutes?: number;
+  explanation: string;
+}[] {
+  if (session.isQuestionLed) return [];
+  const scaffold = CASE_SCAFFOLDS.find((s) => s.id === session.scaffoldId) || CASE_SCAFFOLDS[0];
+  const allOrders = [...session.completedOrders, ...session.pendingOrders];
+  const startMinutes = simTimeToMinutes({ day: 1, hour: 9, minute: 0 });
+
+  const gateDelivered = session.decisionGates
+    .filter((g) => g.userAnswer !== undefined && g.isCorrect)
+    .map((g) => ({
+      text: `${g.consequenceMessage || ''} ${g.patientContext || ''}`,
+      turnIndex: g.triggerTurnIndex,
+    }));
+
+  return scaffold.criticalInterventions.map((crit) => {
+    const orderMatch = allOrders.find((o) => crit.orderOrActionPattern.test(o.orderName));
+    if (orderMatch) {
+      const turn =
+        orderMatch.orderedTurnIndex !== undefined ? session.turns[orderMatch.orderedTurnIndex] : undefined;
+      const actualMinutes = turn
+        ? simTimeToMinutes(turn.simTime) - startMinutes
+        : (parseSimTimeString(orderMatch.placedSimTime) ?? startMinutes) - startMinutes;
+      const delayMinutes = actualMinutes - crit.targetMilestoneMinutes;
+      const status: 'done' | 'delayed' = delayMinutes > 0 ? 'delayed' : 'done';
+      return {
+        name: crit.name,
+        status,
+        targetMinutes: crit.targetMilestoneMinutes,
+        actualMinutes,
+        delayMinutes: status === 'delayed' ? delayMinutes : undefined,
+        explanation:
+          status === 'done'
+            ? `Ordered at ${actualMinutes} min — inside the ${crit.targetMilestoneMinutes}-minute target.`
+            : `Ordered at ${actualMinutes} min — ${delayMinutes} minutes after the ${crit.targetMilestoneMinutes}-minute target.`,
+      };
+    }
+
+    const gateMatch = gateDelivered.find((g) => crit.orderOrActionPattern.test(g.text));
+    if (gateMatch) {
+      const turn = session.turns[gateMatch.turnIndex];
+      const actualMinutes = turn ? simTimeToMinutes(turn.simTime) - startMinutes : undefined;
+      const delayMinutes = actualMinutes !== undefined ? actualMinutes - crit.targetMilestoneMinutes : undefined;
+      const status: 'done' | 'delayed' = delayMinutes !== undefined && delayMinutes > 0 ? 'delayed' : 'done';
+      return {
+        name: crit.name,
+        status,
+        targetMinutes: crit.targetMilestoneMinutes,
+        actualMinutes,
+        delayMinutes: status === 'delayed' ? delayMinutes : undefined,
+        explanation:
+          status === 'done'
+            ? 'Delivered by answering the linked decision correctly, inside the target window.'
+            : `Delivered by answering the linked decision correctly, but ${delayMinutes} minutes after the ${crit.targetMilestoneMinutes}-minute target.`,
+      };
+    }
+
+    return {
+      name: crit.name,
+      status: 'omitted' as const,
+      targetMinutes: crit.targetMilestoneMinutes,
+      explanation: `Never ordered or delivered (target was within ${crit.targetMilestoneMinutes} minutes of case start).`,
+    };
+  });
+}
+
+/**
+ * Safety sub-score: did any administered therapy come back graded harmful —
+ * whether because the drug itself was wrong for this patient, or because a
+ * safe drug was given out of the required sequence? `TherapyLogEntry.rationale`
+ * already resolves to the scaffold's `harmfulSequenceRationale` for the
+ * latter case (see `resolveOrder`), so no new clinical text is invented here.
+ */
+export function computeSafetySummary(session: CaseSession): {
+  isSafe: boolean;
+  harmfulEvents: { orderName: string; time: string; rationale: string }[];
+  explanation: string;
+} {
+  const harmful = session.therapyLog.filter((t) => t.appropriateness === 'harmful');
+  const harmfulEvents = harmful.map((t) => ({
+    orderName: t.orderName,
+    time: formatSimTime(addMinutesToSimTime({ day: 1, hour: 0, minute: 0 }, t.atMinutes)),
+    rationale: t.rationale,
+  }));
+  return {
+    isSafe: harmful.length === 0,
+    harmfulEvents,
+    explanation:
+      harmful.length === 0
+        ? session.therapyLog.length > 0
+          ? `No therapy given during this case was graded harmful (${session.therapyLog.length} given in total).`
+          : 'No therapies were given during this case.'
+        : `${harmful.length} of ${session.therapyLog.length} therapy administration${
+            session.therapyLog.length === 1 ? '' : 's'
+          } graded harmful.`,
+  };
+}
+
+/**
+ * Investigation-quality sub-score: what fraction of ordered investigations
+ * this case actually grades were 'indicated' rather than 'neutral'/'harmful'.
+ * Orders the scaffold does not model are excluded from both the numerator and
+ * denominator — the same principle `unmodelledList` already follows, since
+ * the case has no clinical opinion about a test it never authored.
+ */
+export function computeInvestigationQuality(session: CaseSession): {
+  indicatedCount: number;
+  neutralCount: number;
+  harmfulCount: number;
+  gradedTotal: number;
+  percentage: number;
+  explanation: string;
+} {
+  const scaffold = CASE_SCAFFOLDS.find((s) => s.id === session.scaffoldId) || CASE_SCAFFOLDS[0];
+  const allOrders = [...session.completedOrders, ...session.pendingOrders];
+  const grades = allOrders
+    .map((o) => findByAlias(scaffold.investigationsMap, o.orderName))
+    .filter((m): m is NonNullable<typeof m> => !!m)
+    .map((m) => investigationGrade(m.entry));
+
+  const indicatedCount = grades.filter((g) => g === 'indicated').length;
+  const neutralCount = grades.filter((g) => g === 'neutral').length;
+  const harmfulCount = grades.filter((g) => g === 'harmful').length;
+  const gradedTotal = grades.length;
+  const percentage = gradedTotal > 0 ? Math.round((indicatedCount / gradedTotal) * 100) : 100;
+
+  return {
+    indicatedCount,
+    neutralCount,
+    harmfulCount,
+    gradedTotal,
+    percentage,
+    explanation:
+      gradedTotal > 0
+        ? `${indicatedCount} of ${gradedTotal} investigations this case grades were indicated (orders this case does not model are excluded, not counted against you).`
+        : 'No investigations were ordered that this case grades.',
+  };
+}
+
+/**
+ * Treatment-appropriateness sub-score: same idea as investigation quality,
+ * over `therapyLog` instead. Every logged therapy was, by construction,
+ * matched against the scaffold's `therapiesMap` before being logged, so there
+ * is no unmodelled case to exclude here.
+ */
+export function computeTreatmentAppropriateness(session: CaseSession): {
+  indicatedCount: number;
+  neutralCount: number;
+  harmfulCount: number;
+  gradedTotal: number;
+  percentage: number;
+  explanation: string;
+} {
+  const total = session.therapyLog.length;
+  const indicatedCount = session.therapyLog.filter((t) => t.appropriateness === 'indicated').length;
+  const neutralCount = session.therapyLog.filter((t) => t.appropriateness === 'neutral').length;
+  const harmfulCount = session.therapyLog.filter((t) => t.appropriateness === 'harmful').length;
+  const percentage = total > 0 ? Math.round((indicatedCount / total) * 100) : 100;
+
+  return {
+    indicatedCount,
+    neutralCount,
+    harmfulCount,
+    gradedTotal: total,
+    percentage,
+    explanation:
+      total > 0
+        ? `${indicatedCount} of ${total} therapies given were indicated.`
+        : 'No therapies were given during this case.',
+  };
+}

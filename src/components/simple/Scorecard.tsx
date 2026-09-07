@@ -1,6 +1,14 @@
 import React from 'react';
 import { CaseSession } from '../../types';
 import { computeGameStats } from '../../utils/gamification';
+import {
+  buildCaseTimeline,
+  computeCriticalInterventionStatus,
+  computeSafetySummary,
+  computeInvestigationQuality,
+  computeTreatmentAppropriateness,
+  TimelineEvent,
+} from '../../utils/ccsEngine';
 
 interface ScorecardProps {
   session: CaseSession;
@@ -17,12 +25,64 @@ const Row: React.FC<{ label: string; children: React.ReactNode }> = ({ label, ch
   </div>
 );
 
+/** Colour for a three-way clinical grade, shared by the timeline dots and the
+ *  inline appropriateness labels. Neutral/ungraded uses the same muted tone
+ *  as an unmodelled order — it is not a judgement, just "not indicated". */
+function graderColor(grade?: 'indicated' | 'neutral' | 'harmful'): string {
+  if (grade === 'indicated') return 'var(--ok)';
+  if (grade === 'harmful') return 'var(--danger)';
+  if (grade === 'neutral') return 'var(--warn)';
+  return 'var(--text-faint)';
+}
+
+/** Fallback consequence strings the engine writes when a case has no authored
+ *  milestone for a gate (defensive path only — every gate is built from a
+ *  gateMilestone, so this should not normally trigger). Never surfaced as a
+ *  "what this led to" line, since that would present generic copy as a
+ *  clinical fact the case never actually stated. */
+const GENERIC_GATE_CONSEQUENCES = new Set([
+  'Suboptimal clinical choice made.',
+  'Standard clinical outcome.',
+  'Decision executed correctly.',
+]);
+
+const TIMELINE_KIND_LABEL: Record<TimelineEvent['kind'], string> = {
+  order: 'Ordered',
+  therapy: 'Given',
+  gate: 'Decision',
+  note: 'Action',
+};
+
+const CriticalStatusLabel: Record<'done' | 'delayed' | 'omitted', string> = {
+  done: 'done',
+  delayed: 'delayed',
+  omitted: 'omitted',
+};
+
+function criticalStatusColor(status: 'done' | 'delayed' | 'omitted'): string {
+  if (status === 'done') return 'var(--ok)';
+  if (status === 'delayed') return 'var(--warn)';
+  return 'var(--danger)';
+}
+
 export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack }) => {
   const card = session.scorecard;
   const stats = computeGameStats(session);
   if (!card) return null;
 
   const earned = stats.badges.filter((b) => b.earned);
+
+  // Teaching sub-scores and the debrief timeline: computed fresh from the
+  // session (turns, completedOrders, therapyLog, decisionGates) rather than
+  // stored on the scorecard, so nothing in generateScorecard had to change.
+  // All are scaffold-based, so a question-led run (no simulated patient
+  // behind it) skips them rather than showing hollow, all-empty sections.
+  const timeline = session.isQuestionLed ? [] : buildCaseTimeline(session);
+  const criticalStatuses = session.isQuestionLed ? [] : computeCriticalInterventionStatus(session);
+  const safety = session.isQuestionLed ? null : computeSafetySummary(session);
+  const investigationQuality = session.isQuestionLed ? null : computeInvestigationQuality(session);
+  const treatmentAppropriateness = session.isQuestionLed ? null : computeTreatmentAppropriateness(session);
+  const criticalDoneCount = criticalStatuses.filter((c) => c.status === 'done').length;
 
   return (
     <div className="min-h-screen px-4" style={{ background: 'var(--bg)' }}>
@@ -70,7 +130,178 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
             </div>
           </Row>
 
-          {card.criticalDelays.length > 0 && (
+          {timeline.length > 0 && (
+            <Row label="Timeline">
+              <div className="space-y-4">
+                {timeline.map((ev, i) => (
+                  <div key={i} className="flex gap-3">
+                    <span
+                      className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full"
+                      style={{ background: graderColor(ev.appropriateness) }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[12px] tnum" style={{ color: 'var(--text-faint)' }}>
+                        {ev.time} · {TIMELINE_KIND_LABEL[ev.kind]}
+                      </div>
+                      <div className="text-[14px] break-words">
+                        {ev.label}
+                        {ev.appropriateness && (
+                          <span
+                            className="ml-2 text-[11px] uppercase tracking-wide align-middle"
+                            style={{ color: graderColor(ev.appropriateness) }}
+                          >
+                            {/* A decision gate is right or wrong, not "indicated"/"harmful" —
+                                that wording belongs to orders and therapies. Same colour, a
+                                label that actually fits what the event is. */}
+                            {ev.kind === 'gate'
+                              ? ev.appropriateness === 'indicated'
+                                ? 'correct'
+                                : 'incorrect'
+                              : ev.appropriateness}
+                          </span>
+                        )}
+                      </div>
+                      {ev.detail && (
+                        <div
+                          className="text-[13px] mt-0.5 break-words whitespace-pre-line"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          {ev.detail}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Row>
+          )}
+
+          {(safety || investigationQuality || treatmentAppropriateness || criticalStatuses.length > 0) && (
+            <Row label="How this was scored">
+              <div className="space-y-4">
+                {safety && (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="shrink-0 w-1.5 h-1.5 rounded-full"
+                        style={{ background: safety.isSafe ? 'var(--ok)' : 'var(--danger)' }}
+                      />
+                      <span className="text-[14px] font-medium">Safety</span>
+                      <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
+                        {safety.isSafe ? 'no harmful therapy' : `${safety.harmfulEvents.length} harmful therapy administration${safety.harmfulEvents.length === 1 ? '' : 's'}`}
+                      </span>
+                    </div>
+                    <div className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                      {safety.explanation}
+                    </div>
+                  </div>
+                )}
+
+                {criticalStatuses.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="shrink-0 w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background:
+                            criticalDoneCount === criticalStatuses.length ? 'var(--ok)' : 'var(--warn)',
+                        }}
+                      />
+                      <span className="text-[14px] font-medium">Time to critical intervention</span>
+                      <span className="text-[13px] tnum" style={{ color: 'var(--text-muted)' }}>
+                        {criticalDoneCount}/{criticalStatuses.length} on time
+                      </span>
+                    </div>
+                    <div className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                      Each time-critical step is checked against the case's own target window — see Critical
+                      actions below for each one.
+                    </div>
+                  </div>
+                )}
+
+                {investigationQuality && (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="shrink-0 w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background:
+                            investigationQuality.gradedTotal === 0
+                              ? 'var(--text-faint)'
+                              : investigationQuality.harmfulCount > 0
+                              ? 'var(--danger)'
+                              : 'var(--ok)',
+                        }}
+                      />
+                      <span className="text-[14px] font-medium">Investigation quality</span>
+                      <span className="text-[13px] tnum" style={{ color: 'var(--text-muted)' }}>
+                        {investigationQuality.gradedTotal === 0 ? 'n/a' : `${investigationQuality.percentage}%`}
+                      </span>
+                    </div>
+                    <div className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                      {investigationQuality.explanation}
+                    </div>
+                  </div>
+                )}
+
+                {treatmentAppropriateness && (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="shrink-0 w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background:
+                            treatmentAppropriateness.gradedTotal === 0
+                              ? 'var(--text-faint)'
+                              : treatmentAppropriateness.harmfulCount > 0
+                              ? 'var(--danger)'
+                              : 'var(--ok)',
+                        }}
+                      />
+                      <span className="text-[14px] font-medium">Treatment appropriateness</span>
+                      <span className="text-[13px] tnum" style={{ color: 'var(--text-muted)' }}>
+                        {treatmentAppropriateness.gradedTotal === 0 ? 'n/a' : `${treatmentAppropriateness.percentage}%`}
+                      </span>
+                    </div>
+                    <div className="text-[13px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                      {treatmentAppropriateness.explanation}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Row>
+          )}
+
+          {criticalStatuses.length > 0 && (
+            <Row label="Critical actions">
+              <div className="space-y-2.5">
+                {criticalStatuses.map((c, i) => (
+                  <div key={i} className="flex gap-3">
+                    <span
+                      className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full"
+                      style={{ background: criticalStatusColor(c.status) }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div>
+                        {c.name}{' '}
+                        <span
+                          className="text-[12px] uppercase tracking-wide"
+                          style={{ color: criticalStatusColor(c.status) }}
+                        >
+                          {CriticalStatusLabel[c.status]}
+                        </span>
+                      </div>
+                      <div className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
+                        {c.explanation}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Row>
+          )}
+
+          {card.criticalDelays.length > 0 && criticalStatuses.length === 0 && (
             <Row label="Critical Delays / Misses">
               <div className="space-y-2">
                 {card.criticalDelays.map((del, i) => (
@@ -155,11 +386,16 @@ export const Scorecard: React.FC<ScorecardProps> = ({ session, onNewCase, onBack
                       className="shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full"
                       style={{ background: g.isCorrect ? 'var(--ok)' : 'var(--danger)' }}
                     />
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div>{g.concept}</div>
                       <div className="text-[13px] tnum" style={{ color: 'var(--text-faint)' }}>
                         {g.qid} · {g.examYear} · you chose {g.userChoice || 'none'}, answer {g.correctChoice}
                       </div>
+                      {!g.isCorrect && g.consequence && !GENERIC_GATE_CONSEQUENCES.has(g.consequence) && (
+                        <div className="text-[13px] mt-1 break-words" style={{ color: 'var(--danger)' }}>
+                          What this led to: {g.consequence}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
