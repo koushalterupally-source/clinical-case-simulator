@@ -210,7 +210,7 @@ export const SCAFFOLD_MITRAL_STENOSIS: CaseScaffold = {
         'Her true heart rate was already fast; the radial pulse alone is an unreliable guide here because of the gap between the rate felt at the wrist and the true rate at the heart. A faster rate shortens the diastolic time available for the left atrium to empty across the narrowed valve, raising left atrial and pulmonary venous pressure and precipitating pulmonary oedema. What she needs is deliberate rate CONTROL, not rate acceleration — the apical rate or a monitor strip should be trusted over the wrist count before any rate-affecting drug is chosen.',
     },
     electrical_cardioversion: {
-      aliases: ['electrical cardioversion', 'dc cardioversion', 'synchronized cardioversion', 'cardioversion'],
+      aliases: ['electrical cardioversion', 'dc cardioversion', 'synchronised cardioversion', 'synchronized cardioversion', 'cardioversion'],
       responseText: 'Electrical cardioversion is performed; sinus rhythm is briefly restored before reverting to her irregular rhythm within the hour, given how enlarged the chamber behind her valve has become.',
       onsetMinutes: 10,
       vitalsEffect: { hr: -30 },

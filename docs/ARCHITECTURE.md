@@ -127,10 +127,18 @@ It covers boot, starting a case, free-text submission, the order sheet, history
 and examination, leave/resume, end-case and reload, mid-case reload, four
 viewport widths, keyboard navigation, theme persistence and the case library.
 
-One known weakness: a regression that strands the app on the wrong screen is
-currently detected by a locator timing out rather than by a fast assertion, so
-the suite slows down before it goes red. If you are hardening it, bound those
-waits.
+A regression that strands the app on the wrong screen is asserted, not waited
+out: the screen checks read the DOM and name what they found ("landed on:
+case"). Each check has a 35s budget and the run as a whole has 150s, so a broken
+app always produces a readable report instead of a killed process.
+
+One subtlety worth preserving if you touch this. Session restore is
+asynchronous — the start screen paints immediately from the synchronous
+localStorage read, and only afterwards can an IndexedDB read swap a restored
+case in. Reading the screen once therefore RACES the restore and can report
+"start" for an app that is about to resurrect a finished case, which is the very
+regression the check exists to catch. `settledScreen` waits for the screen to
+stop changing before answering. A faster check here is a broken check.
 
 The invariant suite prints its seed. A failure is reproduced by re-running with that seed as
 `argv[2]`.

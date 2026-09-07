@@ -75,6 +75,61 @@ async function gotoApp(page) {
   await page.goto(BASE_URL + '/', { waitUntil: 'domcontentloaded' });
 }
 
+
+/**
+ * Which screen are we on? Decided by polling the DOM directly rather than by
+ * waiting on one locator and letting it time out.
+ *
+ * The suite used to assert the expected screen with `waitFor({ timeout: 10000 })`.
+ * When a regression stranded the app on the WRONG screen that call burned the
+ * whole timeout and then threw a timeout error — so the suite went red slowly,
+ * and said "locator timed out" instead of naming the screen it actually found.
+ * This resolves as soon as any known screen is recognised, so a wrong screen
+ * fails in well under a second with a message that says what was there.
+ */
+async function whichScreen(page, timeoutMs = 6000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    const seen = await page
+      .evaluate(() => {
+        const t = document.body?.innerText || '';
+        if (/Case complete/i.test(t)) return 'scorecard';
+        if (/Start Clinical Case/i.test(t)) return 'start';
+        if (/Day \d+, \d{2}:\d{2}/.test(t)) return 'case';
+        return null;
+      })
+      .catch(() => null);
+    if (seen) return seen;
+    if (Date.now() > deadline) return 'unknown';
+    await page.waitForTimeout(100);
+  }
+}
+
+/**
+ * The screen the app SETTLES on, not the first one it paints.
+ *
+ * Session restore is asynchronous: the start screen renders immediately from
+ * the synchronous localStorage read, and only afterwards can an IndexedDB read
+ * swap a restored case in. A check that reads the screen once therefore races
+ * the restore and can report "start" for an app that is about to resurrect a
+ * finished case — which is exactly the regression the check exists to catch.
+ * This waits for the screen to stop changing before answering.
+ */
+async function settledScreen(page, settleMs = 1200) {
+  let last = await whichScreen(page);
+  const deadline = Date.now() + settleMs;
+  while (Date.now() < deadline) {
+    await page.waitForTimeout(200);
+    const now = await whichScreen(page, 1000);
+    if (now !== last) {
+      last = now;
+      // Something changed — give it the full settle window again.
+      return settledScreen(page, settleMs);
+    }
+  }
+  return last;
+}
+
 /** Retries a page/locator action once if Chromium reports its execution
  *  context destroyed — seen occasionally and harmlessly in this sandbox
  *  around a fresh context's very first interaction, unrelated to anything
@@ -108,13 +163,44 @@ async function startCase(page) {
  * burn the shared time budget) once an earlier, foundational step in the
  * same stateful flow has already gone wrong.
  */
+/** No single check may exceed this. A broken app makes several checks wait on
+ *  screens that will never appear; without a bound, one regression turns a
+ *  90-second suite into a run that blows any CI budget and reports nothing
+ *  until it finally gives up. A check that hits this fails with a clear reason
+ *  and the suite carries on to the rest. */
+const CHECK_TIMEOUT_MS = 35000;
+
+/** And a bound on the whole run. Twelve checks each allowed 20s could still add
+ *  up to four minutes against a thoroughly broken app. Past this deadline the
+ *  remaining checks are abandoned and the suite reports what it has, so a
+ *  regression always produces a readable failure rather than a killed process
+ *  with no output. */
+const SUITE_BUDGET_MS = 150000;
+const suiteStart = Date.now();
+function suiteBudgetExhausted() {
+  return Date.now() - suiteStart > SUITE_BUDGET_MS;
+}
+
 async function runCheck(label, fn) {
+  if (suiteBudgetExhausted()) {
+    assert(false, `${label} abandoned: the suite passed its ${SUITE_BUDGET_MS / 1000}s budget, so earlier checks are already failing badly`);
+    return false;
+  }
+  let timer;
+  const budget = new Promise((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`exceeded its ${CHECK_TIMEOUT_MS / 1000}s budget — the app is probably stuck on the wrong screen`)),
+      CHECK_TIMEOUT_MS
+    );
+  });
   try {
-    await fn();
+    await Promise.race([fn(), budget]);
     return true;
   } catch (e) {
-    assert(false, `${label} threw: ${e?.stack || e}`);
+    assert(false, `${label} failed: ${e?.message || e}`);
     return false;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -412,11 +498,15 @@ async function check7_endCaseAndReload(page, patientName) {
   // moment to settle before reloading, same as a real user would.
   await page.waitForTimeout(500);
   await gotoApp(page);
-  const startBtn = page.getByRole('button', { name: /Start Clinical Case/i });
-  await startBtn.waitFor({ state: 'visible', timeout: 10000 });
-  const stillOnScorecard = await page.getByRole('heading', { name: 'Case complete' }).count();
-  assert(stillOnScorecard === 0, 'reloading after ending the case does not land back on the finished case');
-  assert(await startBtn.isVisible(), 'reloading after ending the case lands on the start screen');
+  const screen = await settledScreen(page);
+  assert(
+    screen !== 'scorecard' && screen !== 'case',
+    `reloading after ending the case does not land back in the finished case (landed on: ${screen})`
+  );
+  assert(
+    screen === 'start',
+    `reloading after ending the case lands on the start screen (landed on: ${screen})`
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -434,7 +524,11 @@ async function check8_midCaseReload(page) {
   await waitIdle(page);
 
   await gotoApp(page);
-  await header.waitFor({ state: 'visible', timeout: 10000 });
+  // Decide the screen first: if the reload dropped us back to the menu, say so
+  // immediately rather than waiting out a header that will never appear.
+  const screen = await settledScreen(page);
+  assert(screen === 'case', `mid-case reload stays in the case (landed on: ${screen})`);
+  if (screen !== 'case') return;
   const nameAfter = (await header.textContent())?.trim() || '';
   assert(nameAfter === patientName, `mid-case reload resumes the same patient (before "${patientName}", after "${nameAfter}")`);
   const clockVisible = await page.locator('header').getByText(/Day \d+, \d{2}:\d{2}/).first().isVisible();
