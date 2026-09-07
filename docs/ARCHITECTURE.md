@@ -1,6 +1,6 @@
 # Architecture
 
-An offline-first clinical case simulator for NEET-PG and INI-CET preparation. Everything runs in
+An offline-first clinical case simulator for postgraduate medical exam preparation. Everything runs in
 the browser: there is no server, no account, and no analytics. The whole simulation — the clock,
 the patient's physiology, the labs, the scoring — is a pure function of the case data and what the
 learner typed.
@@ -17,7 +17,7 @@ index.html ──▶ src/main.tsx ──▶ ErrorBoundary ──▶ App.tsx
                     │                               │                               │
                     └──────────── src/utils/ccsEngine.ts (the simulation) ──────────┘
                                              │
-                          src/data/cases/*.ts (28 authored cases)
+                          src/data/cases/*.ts (38 authored cases)
 ```
 
 `App.tsx` holds all session state and owns every transition. There is no router: the screen is
@@ -65,7 +65,7 @@ result.** A fabricated lab value is worse than an admitted gap.
 
 ### Invariants
 
-These are enforced by `tests/invariants.test.ts` over seeded randomised play across all 28 cases:
+These are enforced by `tests/invariants.test.ts` over seeded randomised play across all 38 cases:
 
 - The clinical clock never moves backward.
 - A result is never ready before its order was placed, and no order is stamped in the future.

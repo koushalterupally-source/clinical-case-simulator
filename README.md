@@ -1,7 +1,7 @@
 # Clinical Case Simulator
 
-An offline-first, deterministic clinical case simulator for NEET-PG and INI-CET preparation.
-28 authored emergency and ward cases across 9 specialties. Everything runs in the browser —
+An offline-first, deterministic clinical case simulator for postgraduate medical exam
+preparation. 38 authored emergency and ward cases across 9 specialties. Everything runs in the browser —
 no server, no account, no analytics, no data leaves the device.
 
 **Educational use only.** This is a teaching simulation, not a substitute for supervised clinical
