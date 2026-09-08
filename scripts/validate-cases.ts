@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 /**
  * Build-time validation of the case library against src/data/caseSchema.ts.
  *
@@ -51,12 +53,50 @@ function run() {
       `${totalProblems} total problem${totalProblems === 1 ? '' : 's'}.`
   );
 
-  if (totalProblems > 0) {
-    console.log('\nFAILED: real defects were found in the case library (see above). Not fixing case data automatically.');
+  // The documented case count has now drifted three separate times, because
+  // nothing was checking it. A number in the docs that is quietly wrong is worse
+  // than no number, since the architecture doc uses it to describe how much the
+  // invariant suite covers. Cheaper to assert it than to keep noticing it.
+  const docProblems = checkDocumentedCaseCount(CASE_SCAFFOLDS.length);
+  for (const p of docProblems) console.log(`  DOCS: ${p}`);
+
+  if (totalProblems > 0 || docProblems.length > 0) {
+    if (totalProblems > 0) {
+      console.log('\nFAILED: real defects were found in the case library (see above). Not fixing case data automatically.');
+    }
+    if (docProblems.length > 0) {
+      console.log('\nFAILED: the documentation states the wrong number of cases. Update it.');
+    }
     process.exit(1);
   }
 
-  console.log('\nOK: every case scaffold is structurally valid.');
+  console.log('\nOK: every case scaffold is structurally valid, and the docs agree on how many there are.');
+}
+
+/**
+ * Every place the docs quote a case count has to match reality. Files that do
+ * not exist are ignored rather than failing — this is a consistency check, not
+ * a requirement that any particular document be present.
+ */
+function checkDocumentedCaseCount(actual: number): string[] {
+  const problems: string[] = [];
+  const targets = ['README.md', 'docs/ARCHITECTURE.md'];
+  for (const rel of targets) {
+    const file = path.join(process.cwd(), rel);
+    if (!fs.existsSync(file)) continue;
+    const text = fs.readFileSync(file, 'utf8');
+    // Any "<n> authored ... cases" or "all <n> cases" phrasing.
+    const patterns = [/(\d+)\s+authored/g, /all\s+(\d+)\s+cases/g];
+    for (const re of patterns) {
+      for (const m of text.matchAll(re)) {
+        const stated = parseInt(m[1], 10);
+        if (stated !== actual) {
+          problems.push(`${rel} says ${stated} where the library has ${actual} ("${m[0]}")`);
+        }
+      }
+    }
+  }
+  return problems;
 }
 
 run();

@@ -17,7 +17,7 @@ index.html ──▶ src/main.tsx ──▶ ErrorBoundary ──▶ App.tsx
                     │                               │                               │
                     └──────────── src/utils/ccsEngine.ts (the simulation) ──────────┘
                                              │
-                          src/data/cases/*.ts (38 authored cases)
+                          src/data/cases/*.ts (46 authored cases)
 ```
 
 `App.tsx` holds all session state and owns every transition. There is no router: the screen is
@@ -65,7 +65,7 @@ result.** A fabricated lab value is worse than an admitted gap.
 
 ### Invariants
 
-These are enforced by `tests/invariants.test.ts` over seeded randomised play across all 38 cases:
+These are enforced by `tests/invariants.test.ts` over seeded randomised play across all 46 cases:
 
 - The clinical clock never moves backward.
 - A result is never ready before its order was placed, and no order is stamped in the future.
