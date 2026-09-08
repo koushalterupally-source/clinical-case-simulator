@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CaseView } from './components/simple/CaseView';
 import { StartScreen } from './components/simple/StartScreen';
+import { ProgressView } from './components/simple/ProgressView';
 import { Scorecard } from './components/simple/Scorecard';
 import { CaseSession, CaseMode, LocationType } from './types';
 import { DEFAULT_PYQ_INDEX } from './data/defaultQBank';
@@ -12,7 +13,7 @@ import { markCasePlayed } from './utils/caseProgress';
 export default function App() {
   const [session, setSession] = useState<CaseSession | null>(() => readActiveSessionSync());
 
-  const [activeTab, setActiveTab] = useState<'sim' | 'scorecard' | 'instructions' | 'menu'>('sim');
+  const [activeTab, setActiveTab] = useState<'sim' | 'scorecard' | 'instructions' | 'menu' | 'progress'>('sim');
   const [isStarting, setIsStarting] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -159,6 +160,15 @@ export default function App() {
   const handleLeaveCase = () => setActiveTab('menu');
   const handleResumeCase = () => setActiveTab('sim');
 
+  if (activeTab === 'progress') {
+    return (
+      <ProgressView
+        onBack={() => setActiveTab(session ? 'sim' : 'menu')}
+        onPractise={(subject) => handleStartNewCase('standard', subject, false)}
+      />
+    );
+  }
+
   const showScorecard = activeTab === 'scorecard' && session?.scorecard;
 
   if (showScorecard && session) {
@@ -183,6 +193,7 @@ export default function App() {
         <StartScreen
           resumeLabel={parked ? (parked.isQuestionLed ? parked.title : parked.patient.name) : null}
           onResume={parked ? handleResumeCase : undefined}
+          onOpenProgress={() => setActiveTab('progress')}
           onStart={(mode, subject, blind, scaffoldId, setting) =>
             handleStartNewCase(mode, subject, !!blind, scaffoldId, setting)
           }

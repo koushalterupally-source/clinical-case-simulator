@@ -21,7 +21,33 @@
  * extra chromium.launch() args reduce that, and generous timeouts on top-
  * level start-screen waits absorb whatever it doesn't.
  */
-import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+/**
+ * Resolve Playwright the normal way first. This used to import an absolute path
+ * into the sandbox's global node_modules, which worked on exactly one machine
+ * and broke on every other checkout with a raw module-not-found. The fallback
+ * keeps it working in this sandbox, where playwright is installed globally
+ * rather than in the project, and the message says what to do when neither
+ * works — playwright is not a declared dependency because CI does not run this
+ * suite and pulling it in would add a browser download to the deploy job.
+ */
+async function loadChromium() {
+  const attempts = ['playwright', '/opt/node22/lib/node_modules/playwright/index.mjs'];
+  for (const spec of attempts) {
+    try {
+      return (await import(spec)).chromium;
+    } catch {
+      /* try the next one */
+    }
+  }
+  console.error(
+    'Playwright is not available.\n' +
+      'This suite needs it, but it is not a project dependency because CI does not run the\n' +
+      'browser tests. Install it just for this:\n\n' +
+      '  npm i --no-save playwright\n'
+  );
+  process.exit(1);
+}
+const chromium = await loadChromium();
 
 const BASE_URL = process.env.E2E_BASE_URL || 'http://localhost:8310';
 

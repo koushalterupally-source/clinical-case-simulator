@@ -15,6 +15,7 @@ interface StartScreenProps {
    *  instead of being stranded behind a "start a new one" button. */
   resumeLabel?: string | null;
   onResume?: () => void;
+  onOpenProgress?: () => void;
 }
 
 // Same localStorage key the sibling PYQ app writes, so a theme choice made in
@@ -72,6 +73,7 @@ export const StartScreen: React.FC<StartScreenProps> = ({
   starting,
   resumeLabel,
   onResume,
+  onOpenProgress,
 }) => {
   const [libraryOpen, setLibraryOpen] = useState(false);
 
@@ -161,6 +163,16 @@ export const StartScreen: React.FC<StartScreenProps> = ({
             >
               Browse by topic
             </button>
+
+            {onOpenProgress && (
+              <button
+                onClick={onOpenProgress}
+                className="w-full rounded-xl py-2.5 text-[13.5px] font-medium ring-focus transition-colors"
+                style={{ background: 'transparent', color: 'var(--text-muted)' }}
+              >
+                Your progress
+              </button>
+            )}
           </div>
 
           {/* The QBank link that used to sit here pointed at a section that no

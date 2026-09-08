@@ -120,8 +120,13 @@ The browser suite needs a built app being served, so it is not part of `npm test
 ```bash
 npm run build
 npx serve -s dist -l 8310   # in its own shell
-npm run test:e2e            # 56 checks, ~90s
+npm run test:e2e            # 57 checks, ~90s
 ```
+
+Playwright is not a project dependency: CI does not run the browser suite, and
+declaring it would add a browser download to the deploy job for no benefit. The
+runner resolves it normally, falls back to a global install, and otherwise tells
+you to `npm i --no-save playwright`.
 
 It covers boot, starting a case, free-text submission, the order sheet, history
 and examination, leave/resume, end-case and reload, mid-case reload, four
