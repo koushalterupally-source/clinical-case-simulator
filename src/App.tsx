@@ -165,6 +165,7 @@ export default function App() {
       <ProgressView
         onBack={() => setActiveTab(session ? 'sim' : 'menu')}
         onPractise={(subject) => handleStartNewCase('standard', subject, false)}
+        onPractiseCase={(scaffoldId) => handleStartNewCase('standard', 'All', false, scaffoldId)}
       />
     );
   }

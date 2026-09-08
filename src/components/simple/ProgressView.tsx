@@ -6,6 +6,9 @@ import { computeProgress, ProgressSummary } from '../../utils/progress';
 interface Props {
   onBack: () => void;
   onPractise: (subject: string) => void;
+  /** Re-open one specific case — the whole point of naming a step you keep
+   *  missing is being able to go and do it again. */
+  onPractiseCase: (scaffoldId: string) => void;
 }
 
 /**
@@ -16,7 +19,7 @@ interface Props {
  * simulator exists to punish. Every number here is in service of one question:
  * what should you open next?
  */
-export const ProgressView: React.FC<Props> = ({ onBack, onPractise }) => {
+export const ProgressView: React.FC<Props> = ({ onBack, onPractise, onPractiseCase }) => {
   const [summary, setSummary] = React.useState<ProgressSummary | null>(null);
   const [loading, setLoading] = React.useState(true);
 
@@ -104,13 +107,24 @@ export const ProgressView: React.FC<Props> = ({ onBack, onPractise }) => {
                 </p>
                 <ul className="space-y-2.5">
                   {summary.repeatedMisses.map((m) => (
-                    <li key={`${m.scaffoldId}-${m.name}`} className="text-[14px]">
-                      <span style={{ color: 'var(--text)' }}>{m.name}</span>
-                      <span className="block text-[12.5px]" style={{ color: 'var(--text-muted)' }}>
-                        {m.caseTitle} — {m.omitted > 0 && `never done ${m.omitted} time${m.omitted === 1 ? '' : 's'}`}
-                        {m.omitted > 0 && m.delayed > 0 && ', '}
-                        {m.delayed > 0 && `late ${m.delayed} time${m.delayed === 1 ? '' : 's'}`}
-                      </span>
+                    <li key={`${m.scaffoldId}-${m.name}`}>
+                      <button
+                        onClick={() => onPractiseCase(m.scaffoldId)}
+                        className="w-full text-left ring-focus rounded-xl px-3 py-2.5"
+                        style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                      >
+                        <span className="block text-[14px]" style={{ color: 'var(--text)' }}>
+                          {m.name}
+                        </span>
+                        <span className="block text-[12.5px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                          {m.caseTitle} — {m.omitted > 0 && `never done ${m.omitted} time${m.omitted === 1 ? '' : 's'}`}
+                          {m.omitted > 0 && m.delayed > 0 && ', '}
+                          {m.delayed > 0 && `late ${m.delayed} time${m.delayed === 1 ? '' : 's'}`}
+                        </span>
+                        <span className="block text-[12px] mt-1" style={{ color: 'var(--accent)' }}>
+                          Play this case again
+                        </span>
+                      </button>
                     </li>
                   ))}
                 </ul>
