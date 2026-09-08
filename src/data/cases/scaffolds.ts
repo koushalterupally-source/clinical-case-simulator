@@ -33,6 +33,14 @@ import { SCAFFOLD_MITRAL_REGURGITATION } from './mitralRegurgitation';
 import { SCAFFOLD_GBS } from './guillainBarre';
 import { SCAFFOLD_ALCOHOLIC_CLD } from './alcoholicLiverDisease';
 import { SCAFFOLD_NONALCOHOLIC_CLD } from './nonAlcoholicCirrhosis';
+import { SCAFFOLD_RETINAL_DETACHMENT } from './retinalDetachment';
+import { SCAFFOLD_CHEMICAL_EYE_INJURY } from './chemicalEyeInjury';
+import { SCAFFOLD_EPISTAXIS } from './epistaxis';
+import { SCAFFOLD_PERITONSILLAR_ABSCESS } from './peritonsillarAbscess';
+import { SCAFFOLD_PEMPHIGUS } from './pemphigusVulgaris';
+import { SCAFFOLD_NECROTISING_FASCIITIS } from './cellulitisNecrotising';
+import { SCAFFOLD_OPEN_FRACTURE } from './openFracture';
+import { SCAFFOLD_SEPTIC_ARTHRITIS } from './septicArthritis';
 
 /**
  * Twelve cases, all modelled to the same standard. Four are defined inline
@@ -1096,4 +1104,12 @@ export const CASE_SCAFFOLDS: CaseScaffold[] = [
   SCAFFOLD_GBS,
   SCAFFOLD_ALCOHOLIC_CLD,
   SCAFFOLD_NONALCOHOLIC_CLD,
+  SCAFFOLD_RETINAL_DETACHMENT,
+  SCAFFOLD_CHEMICAL_EYE_INJURY,
+  SCAFFOLD_EPISTAXIS,
+  SCAFFOLD_PERITONSILLAR_ABSCESS,
+  SCAFFOLD_PEMPHIGUS,
+  SCAFFOLD_NECROTISING_FASCIITIS,
+  SCAFFOLD_OPEN_FRACTURE,
+  SCAFFOLD_SEPTIC_ARTHRITIS,
 ];
